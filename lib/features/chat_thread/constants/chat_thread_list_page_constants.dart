@@ -1,8 +1,8 @@
 class ChatThreadListPageConstants {
   static const String title = 'Chatas';
   static const String searchTooltip = 'Tìm kiếm';
-  static const String errorPrefix = 'Error: ';
-  static const String noChats = 'No chats yet';
+  static const String errorPrefix = 'lỗi: ';
+  static const String noChats = 'Không có đoạn chat nào';
   static const String loading = 'Loading...';
   static const String chatCountText = 'Bạn đã nhấn nút này:';
   static const double avatarRadius = 20.0;
