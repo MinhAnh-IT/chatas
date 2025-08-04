@@ -11,6 +11,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   final _router = AppRouter.router;
 
+  MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
