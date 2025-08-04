@@ -14,7 +14,7 @@ class AppRouter{
       ),
       GoRoute(
         path: '/login',
-        name: AppRouteConstants.homePathName,
+        name: AppRouteConstants.loginPathName,
         builder: (context, state) => const LoginPage(),
       ),
     ]
