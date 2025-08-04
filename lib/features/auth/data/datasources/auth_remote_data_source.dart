@@ -44,6 +44,7 @@ class AuthRemoteDataSource {
 
       if (userCredential.user != null) {
         final userModel = UserModel(
+          id: userCredential.user!.uid,
           fullName: request.fullName,
           username: request.username,
           email: request.email,

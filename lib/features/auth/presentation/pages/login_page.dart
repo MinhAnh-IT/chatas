@@ -143,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     );
                                   Future.delayed(const Duration(milliseconds: 700), () {
-                                    Navigator.pushReplacementNamed(context, '/ChatThreadListPage');
+                                    Navigator.pushReplacementNamed(context, '/chatThreads');
                                   });
                                   } else if (state is AuthFailure) {
                                     ScaffoldMessenger.of(context).showSnackBar(
