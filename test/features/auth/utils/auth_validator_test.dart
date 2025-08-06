@@ -120,7 +120,6 @@ void main() {
       expect(AuthValidator.validateRegisterRequest(req), null);
     });
     test('Thiếu trường', () {
-      final now = DateTime.now();
       final req = RegisterRequest(
         fullName: '',
         username: '',
@@ -136,11 +135,11 @@ void main() {
 
   group('AuthValidator - validateLoginRequest', () {
     test('Đăng nhập hợp lệ', () {
-      final req = LoginRequest(emailOrUsername: 'abc@gmail.com', password: '12345678');
+      const req = LoginRequest(emailOrUsername: 'abc@gmail.com', password: '12345678');
       expect(AuthValidator.validateLoginRequest(req), null);
     });
     test('Thiếu trường', () {
-      final req = LoginRequest(emailOrUsername: '', password: '');
+      const req = LoginRequest(emailOrUsername: '', password: '');
       expect(AuthValidator.validateLoginRequest(req), isNotNull);
     });
   });

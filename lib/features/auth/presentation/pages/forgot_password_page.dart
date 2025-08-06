@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chatas/shared/utils/auth_validator.dart';
-import '../cubit/auth_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '/shared/utils/auth_validator.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
+import 'package:go_router/go_router.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -15,6 +15,8 @@ class ForgotPasswordPage extends StatefulWidget {
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -22,9 +24,64 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     super.dispose();
   }
 
-  void _handleSendReset() {
+  Future<void> _handleSendReset() async {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthCubit>().sendPasswordResetEmail(_emailController.text.trim());
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await _firebaseAuth.sendPasswordResetEmail(email: _emailController.text.trim());
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đã gửi email đặt lại mật khẩu!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Future.delayed(const Duration(milliseconds: 700), () {
+            context.pop();
+          });
+        }
+      } on firebase_auth.FirebaseAuthException catch (e) {
+        String message = 'Lỗi gửi email';
+        switch (e.code) {
+          case 'user-not-found':
+            message = 'Không tìm thấy tài khoản với email này';
+            break;
+          case 'invalid-email':
+            message = 'Email không hợp lệ';
+            break;
+          case 'too-many-requests':
+            message = 'Thử quá nhiều lần. Vui lòng thử lại sau';
+            break;
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi không xác định: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -81,38 +138,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               validator: (value) => AuthValidator.validateEmail(value),
                             ),
                             const SizedBox(height: 24),
-                            BlocConsumer<AuthCubit, AuthState>(
-                              listener: (context, state) {
-                                if (state is PasswordResetEmailSent) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Đã gửi email đặt lại mật khẩu!'),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                  Future.delayed(const Duration(milliseconds: 700), () {
-                                    Navigator.pop(context);
-                                  });
-                                } else if (state is AuthFailure) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(state.message),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              },
-                              builder: (context, state) {
-                                return AuthButton(
-                                  text: 'Gửi liên kết',
-                                  onPressed: state is AuthLoading ? null : _handleSendReset,
-                                  isLoading: state is AuthLoading,
-                                );
-                              },
+                            AuthButton(
+                              text: 'Gửi liên kết',
+                              onPressed: _isLoading ? null : _handleSendReset,
+                              isLoading: _isLoading,
                             ),
                             const SizedBox(height: 16),
                             TextButton(
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: () => context.pop(),
                               child: const Text('Quay lại đăng nhập'),
                             ),
                           ],

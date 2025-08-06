@@ -44,7 +44,7 @@ class AuthRemoteDataSource {
 
       if (userCredential.user != null) {
         final userModel = UserModel(
-          id: userCredential.user!.uid,
+          userid: userCredential.user!.uid,
           fullName: request.fullName,
           username: request.username,
           email: request.email,
@@ -52,7 +52,7 @@ class AuthRemoteDataSource {
           birthDate: request.birthDate,
           password: request.password,
           confirmPassword: request.confirmPassword,
-          avatarUrl: '', 
+          avatarUrl: '',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );

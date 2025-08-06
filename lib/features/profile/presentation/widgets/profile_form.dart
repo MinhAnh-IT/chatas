@@ -3,15 +3,18 @@ import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/update_profile_request.dart';
 import '../../../../shared/utils/profile_validator.dart';
 import '../../constants/profile_constants.dart';
+import 'change_password_dialog.dart';
 
 class ProfileForm extends StatefulWidget {
   final UserProfile profile;
   final Function(UpdateProfileRequest) onProfileUpdated;
+  final VoidCallback? onChangePassword;
 
   const ProfileForm({
     super.key,
     required this.profile,
     required this.onProfileUpdated,
+    this.onChangePassword,
   });
 
   @override
@@ -82,15 +85,43 @@ class _ProfileFormState extends State<ProfileForm> {
           _buildBirthDatePicker(),
           const SizedBox(height: 24),
 
+          // Change Password Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const ChangePasswordDialog(),
+                );
+              },
+              icon: const Icon(Icons.lock_outline),
+              label: const Text('Đổi mật khẩu'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE67E22),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Save Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _saveProfile,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: const Color(0xFF8E44AD),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('Lưu thay đổi'),
             ),

@@ -4,7 +4,7 @@ import '../../domain/entities/change_password_request.dart';
 import '../../domain/usecases/get_user_profile_usecase.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/change_password_usecase.dart';
-import '../../domain/usecases/upload_profile_image_usecase.dart';
+
 import '../../domain/usecases/check_username_availability_usecase.dart';
 import 'profile_state.dart';
 
@@ -12,19 +12,19 @@ class ProfileCubit extends Cubit<ProfileState> {
   final GetUserProfileUseCase _getUserProfileUseCase;
   final UpdateProfileUseCase _updateProfileUseCase;
   final ChangePasswordUseCase _changePasswordUseCase;
-  final UploadProfileImageUseCase _uploadProfileImageUseCase;
+
   final CheckUsernameAvailabilityUseCase _checkUsernameAvailabilityUseCase;
 
   ProfileCubit({
     required GetUserProfileUseCase getUserProfileUseCase,
     required UpdateProfileUseCase updateProfileUseCase,
     required ChangePasswordUseCase changePasswordUseCase,
-    required UploadProfileImageUseCase uploadProfileImageUseCase,
+
     required CheckUsernameAvailabilityUseCase checkUsernameAvailabilityUseCase,
   }) : _getUserProfileUseCase = getUserProfileUseCase,
        _updateProfileUseCase = updateProfileUseCase,
        _changePasswordUseCase = changePasswordUseCase,
-       _uploadProfileImageUseCase = uploadProfileImageUseCase,
+
        _checkUsernameAvailabilityUseCase = checkUsernameAvailabilityUseCase,
        super(ProfileInitial());
 
@@ -61,16 +61,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 
-  Future<void> uploadProfileImage(String imagePath) async {
-    emit(ImageUploading());
-    
-    final result = await _uploadProfileImageUseCase(imagePath);
-    
-    result.fold(
-      (failure) => emit(ProfileFailure(failure.message)),
-      (imageUrl) => emit(ImageUploaded(imageUrl)),
-    );
-  }
+
 
   Future<bool> checkUsernameAvailability(String username) async {
     final result = await _checkUsernameAvailabilityUseCase(username);

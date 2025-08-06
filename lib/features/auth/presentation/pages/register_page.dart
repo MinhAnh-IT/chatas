@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubit/auth_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '../../domain/entities/register_request.dart';
-import 'package:chatas/shared/utils/auth_validator.dart';
+import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
+import '../../data/models/user_model.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -21,11 +23,14 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   
   String _selectedGender = '';
   DateTime? _selectedDate;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -37,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedGender.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -57,16 +62,111 @@ class _RegisterPageState extends State<RegisterPage> {
         );
         return;
       }
-      final registerRequest = RegisterRequest(
-        fullName: _fullNameController.text.trim(),
-        username: _usernameController.text.trim(),
-        email: _emailController.text.trim(),
-        gender: _selectedGender,
-        birthDate: _selectedDate!,
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
-      );
-      context.read<AuthCubit>().register(registerRequest);
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        if (_passwordController.text != _confirmPasswordController.text) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mật khẩu xác nhận không khớp'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        if (_passwordController.text.length < AuthConstants.minPasswordLength) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mật khẩu quá yếu'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+        if (userCredential.user != null) {
+          final userModel = UserModel(
+            userid: userCredential.user!.uid,
+            fullName: _fullNameController.text.trim(),
+            username: _usernameController.text.trim(),
+            email: _emailController.text.trim(),
+            gender: _selectedGender,
+            birthDate: _selectedDate!,
+            password: _passwordController.text,
+            confirmPassword: _confirmPasswordController.text,
+            avatarUrl: '',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+
+          await _firestore
+              .collection(AuthConstants.usersCollection)
+              .doc(userCredential.user!.uid)
+              .set(userModel.toJson());
+
+          // Đăng xuất để user phải đăng nhập lại
+          await _firebaseAuth.signOut();
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Đăng ký thành công! Vui lòng đăng nhập.'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            context.go('/login');
+          }
+        }
+      } on firebase_auth.FirebaseAuthException catch (e) {
+        String message = 'Lỗi đăng ký';
+        switch (e.code) {
+          case 'email-already-in-use':
+            message = 'Email đã được sử dụng';
+            break;
+          case 'weak-password':
+            message = 'Mật khẩu quá yếu';
+            break;
+          case 'invalid-email':
+            message = 'Địa chỉ email không hợp lệ';
+            break;
+          case 'operation-not-allowed':
+            message = 'Thao tác không được phép';
+            break;
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi đăng ký: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -86,7 +186,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Nhận AuthCubit từ cha (nên bọc BlocProvider ở MaterialApp hoặc cha của RegisterPage)
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
@@ -272,34 +371,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       validator: (value) => AuthValidator.validateConfirmPassword(value, _passwordController.text),
                     ),
                     const SizedBox(height: 32),
-                    BlocConsumer<AuthCubit, AuthState>(
-                      listener: (context, state) {
-                        if (state is AuthSuccess) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đăng ký thành công!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Future.delayed(const Duration(milliseconds: 700), () {
-                            Navigator.pushReplacementNamed(context, '/login');
-                          });
-                        } else if (state is AuthFailure) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(state.message),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        return AuthButton(
-                          text: 'Tạo tài khoản',
-                          onPressed: state is AuthLoading ? null : _handleRegister,
-                          isLoading: state is AuthLoading,
-                        );
-                      },
+                    AuthButton(
+                      text: 'Tạo tài khoản',
+                      onPressed: _isLoading ? null : _handleRegister,
+                      isLoading: _isLoading,
                     ),
                     const SizedBox(height: 24),
                     Row(
@@ -308,7 +383,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         const Text('Đã có tài khoản? ', style: TextStyle(fontSize: 14)),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/login');
+                            context.push('/login');
                           },
                           child: const Text(
                             'Đăng nhập',

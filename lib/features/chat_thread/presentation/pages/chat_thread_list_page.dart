@@ -8,6 +8,7 @@ import '../cubit/chat_thread_list_cubit.dart';
 import '../cubit/chat_thread_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
+import 'package:go_router/go_router.dart';
 
 class ChatThreadListPage extends StatefulWidget {
   const ChatThreadListPage({super.key});
@@ -25,6 +26,13 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     final repository = GetChatThreadsUseCase(ChatThreadRepositoryImpl());
     _cubit = ChatThreadListCubit(repository);
     _cubit.fetchChatThreads();
+  }
+
+  void _onTabTapped(int index) {
+    if (index == 3) { // Tab "Cá nhân"
+      context.go('/profile');
+    }
+    // Các tab khác có thể thêm logic sau
   }
 
   @override
@@ -84,7 +92,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
         ),
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
-          onTap: (index) {},
+          onTap: _onTabTapped,
         ),
       ),
     );
