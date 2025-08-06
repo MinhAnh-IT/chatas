@@ -1,4 +1,5 @@
 import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
@@ -22,10 +23,17 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
   @override
   void initState() {
     super.initState();
-    final repository = GetChatThreadsUseCase(ChatThreadRepositoryImpl());
-    _cubit = ChatThreadListCubit(repository);
+    final repository = ChatThreadRepositoryImpl();
+    final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+    final createChatThreadUseCase = CreateChatThreadUseCase(repository);
+    
+    _cubit = ChatThreadListCubit(
+      getChatThreadsUseCase: getChatThreadsUseCase,
+      createChatThreadUseCase: createChatThreadUseCase,
+    );
     _cubit.fetchChatThreads();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +47,8 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
               icon: const Icon(Icons.search),
               tooltip: ChatThreadListPageConstants.searchTooltip,
               onPressed: () {
-                // TODO: Tìm kiếm
-              },
+
+              }
             ),
           ],
         ),

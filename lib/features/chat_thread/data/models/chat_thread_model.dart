@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 import '../../domain/entities/chat_thread.dart';
 
-class ChatThreadModel {
+class ChatThreadModel extends Equatable {
   final String id;
   final String name;
   final String lastMessage;
@@ -25,6 +26,20 @@ class ChatThreadModel {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        lastMessage,
+        lastMessageTime,
+        avatarUrl,
+        members,
+        isGroup,
+        unreadCount,
+        createdAt,
+        updatedAt,
+      ];
 
   factory ChatThreadModel.fromJson(Map<String, dynamic> map) {
     DateTime parseDate(dynamic value) {
