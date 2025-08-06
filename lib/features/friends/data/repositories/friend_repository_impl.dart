@@ -1,7 +1,7 @@
 import '../../domain/entities/friend.dart';
 import '../../domain/entities/friendRequest.dart';
 import '../../domain/repositories/friend_repository.dart';
-import '../datasources/friend_remote_datasource.dart';
+import '../datasources/friendDataSource.dart';
 
 class FriendRepositoryImpl implements FriendRepository {
   final FriendRemoteDataSource remoteDataSource;
@@ -48,8 +48,12 @@ class FriendRepositoryImpl implements FriendRepository {
   }
 
   @override
-  Future<void> acceptFriendRequest(String requestId) async {
-    await remoteDataSource.acceptFriendRequest(requestId);
+  Future<void> acceptFriendRequest(
+    String requestId,
+    String senderId,
+    String receiverId,
+  ) async {
+    await remoteDataSource.acceptFriendRequest(requestId, senderId, receiverId);
   }
 
   @override
@@ -58,8 +62,8 @@ class FriendRepositoryImpl implements FriendRepository {
   }
 
   @override
-  Future<void> cancelFriendRequest(String requestId) async {
-    await remoteDataSource.cancelFriendRequest(requestId);
+  Future<void> cancelFriendRequest(String senderId, String receiverId) async {
+    await remoteDataSource.cancelFriendRequest(senderId, receiverId);
   }
 
   @override
@@ -75,5 +79,14 @@ class FriendRepositoryImpl implements FriendRepository {
   @override
   Future<String?> getFriendshipStatus(String userId, String otherUserId) async {
     return await remoteDataSource.getFriendshipStatus(userId, otherUserId);
+  }
+
+  @override
+  Future<void> updateBlockStatus(
+    String userId,
+    String friendId,
+    bool isBlock,
+  ) async {
+    await remoteDataSource.updateBlockStatus(userId, friendId, isBlock);
   }
 }

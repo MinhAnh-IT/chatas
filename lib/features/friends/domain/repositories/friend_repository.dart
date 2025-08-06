@@ -13,12 +13,17 @@ abstract class FriendRepository {
     String messageId,
     DateTime timestamp,
   );
+  Future<void> updateBlockStatus(String userId, String friendId, bool isBlock);
 
   // Friend Request operations
   Future<void> sendFriendRequest(FriendRequest friendRequest);
-  Future<void> acceptFriendRequest(String requestId);
+  Future<void> acceptFriendRequest(
+    String requestId,
+    String senderId,
+    String receiverId,
+  );
   Future<void> rejectFriendRequest(String requestId);
-  Future<void> cancelFriendRequest(String requestId);
+  Future<void> cancelFriendRequest(String senderId, String receiverId);
   Future<List<FriendRequest>> getReceivedFriendRequests(String userId);
   Future<List<FriendRequest>> getSentFriendRequests(String userId);
 
