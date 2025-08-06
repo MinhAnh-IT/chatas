@@ -5,7 +5,7 @@ import '../domain/repositories/profile_repository.dart';
 import '../domain/usecases/get_user_profile_usecase.dart';
 import '../domain/usecases/update_profile_usecase.dart';
 import '../domain/usecases/change_password_usecase.dart';
-import '../domain/usecases/upload_profile_image_usecase.dart';
+
 import '../domain/usecases/check_username_availability_usecase.dart';
 
 final getIt = GetIt.instance;
@@ -25,6 +25,6 @@ void setupProfileDependencies() {
   getIt.registerLazySingleton(() => GetUserProfileUseCase(getIt()));
   getIt.registerLazySingleton(() => UpdateProfileUseCase(getIt()));
   getIt.registerLazySingleton(() => ChangePasswordUseCase(getIt()));
-  getIt.registerLazySingleton(() => UploadProfileImageUseCase(getIt()));
+
   getIt.registerLazySingleton(() => CheckUsernameAvailabilityUseCase(getIt()));
 } 

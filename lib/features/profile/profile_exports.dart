@@ -6,7 +6,7 @@ export 'domain/repositories/profile_repository.dart';
 export 'domain/usecases/get_user_profile_usecase.dart';
 export 'domain/usecases/update_profile_usecase.dart';
 export 'domain/usecases/change_password_usecase.dart';
-export 'domain/usecases/upload_profile_image_usecase.dart';
+// export 'domain/usecases/upload_profile_image_usecase.dart';
 export 'domain/usecases/check_username_availability_usecase.dart';
 export 'domain/exceptions/profile_exceptions.dart';
 

@@ -50,18 +50,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     }
   }
 
-  @override
-  Future<Either<ProfileException, String>> uploadProfileImage(String imagePath) async {
-    try {
-      final imageUrl = await remoteDataSource.uploadProfileImage(imagePath);
-      return Right(imageUrl);
-    } catch (e) {
-      if (e is ProfileException) {
-        return Left(e);
-      }
-      return Left(ImageUploadException('Không thể tải ảnh lên: ${e.toString()}'));
-    }
-  }
+
 
   @override
   Future<Either<ProfileException, bool>> checkUsernameAvailability(String username) async {

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
 import '../models/user_profile_model.dart';
 import '../../domain/entities/update_profile_request.dart';
 import '../../domain/entities/change_password_request.dart';
@@ -11,22 +11,19 @@ abstract class ProfileRemoteDataSource {
   Future<UserProfileModel> getUserProfile();
   Future<UserProfileModel> updateProfile(UpdateProfileRequest request);
   Future<void> changePassword(ChangePasswordRequest request);
-  Future<String> uploadProfileImage(String imagePath);
+
   Future<bool> checkUsernameAvailability(String username);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
-  final FirebaseStorage _storage;
 
   ProfileRemoteDataSourceImpl({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-    FirebaseStorage? storage,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance,
-       _storage = storage ?? FirebaseStorage.instance;
+       _auth = auth ?? FirebaseAuth.instance;
 
   @override
   Future<UserProfileModel> getUserProfile() async {
@@ -120,39 +117,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     }
   }
 
-  @override
-  Future<String> uploadProfileImage(String imagePath) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw const UserNotFoundException();
-      }
 
-      final file = File(imagePath);
-      final ref = _storage
-          .ref()
-          .child('profile_images')
-          .child('${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg');
-
-      final uploadTask = ref.putFile(file);
-      final snapshot = await uploadTask;
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-
-      // Update profile with new image URL
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .update({
-        'avatarUrl': downloadUrl, // Chỉ cập nhật avatarUrl
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      return downloadUrl;
-    } catch (e) {
-      if (e is ProfileException) rethrow;
-      throw ImageUploadException('Không thể tải ảnh lên: ${e.toString()}');
-    }
-  }
 
   @override
   Future<bool> checkUsernameAvailability(String username) async {
