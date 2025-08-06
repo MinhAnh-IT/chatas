@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/chat_thread_model.dart';
-import '../../domain/entities/chat_thread.dart';
 import '../../constants/chat_thread_remote_constants.dart';
 
 class ChatThreadRemoteDataSource {
@@ -9,20 +8,18 @@ class ChatThreadRemoteDataSource {
   ChatThreadRemoteDataSource({FirebaseFirestore? firestore})
       : firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<List<ChatThread>> fetchChatThreads() async {
+  Future<List<ChatThreadModel>> fetchChatThreads() async {
     final snapshot = await firestore.collection(ChatThreadRemoteConstants.collectionName).get();
     return snapshot.docs
-        .map((doc) => ChatThreadModel.fromJson(doc.data()).toEntity())
+        .map((doc) => ChatThreadModel.fromJson(doc.data()))
         .toList();
   }
 
-  Future<void> addChatThread(ChatThread chatThread) async {
-    final model = ChatThreadModel.fromEntity(chatThread);
+  Future<void> addChatThread(ChatThreadModel model) async {
     await firestore.collection(ChatThreadRemoteConstants.collectionName).add(model.toJson());
   }
 
-  Future<void> updateChatThread(String id, ChatThread chatThread) async {
-    final model = ChatThreadModel.fromEntity(chatThread);
+  Future<void> updateChatThread(String id, ChatThreadModel model) async {
     await firestore.collection(ChatThreadRemoteConstants.collectionName).doc(id).update(model.toJson());
   }
 
@@ -30,10 +27,10 @@ class ChatThreadRemoteDataSource {
     await firestore.collection(ChatThreadRemoteConstants.collectionName).doc(id).delete();
   }
 
-  Stream<List<ChatThread>> chatThreadsStream() {
+  Stream<List<ChatThreadModel>> chatThreadsStream() {
     return firestore.collection(ChatThreadRemoteConstants.collectionName).snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => ChatThreadModel.fromJson(doc.data()).toEntity())
+          .map((doc) => ChatThreadModel.fromJson(doc.data()))
           .toList();
     });
   }
