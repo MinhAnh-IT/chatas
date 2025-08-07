@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../domain/entities/auth_result.dart' as domain;
 import '../../domain/entities/login_request.dart';
 import '../../domain/entities/register_request.dart';
-import '../../domain/entities/User.dart';
+import '../../domain/entities/user.dart';
 import '../../di/auth_dependency_injection.dart';
 
 // States
@@ -106,10 +106,12 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> sendPasswordResetEmail(String email) async {
     emit(const AuthLoading());
     try {
-      await AuthDependencyInjection.authRemoteDataSource.sendPasswordResetEmail(email);
+      await AuthDependencyInjection.authRemoteDataSource.sendPasswordResetEmail(
+        email,
+      );
       emit(const PasswordResetEmailSent());
     } on Exception catch (e) {
       emit(AuthFailure('Gửi email đặt lại mật khẩu thất bại: ${e.toString()}'));
     }
   }
-}   
+}
