@@ -137,7 +137,7 @@ class _FriendsListPageState extends State<FriendsListPage> {
           switch (index) {
             case 0:
               // Chuyển đến trang Chat
-              context.go(AppRouteConstants.homePath);
+              context.go('/');
               break;
             case 1:
               // Đã ở trang Bạn bè (hiện tại)
