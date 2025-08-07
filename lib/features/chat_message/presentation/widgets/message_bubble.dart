@@ -45,9 +45,7 @@ class MessageBubble extends StatelessWidget {
               children: [
                 if (!message.isFromCurrentUser) _buildAvatar(),
                 if (!message.isFromCurrentUser) const SizedBox(width: 8.0),
-                Flexible(
-                  child: _buildMessageContainer(context),
-                ),
+                Flexible(child: _buildMessageContainer(context)),
                 if (message.isFromCurrentUser) const SizedBox(width: 8.0),
                 if (message.isFromCurrentUser) _buildMessageStatus(),
               ],
@@ -63,7 +61,7 @@ class MessageBubble extends StatelessWidget {
   Widget _buildTimestamp(BuildContext context) {
     final theme = Theme.of(context);
     final timestampText = app_date_utils.DateUtils.formatTime(message.sentAt);
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
       child: Text(
@@ -93,7 +91,7 @@ class MessageBubble extends StatelessWidget {
   Widget _buildMessageContainer(BuildContext context) {
     final theme = Theme.of(context);
     final isFromCurrentUser = message.isFromCurrentUser;
-    
+
     return Stack(
       children: [
         Container(
@@ -102,7 +100,9 @@ class MessageBubble extends StatelessWidget {
             color: isFromCurrentUser
                 ? theme.colorScheme.primary
                 : theme.colorScheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(ChatMessagePageConstants.messageRadius),
+            borderRadius: BorderRadius.circular(
+              ChatMessagePageConstants.messageRadius,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +136,7 @@ class MessageBubble extends StatelessWidget {
   /// Builds the edited indicator for modified messages.
   Widget _buildEditedIndicator(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.only(top: 4.0),
       child: Text(
@@ -155,7 +155,7 @@ class MessageBubble extends StatelessWidget {
   Widget _buildMessageStatus() {
     IconData icon;
     Color color = Colors.grey;
-    
+
     switch (message.status) {
       case MessageStatus.sending:
         // No icon for sending status (removed clock icon)
@@ -175,23 +175,19 @@ class MessageBubble extends StatelessWidget {
         color = Colors.red;
         break;
     }
-    
-    return Icon(
-      icon,
-      size: 16.0,
-      color: color,
-    );
+
+    return Icon(icon, size: 16.0, color: color);
   }
 
   /// Builds the reactions display below the message.
   Widget _buildReactions(BuildContext context) {
     if (message.reactions.isEmpty) return const SizedBox.shrink();
-    
+
     final reactionCounts = <ReactionType, int>{};
     for (final reaction in message.reactions.values) {
       reactionCounts[reaction] = (reactionCounts[reaction] ?? 0) + 1;
     }
-    
+
     return Padding(
       padding: const EdgeInsets.only(top: 4.0),
       child: Wrap(
@@ -200,7 +196,10 @@ class MessageBubble extends StatelessWidget {
           return GestureDetector(
             onTap: () => onReactionTap(message.id, entry.key),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(12.0),
@@ -210,7 +209,9 @@ class MessageBubble extends StatelessWidget {
                 children: [
                   Text(
                     _getReactionEmoji(entry.key),
-                    style: const TextStyle(fontSize: ChatMessagePageConstants.reactionSize),
+                    style: const TextStyle(
+                      fontSize: ChatMessagePageConstants.reactionSize,
+                    ),
                   ),
                   if (entry.value > 1) const SizedBox(width: 4.0),
                   if (entry.value > 1)

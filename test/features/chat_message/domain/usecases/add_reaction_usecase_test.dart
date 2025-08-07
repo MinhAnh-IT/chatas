@@ -27,50 +27,44 @@ void main() {
         // Arrange
         const messageId = 'test_message_id';
         const reactionType = ReactionType.like;
-        
-        when(() => mockRepository.addReaction(
-          any(),
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.addReaction(any(), any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(
-          messageId: messageId,
-          reaction: reactionType,
-        );
+        await useCase.call(messageId: messageId, reaction: reactionType);
 
         // Assert
-        verify(() => mockRepository.addReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-          reactionType,
-        )).called(1);
+        verify(
+          () => mockRepository.addReaction(
+            messageId,
+            ChatMessagePageConstants.temporaryUserId,
+            reactionType,
+          ),
+        ).called(1);
       });
 
       test('uses temporaryUserId for current user ID', () async {
         // Arrange
         const messageId = 'test_message_id';
         const reactionType = ReactionType.love;
-        
-        when(() => mockRepository.addReaction(
-          any(),
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.addReaction(any(), any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(
-          messageId: messageId,
-          reaction: reactionType,
-        );
+        await useCase.call(messageId: messageId, reaction: reactionType);
 
         // Assert
-        verify(() => mockRepository.addReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-          reactionType,
-        )).called(1);
+        verify(
+          () => mockRepository.addReaction(
+            messageId,
+            ChatMessagePageConstants.temporaryUserId,
+            reactionType,
+          ),
+        ).called(1);
       });
 
       test('propagates repository exceptions', () async {
@@ -78,19 +72,14 @@ void main() {
         const messageId = 'test_message_id';
         const reactionType = ReactionType.sad;
         final exception = Exception('Repository error');
-        
-        when(() => mockRepository.addReaction(
-          any(),
-          any(),
-          any(),
-        )).thenThrow(exception);
+
+        when(
+          () => mockRepository.addReaction(any(), any(), any()),
+        ).thenThrow(exception);
 
         // Act & Assert
         expect(
-          () => useCase.call(
-            messageId: messageId,
-            reaction: reactionType,
-          ),
+          () => useCase.call(messageId: messageId, reaction: reactionType),
           throwsA(exception),
         );
       });
@@ -98,25 +87,22 @@ void main() {
       test('works with all reaction types', () async {
         // Arrange
         const messageId = 'test_message_id';
-        
-        when(() => mockRepository.addReaction(
-          any(),
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.addReaction(any(), any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act & Assert
         for (final reactionType in ReactionType.values) {
-          await useCase.call(
-            messageId: messageId,
-            reaction: reactionType,
-          );
+          await useCase.call(messageId: messageId, reaction: reactionType);
 
-          verify(() => mockRepository.addReaction(
-            messageId,
-            ChatMessagePageConstants.temporaryUserId,
-            reactionType,
-          )).called(1);
+          verify(
+            () => mockRepository.addReaction(
+              messageId,
+              ChatMessagePageConstants.temporaryUserId,
+              reactionType,
+            ),
+          ).called(1);
         }
       });
 
@@ -124,25 +110,22 @@ void main() {
         // Arrange
         const messageId = '';
         const reactionType = ReactionType.angry;
-        
-        when(() => mockRepository.addReaction(
-          any(),
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.addReaction(any(), any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(
-          messageId: messageId,
-          reaction: reactionType,
-        );
+        await useCase.call(messageId: messageId, reaction: reactionType);
 
         // Assert
-        verify(() => mockRepository.addReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-          reactionType,
-        )).called(1);
+        verify(
+          () => mockRepository.addReaction(
+            messageId,
+            ChatMessagePageConstants.temporaryUserId,
+            reactionType,
+          ),
+        ).called(1);
       });
     });
 

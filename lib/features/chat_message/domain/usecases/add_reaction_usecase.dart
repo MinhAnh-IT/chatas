@@ -16,6 +16,10 @@ class AddReactionUseCase {
     required ReactionType reaction,
   }) async {
     // TODO: Get actual current user ID from auth service
-    await repository.addReaction(messageId, ChatMessagePageConstants.temporaryUserId, reaction);
+    await repository.addReaction(
+      messageId,
+      ChatMessagePageConstants.temporaryUserId,
+      reaction,
+    );
   }
 }

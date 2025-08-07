@@ -28,7 +28,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     final repository = ChatThreadRepositoryImpl();
     final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
-    
+
     _cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
       createChatThreadUseCase: createChatThreadUseCase,
@@ -37,7 +37,11 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
   }
 
   /// Navigates to chat message page when a thread is tapped.
-  void _navigateToChatMessage(BuildContext context, String threadId, String threadName) {
+  void _navigateToChatMessage(
+    BuildContext context,
+    String threadId,
+    String threadName,
+  ) {
     final route = AppRouteConstants.chatMessageRoute(
       threadId,
       currentUserId: ChatThreadListPageConstants.temporaryUserId,
@@ -57,9 +61,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: ChatThreadListPageConstants.searchTooltip,
-              onPressed: () {
-
-              }
+              onPressed: () {},
             ),
           ],
         ),
@@ -69,12 +71,18 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
               return const Center(child: CircularProgressIndicator());
             }
             if (state is ChatThreadListError) {
-              return Center(child: Text('${ChatThreadListPageConstants.errorPrefix}${state.message}'));
+              return Center(
+                child: Text(
+                  '${ChatThreadListPageConstants.errorPrefix}${state.message}',
+                ),
+              );
             }
             if (state is ChatThreadListLoaded) {
               final threads = state.threads;
               if (threads.isEmpty) {
-                return const Center(child: Text(ChatThreadListPageConstants.noChats));
+                return const Center(
+                  child: Text(ChatThreadListPageConstants.noChats),
+                );
               }
               return ListView.builder(
                 itemCount: threads.length,
@@ -89,7 +97,9 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                     subtitle: Text(thread.lastMessage),
                     trailing: Text(
                       chat_utils.DateUtils.formatTime(thread.lastMessageTime),
-                      style: const TextStyle(fontSize: ChatThreadListPageConstants.trailingFontSize),
+                      style: const TextStyle(
+                        fontSize: ChatThreadListPageConstants.trailingFontSize,
+                      ),
                     ),
                     onTap: () {
                       _navigateToChatMessage(context, thread.id, thread.name);

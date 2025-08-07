@@ -26,4 +26,4 @@ class AuthFailure extends AuthResult {
 
   @override
   List<Object?> get props => [message, exception];
-} 
+}

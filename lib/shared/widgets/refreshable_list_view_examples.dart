@@ -21,10 +21,8 @@ class SimpleListExample extends StatelessWidget {
     return RefreshableListView<String>(
       items: items,
       onRefresh: onRefresh,
-      itemBuilder: (context, item, index) => ListTile(
-        title: Text(item),
-        subtitle: Text('Item #${index + 1}'),
-      ),
+      itemBuilder: (context, item, index) =>
+          ListTile(title: Text(item), subtitle: Text('Item #${index + 1}')),
     );
   }
 }
@@ -57,9 +55,7 @@ class UserListExample extends StatelessWidget {
       itemBuilder: (context, user, index) => Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: ListTile(
-          leading: CircleAvatar(
-            child: Text(user.name[0].toUpperCase()),
-          ),
+          leading: CircleAvatar(child: Text(user.name[0].toUpperCase())),
           title: Text(user.name),
           subtitle: Text(user.email),
           onTap: () {
@@ -179,7 +175,10 @@ class _ChatThreadListExampleState extends State<ChatThreadListExample> {
               if (thread.unreadCount > 0)
                 Container(
                   margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(10),

@@ -232,7 +232,10 @@ void main() {
       final result = ChatThreadModel.fromJson(mapWithInvalidDate);
 
       // Assert
-      expect(result.lastMessageTime, isA<DateTime>()); // Should default to DateTime.now()
+      expect(
+        result.lastMessageTime,
+        isA<DateTime>(),
+      ); // Should default to DateTime.now()
     });
   });
 }

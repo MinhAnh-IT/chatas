@@ -22,72 +22,66 @@ void main() {
         // Arrange
         const messageId = 'test_message_id';
         const providedUserId = 'provided_user_id';
-        
-        when(() => mockRepository.removeReaction(
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.removeReaction(any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(
-          messageId: messageId,
-          userId: providedUserId,
-        );
+        await useCase.call(messageId: messageId, userId: providedUserId);
 
         // Assert
-        verify(() => mockRepository.removeReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-        )).called(1);
+        verify(
+          () => mockRepository.removeReaction(
+            messageId,
+            ChatMessagePageConstants.temporaryUserId,
+          ),
+        ).called(1);
       });
 
-      test('ignores provided userId and uses temporaryUserId for consistency', () async {
-        // Arrange
-        const messageId = 'test_message_id';
-        const providedUserId = 'different_user_id';
-        
-        when(() => mockRepository.removeReaction(
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+      test(
+        'ignores provided userId and uses temporaryUserId for consistency',
+        () async {
+          // Arrange
+          const messageId = 'test_message_id';
+          const providedUserId = 'different_user_id';
 
-        // Act
-        await useCase.call(
-          messageId: messageId,
-          userId: providedUserId,
-        );
+          when(
+            () => mockRepository.removeReaction(any(), any()),
+          ).thenAnswer((_) async {});
 
-        // Assert
-        // Should use temporaryUserId, not the provided userId
-        verify(() => mockRepository.removeReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-        )).called(1);
-        
-        // Verify it does NOT use the provided userId
-        verifyNever(() => mockRepository.removeReaction(
-          messageId,
-          providedUserId,
-        ));
-      });
+          // Act
+          await useCase.call(messageId: messageId, userId: providedUserId);
+
+          // Assert
+          // Should use temporaryUserId, not the provided userId
+          verify(
+            () => mockRepository.removeReaction(
+              messageId,
+              ChatMessagePageConstants.temporaryUserId,
+            ),
+          ).called(1);
+
+          // Verify it does NOT use the provided userId
+          verifyNever(
+            () => mockRepository.removeReaction(messageId, providedUserId),
+          );
+        },
+      );
 
       test('propagates repository exceptions', () async {
         // Arrange
         const messageId = 'test_message_id';
         const userId = 'user_id';
         final exception = Exception('Repository error');
-        
-        when(() => mockRepository.removeReaction(
-          any(),
-          any(),
-        )).thenThrow(exception);
+
+        when(
+          () => mockRepository.removeReaction(any(), any()),
+        ).thenThrow(exception);
 
         // Act & Assert
         expect(
-          () => useCase.call(
-            messageId: messageId,
-            userId: userId,
-          ),
+          () => useCase.call(messageId: messageId, userId: userId),
           throwsA(exception),
         );
       });
@@ -96,47 +90,43 @@ void main() {
         // Arrange
         const messageId = '';
         const userId = 'user_id';
-        
-        when(() => mockRepository.removeReaction(
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.removeReaction(any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(
-          messageId: messageId,
-          userId: userId,
-        );
+        await useCase.call(messageId: messageId, userId: userId);
 
         // Assert
-        verify(() => mockRepository.removeReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-        )).called(1);
+        verify(
+          () => mockRepository.removeReaction(
+            messageId,
+            ChatMessagePageConstants.temporaryUserId,
+          ),
+        ).called(1);
       });
 
       test('handles empty provided userId', () async {
         // Arrange
         const messageId = 'test_message_id';
         const userId = '';
-        
-        when(() => mockRepository.removeReaction(
-          any(),
-          any(),
-        )).thenAnswer((_) async {});
+
+        when(
+          () => mockRepository.removeReaction(any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(
-          messageId: messageId,
-          userId: userId,
-        );
+        await useCase.call(messageId: messageId, userId: userId);
 
         // Assert
         // Should still use temporaryUserId regardless of empty provided userId
-        verify(() => mockRepository.removeReaction(
-          messageId,
-          ChatMessagePageConstants.temporaryUserId,
-        )).called(1);
+        verify(
+          () => mockRepository.removeReaction(
+            messageId,
+            ChatMessagePageConstants.temporaryUserId,
+          ),
+        ).called(1);
       });
     });
 

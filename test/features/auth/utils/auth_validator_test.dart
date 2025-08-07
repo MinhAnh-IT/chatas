@@ -7,8 +7,14 @@ import 'package:chatas/features/auth/domain/entities/login_request.dart';
 void main() {
   group('AuthValidator - Họ và tên', () {
     test('Họ và tên không được để trống', () {
-      expect(AuthValidator.validateFullName(''), AuthConstants.fullNameRequired);
-      expect(AuthValidator.validateFullName(null), AuthConstants.fullNameRequired);
+      expect(
+        AuthValidator.validateFullName(''),
+        AuthConstants.fullNameRequired,
+      );
+      expect(
+        AuthValidator.validateFullName(null),
+        AuthConstants.fullNameRequired,
+      );
     });
     test('Họ và tên hợp lệ', () {
       expect(AuthValidator.validateFullName('Nguyễn Văn A'), null);
@@ -17,8 +23,14 @@ void main() {
 
   group('AuthValidator - Username', () {
     test('Username không được để trống', () {
-      expect(AuthValidator.validateUsername(''), AuthConstants.usernameRequired);
-      expect(AuthValidator.validateUsername(null), AuthConstants.usernameRequired);
+      expect(
+        AuthValidator.validateUsername(''),
+        AuthConstants.usernameRequired,
+      );
+      expect(
+        AuthValidator.validateUsername(null),
+        AuthConstants.usernameRequired,
+      );
     });
     test('Username quá ngắn', () {
       expect(AuthValidator.validateUsername('ab'), contains('ít nhất'));
@@ -45,8 +57,14 @@ void main() {
 
   group('AuthValidator - Mật khẩu', () {
     test('Mật khẩu không được để trống', () {
-      expect(AuthValidator.validatePassword(''), AuthConstants.passwordRequired);
-      expect(AuthValidator.validatePassword(null), AuthConstants.passwordRequired);
+      expect(
+        AuthValidator.validatePassword(''),
+        AuthConstants.passwordRequired,
+      );
+      expect(
+        AuthValidator.validatePassword(null),
+        AuthConstants.passwordRequired,
+      );
     });
     test('Mật khẩu yếu', () {
       expect(AuthValidator.validatePassword('123'), AuthConstants.weakPassword);
@@ -58,20 +76,35 @@ void main() {
 
   group('AuthValidator - Xác nhận mật khẩu', () {
     test('Xác nhận mật khẩu không được để trống', () {
-      expect(AuthValidator.validateConfirmPassword('', '12345678'), AuthConstants.confirmPasswordRequired);
-      expect(AuthValidator.validateConfirmPassword(null, '12345678'), AuthConstants.confirmPasswordRequired);
+      expect(
+        AuthValidator.validateConfirmPassword('', '12345678'),
+        AuthConstants.confirmPasswordRequired,
+      );
+      expect(
+        AuthValidator.validateConfirmPassword(null, '12345678'),
+        AuthConstants.confirmPasswordRequired,
+      );
     });
     test('Mật khẩu không khớp', () {
-      expect(AuthValidator.validateConfirmPassword('1234567', '12345678'), AuthConstants.passwordsDoNotMatch);
+      expect(
+        AuthValidator.validateConfirmPassword('1234567', '12345678'),
+        AuthConstants.passwordsDoNotMatch,
+      );
     });
     test('Mật khẩu khớp', () {
-      expect(AuthValidator.validateConfirmPassword('12345678', '12345678'), null);
+      expect(
+        AuthValidator.validateConfirmPassword('12345678', '12345678'),
+        null,
+      );
     });
   });
 
   group('AuthValidator - Ngày sinh', () {
     test('Ngày sinh không được để trống', () {
-      expect(AuthValidator.validateBirthDate(null), AuthConstants.birthDateRequired);
+      expect(
+        AuthValidator.validateBirthDate(null),
+        AuthConstants.birthDateRequired,
+      );
     });
     test('Ngày sinh nhỏ hơn 13 tuổi', () {
       final now = DateTime.now();
@@ -135,7 +168,10 @@ void main() {
 
   group('AuthValidator - validateLoginRequest', () {
     test('Đăng nhập hợp lệ', () {
-      const req = LoginRequest(emailOrUsername: 'abc@gmail.com', password: '12345678');
+      const req = LoginRequest(
+        emailOrUsername: 'abc@gmail.com',
+        password: '12345678',
+      );
       expect(AuthValidator.validateLoginRequest(req), null);
     });
     test('Thiếu trường', () {

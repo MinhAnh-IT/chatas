@@ -18,7 +18,7 @@ class SendMessageUseCase {
     String? replyToMessageId,
   }) async {
     final now = DateTime.now();
-    
+
     // TODO: Get actual user information from auth service
     final message = ChatMessage(
       id: 'msg_${now.millisecondsSinceEpoch}',

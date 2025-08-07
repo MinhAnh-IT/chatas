@@ -6,31 +6,35 @@ abstract class ChatMessageRepository {
   /// Fetches all messages for a specific chat thread.
   /// Returns a list of [ChatMessage] entities sorted by creation time.
   Future<List<ChatMessage>> getMessages(String chatThreadId);
-  
+
   /// Provides a real-time stream of messages for a specific chat thread.
   /// Returns a stream that emits updated message lists when changes occur.
   Stream<List<ChatMessage>> messagesStream(String chatThreadId);
-  
+
   /// Sends a new message to the specified chat thread.
   /// Takes a [ChatMessage] entity and persists it to the data source.
   Future<void> sendMessage(ChatMessage message);
-  
+
   /// Updates an existing message with new content or status.
   /// Takes a [ChatMessage] entity with updated fields.
   Future<void> updateMessage(ChatMessage message);
-  
+
   /// Soft deletes a message by setting its isDeleted flag to true.
   /// Takes the message ID to identify which message to delete.
   Future<void> deleteMessage(String messageId);
-  
+
   /// Adds a reaction to a specific message from a user.
   /// Takes message ID, user ID, and the reaction type to add.
-  Future<void> addReaction(String messageId, String userId, ReactionType reaction);
-  
+  Future<void> addReaction(
+    String messageId,
+    String userId,
+    ReactionType reaction,
+  );
+
   /// Removes a reaction from a specific message for a user.
   /// Takes message ID and user ID to identify which reaction to remove.
   Future<void> removeReaction(String messageId, String userId);
-  
+
   /// Marks a message as read by a specific user.
   /// Updates the message status and read timestamps.
   Future<void> markAsRead(String messageId, String userId);

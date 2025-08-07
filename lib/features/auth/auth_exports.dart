@@ -5,7 +5,6 @@ export 'domain/entities/login_request.dart';
 export 'domain/entities/register_request.dart';
 
 export 'domain/exceptions/auth_exceptions.dart';
-  
 
 export 'domain/repositories/auth_repository.dart';
 

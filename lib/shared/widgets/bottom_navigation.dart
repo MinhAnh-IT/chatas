@@ -17,10 +17,10 @@ class CommonBottomNavigation extends StatelessWidget {
       currentIndex: currentIndex,
       onTap: onTap,
       items: bottomNavTabs
-          .map((tab) => BottomNavigationBarItem(
-                icon: Icon(tab.icon),
-                label: tab.label,
-              ))
+          .map(
+            (tab) =>
+                BottomNavigationBarItem(icon: Icon(tab.icon), label: tab.label),
+          )
           .toList(),
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Colors.grey,

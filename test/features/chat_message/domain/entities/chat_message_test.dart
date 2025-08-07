@@ -93,13 +93,13 @@ void main() {
     group('getReactionCount method', () {
       test('returns 0 when no reactions of specified type', () {
         final messageWithReactions = testMessage.copyWith(
-          reactions: {
-            'user1': ReactionType.love,
-            'user2': ReactionType.sad,
-          },
+          reactions: {'user1': ReactionType.love, 'user2': ReactionType.sad},
         );
 
-        expect(messageWithReactions.getReactionCount(ReactionType.like), equals(0));
+        expect(
+          messageWithReactions.getReactionCount(ReactionType.like),
+          equals(0),
+        );
       });
 
       test('returns correct count for specific reaction type', () {
@@ -112,9 +112,18 @@ void main() {
           },
         );
 
-        expect(messageWithReactions.getReactionCount(ReactionType.like), equals(3));
-        expect(messageWithReactions.getReactionCount(ReactionType.love), equals(1));
-        expect(messageWithReactions.getReactionCount(ReactionType.sad), equals(0));
+        expect(
+          messageWithReactions.getReactionCount(ReactionType.like),
+          equals(3),
+        );
+        expect(
+          messageWithReactions.getReactionCount(ReactionType.love),
+          equals(1),
+        );
+        expect(
+          messageWithReactions.getReactionCount(ReactionType.sad),
+          equals(0),
+        );
       });
     });
 
@@ -129,10 +138,7 @@ void main() {
 
       test('returns true when user has reacted', () {
         final messageWithReactions = testMessage.copyWith(
-          reactions: {
-            'user1': ReactionType.like,
-            'user2': ReactionType.love,
-          },
+          reactions: {'user1': ReactionType.like, 'user2': ReactionType.love},
         );
 
         expect(messageWithReactions.hasUserReacted('user1'), isTrue);
@@ -158,9 +164,18 @@ void main() {
           },
         );
 
-        expect(messageWithReactions.getUserReaction('user1'), equals(ReactionType.like));
-        expect(messageWithReactions.getUserReaction('user2'), equals(ReactionType.love));
-        expect(messageWithReactions.getUserReaction('user3'), equals(ReactionType.sad));
+        expect(
+          messageWithReactions.getUserReaction('user1'),
+          equals(ReactionType.like),
+        );
+        expect(
+          messageWithReactions.getUserReaction('user2'),
+          equals(ReactionType.love),
+        );
+        expect(
+          messageWithReactions.getUserReaction('user3'),
+          equals(ReactionType.sad),
+        );
       });
     });
 
@@ -174,8 +189,11 @@ void main() {
 
         expect(updatedMessage.content, equals('Updated content'));
         expect(updatedMessage.status, equals(MessageStatus.read));
-        expect(updatedMessage.editedAt, equals(testDateTime.add(const Duration(hours: 1))));
-        
+        expect(
+          updatedMessage.editedAt,
+          equals(testDateTime.add(const Duration(hours: 1))),
+        );
+
         // Other fields should remain unchanged
         expect(updatedMessage.id, equals(testMessage.id));
         expect(updatedMessage.senderId, equals(testMessage.senderId));
@@ -193,13 +211,17 @@ void main() {
 
       test('can update reactions map', () {
         final originalReactions = {'user1': ReactionType.like};
-        final messageWithReactions = testMessage.copyWith(reactions: originalReactions);
-        
+        final messageWithReactions = testMessage.copyWith(
+          reactions: originalReactions,
+        );
+
         final updatedReactions = {
           'user1': ReactionType.like,
           'user2': ReactionType.love,
         };
-        final updatedMessage = messageWithReactions.copyWith(reactions: updatedReactions);
+        final updatedMessage = messageWithReactions.copyWith(
+          reactions: updatedReactions,
+        );
 
         expect(updatedMessage.reactions, equals(updatedReactions));
         expect(updatedMessage.reactions.length, equals(2));

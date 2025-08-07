@@ -14,39 +14,39 @@ class AuthDependencyInjection {
   static LoginUseCase? _loginUseCase;
   static LogoutUseCase? _logoutUseCase;
   static GetCurrentUserUseCase? _getCurrentUserUseCase;
-  
+
   static AuthRemoteDataSource get authRemoteDataSource {
     _authRemoteDataSource ??= AuthRemoteDataSource();
     return _authRemoteDataSource!;
   }
-  
+
   static AuthRepository get authRepository {
     _authRepository ??= AuthRepositoryImpl(
-      remoteDataSource: authRemoteDataSource, 
+      remoteDataSource: authRemoteDataSource,
     );
     return _authRepository!;
   }
-  
+
   static RegisterUseCase get registerUseCase {
     _registerUseCase ??= RegisterUseCase(authRepository);
     return _registerUseCase!;
   }
 
   static LoginUseCase get loginUseCase {
-    _loginUseCase ??= LoginUseCase(authRepository); 
+    _loginUseCase ??= LoginUseCase(authRepository);
     return _loginUseCase!;
   }
 
   static LogoutUseCase get logoutUseCase {
-    _logoutUseCase ??= LogoutUseCase(authRepository); 
+    _logoutUseCase ??= LogoutUseCase(authRepository);
     return _logoutUseCase!;
   }
 
   static GetCurrentUserUseCase get getCurrentUserUseCase {
-    _getCurrentUserUseCase ??= GetCurrentUserUseCase(authRepository); 
+    _getCurrentUserUseCase ??= GetCurrentUserUseCase(authRepository);
     return _getCurrentUserUseCase!;
   }
-  
+
   static void dispose() {
     _authRepository = null;
     _authRemoteDataSource = null;
@@ -55,7 +55,7 @@ class AuthDependencyInjection {
     _logoutUseCase = null;
     _getCurrentUserUseCase = null;
   }
-  
+
   static void reset() {
     dispose();
   }

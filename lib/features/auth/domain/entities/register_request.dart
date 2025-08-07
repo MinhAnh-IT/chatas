@@ -29,4 +29,4 @@ class RegisterRequest extends Equatable {
     password,
     confirmPassword,
   ];
-} 
+}

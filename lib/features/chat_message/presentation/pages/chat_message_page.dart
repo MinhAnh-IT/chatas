@@ -67,7 +67,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   /// Handles sending a new message.
   void _handleSendMessage(String content) {
     context.read<ChatMessageCubit>().sendMessage(content);
-    
+
     // Scroll to bottom after sending
     Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
   }
@@ -80,7 +80,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hủy cảm xúc'),
-        content: Text('Bạn có muốn hủy cảm xúc ${_getReactionEmoji(reactionType)} này không?'),
+        content: Text(
+          'Bạn có muốn hủy cảm xúc ${_getReactionEmoji(reactionType)} này không?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -119,7 +121,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   /// Removes a reaction from the specified message
   void _removeReaction(String messageId, ReactionType reactionType) {
     // Use current user ID - this should come from auth service
-    context.read<ChatMessageCubit>().removeReaction(messageId, widget.currentUserId);
+    context.read<ChatMessageCubit>().removeReaction(
+      messageId,
+      widget.currentUserId,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Đã hủy cảm xúc ${_getReactionEmoji(reactionType)}'),
@@ -177,7 +182,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   /// Handles refresh action when user pulls down to refresh.
   Future<void> _handleRefresh() async {
     await context.read<ChatMessageCubit>().refreshMessages();
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -293,12 +298,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       scrollController: _scrollController,
       padding: const EdgeInsets.all(16.0),
       refreshedMessage: ChatMessagePageConstants.refreshedMessage,
-      showRefreshMessage: false, // We handle the message manually in _handleRefresh
+      showRefreshMessage:
+          false, // We handle the message manually in _handleRefresh
       itemBuilder: (context, message, index) {
         final isSelected = _selectedMessageId == message.id;
-        
+
         return Padding(
-          padding: const EdgeInsets.only(bottom: ChatMessagePageConstants.messageSpacing),
+          padding: const EdgeInsets.only(
+            bottom: ChatMessagePageConstants.messageSpacing,
+          ),
           child: MessageBubble(
             message: message,
             isSelected: isSelected,

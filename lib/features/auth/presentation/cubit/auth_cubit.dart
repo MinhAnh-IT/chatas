@@ -106,10 +106,12 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> sendPasswordResetEmail(String email) async {
     emit(const AuthLoading());
     try {
-      await AuthDependencyInjection.authRemoteDataSource.sendPasswordResetEmail(email);
+      await AuthDependencyInjection.authRemoteDataSource.sendPasswordResetEmail(
+        email,
+      );
       emit(const PasswordResetEmailSent());
     } on Exception catch (e) {
       emit(AuthFailure('Gửi email đặt lại mật khẩu thất bại: ${e.toString()}'));
     }
   }
-}   
+}

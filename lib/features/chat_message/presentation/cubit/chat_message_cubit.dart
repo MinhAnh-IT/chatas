@@ -15,7 +15,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   final SendMessageUseCase _sendMessageUseCase;
   final AddReactionUseCase _addReactionUseCase;
   final RemoveReactionUseCase _removeReactionUseCase;
-  
+
   StreamSubscription<List<ChatMessage>>? _messagesSubscription;
   String? _currentChatThreadId;
 
@@ -24,11 +24,11 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     required SendMessageUseCase sendMessageUseCase,
     required AddReactionUseCase addReactionUseCase,
     required RemoveReactionUseCase removeReactionUseCase,
-  })  : _getMessagesStreamUseCase = getMessagesStreamUseCase,
-        _sendMessageUseCase = sendMessageUseCase,
-        _addReactionUseCase = addReactionUseCase,
-        _removeReactionUseCase = removeReactionUseCase,
-        super(const ChatMessageInitial());
+  }) : _getMessagesStreamUseCase = getMessagesStreamUseCase,
+       _sendMessageUseCase = sendMessageUseCase,
+       _addReactionUseCase = addReactionUseCase,
+       _removeReactionUseCase = removeReactionUseCase,
+       super(const ChatMessageInitial());
 
   /// Loads messages for a specific chat thread and sets up real-time updates.
   /// Subscribes to the message stream for automatic updates.
@@ -36,10 +36,10 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       emit(const ChatMessageLoading());
       _currentChatThreadId = chatThreadId;
-      
+
       // Cancel any existing subscription
       await _messagesSubscription?.cancel();
-      
+
       // Subscribe to real-time message updates
       _messagesSubscription = _getMessagesStreamUseCase(chatThreadId).listen(
         (messages) {
@@ -81,10 +81,12 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         );
 
         // Show pending message immediately
-        emit(ChatMessageSending(
-          messages: currentState.messages,
-          pendingMessage: pendingMessage,
-        ));
+        emit(
+          ChatMessageSending(
+            messages: currentState.messages,
+            pendingMessage: pendingMessage,
+          ),
+        );
 
         // Send the actual message
         await _sendMessageUseCase(
@@ -106,10 +108,12 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     final currentState = state;
     if (currentState is ChatMessageLoaded) {
       final isCurrentlySelected = currentState.selectedMessageId == messageId;
-      emit(currentState.copyWith(
-        selectedMessageId: isCurrentlySelected ? null : messageId,
-        clearSelection: isCurrentlySelected,
-      ));
+      emit(
+        currentState.copyWith(
+          selectedMessageId: isCurrentlySelected ? null : messageId,
+          clearSelection: isCurrentlySelected,
+        ),
+      );
     }
   }
 
@@ -127,16 +131,15 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       final currentState = state;
       if (currentState is ChatMessageLoaded) {
-        emit(ChatMessageReactionAdding(
-          messages: currentState.messages,
-          messageId: messageId,
-          reaction: reaction,
-        ));
-
-        await _addReactionUseCase(
-          messageId: messageId,
-          reaction: reaction,
+        emit(
+          ChatMessageReactionAdding(
+            messages: currentState.messages,
+            messageId: messageId,
+            reaction: reaction,
+          ),
         );
+
+        await _addReactionUseCase(messageId: messageId, reaction: reaction);
 
         // Note: The updated message will be received through the stream
         // so we don't need to manually update the state here
@@ -152,10 +155,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       final currentState = state;
       if (currentState is ChatMessageLoaded) {
-        await _removeReactionUseCase(
-          messageId: messageId,
-          userId: userId,
-        );
+        await _removeReactionUseCase(messageId: messageId, userId: userId);
 
         // Note: The updated message will be received through the stream
         // so we don't need to manually update the state here

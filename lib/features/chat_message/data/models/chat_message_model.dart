@@ -198,7 +198,9 @@ class ChatMessageModel extends Equatable {
   }
 
   /// Parses string reactions map to ReactionType enum map.
-  static Map<String, ReactionType> _parseReactions(Map<String, String> reactions) {
+  static Map<String, ReactionType> _parseReactions(
+    Map<String, String> reactions,
+  ) {
     final Map<String, ReactionType> result = {};
     reactions.forEach((userId, reactionString) {
       final reaction = _parseReactionType(reactionString);
@@ -210,7 +212,9 @@ class ChatMessageModel extends Equatable {
   }
 
   /// Converts ReactionType enum map to string map.
-  static Map<String, String> _reactionsToString(Map<String, ReactionType> reactions) {
+  static Map<String, String> _reactionsToString(
+    Map<String, ReactionType> reactions,
+  ) {
     final Map<String, String> result = {};
     reactions.forEach((userId, reaction) {
       result[userId] = _reactionTypeToString(reaction);
@@ -258,8 +262,20 @@ class ChatMessageModel extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, chatThreadId, senderId, senderName, senderAvatarUrl,
-    content, type, status, sentAt, editedAt, isDeleted,
-    reactions, replyToMessageId, createdAt, updatedAt,
+    id,
+    chatThreadId,
+    senderId,
+    senderName,
+    senderAvatarUrl,
+    content,
+    type,
+    status,
+    sentAt,
+    editedAt,
+    isDeleted,
+    reactions,
+    replyToMessageId,
+    createdAt,
+    updatedAt,
   ];
 }
