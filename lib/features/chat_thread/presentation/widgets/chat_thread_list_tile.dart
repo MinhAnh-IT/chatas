@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/chat_thread.dart';
-import '../../constants/chat_thread_list_page_constants.dart';
-import '../cubit/chat_thread_list_cubit.dart';
-import '../cubit/chat_thread_list_state.dart';
-import 'delete_chat_thread_dialog.dart';
-import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
+import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
+import 'package:chatas/features/chat_thread/constants/chat_thread_list_page_constants.dart';
+import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_cubit.dart';
+import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_state.dart';
+import 'package:chatas/features/chat_thread/presentation/widgets/delete_chat_thread_dialog.dart';
+import 'package:chatas/shared/utils/date_utils.dart' as app_date_utils;
+import 'package:chatas/shared/widgets/smart_image.dart';
 
 /// A custom list tile widget for displaying chat threads with delete functionality.
 class ChatThreadListTile extends StatelessWidget {
@@ -73,9 +74,10 @@ class ChatThreadListTile extends StatelessWidget {
             child: ListTile(
               leading: Stack(
                 children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(thread.avatarUrl),
+                  SmartAvatar(
+                    imageUrl: thread.avatarUrl,
                     radius: ChatThreadListPageConstants.avatarRadius,
+                    fallbackText: thread.name,
                   ),
                   if (isDeleting)
                     Positioned.fill(
@@ -111,7 +113,7 @@ class ChatThreadListTile extends StatelessWidget {
                 ),
               ),
               trailing: Text(
-                chat_utils.DateUtils.formatTime(thread.lastMessageTime),
+                app_date_utils.DateUtils.formatTime(thread.lastMessageTime),
                 style: TextStyle(
                   fontSize: ChatThreadListPageConstants.trailingFontSize,
                   color: isDeleting ? Colors.grey : null,

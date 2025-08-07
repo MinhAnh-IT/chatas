@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/chat_thread.dart';
 import '../cubit/chat_thread_list_cubit.dart';
 import '../../constants/chat_thread_list_page_constants.dart';
-import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
+import 'package:chatas/shared/utils/date_utils.dart' as app_date_utils;
+import 'package:chatas/shared/widgets/smart_image.dart';
 
 class SearchChatDialog extends StatefulWidget {
   final Function(ChatThread) onThreadSelected;
@@ -150,9 +151,10 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
       itemBuilder: (context, index) {
         final thread = _searchResults[index];
         return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: NetworkImage(thread.avatarUrl),
+          leading: SmartAvatar(
+            imageUrl: thread.avatarUrl,
             radius: ChatThreadListPageConstants.avatarRadius,
+            fallbackText: thread.name,
           ),
           title: Text(thread.name),
           subtitle: Text(
@@ -161,7 +163,7 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
             overflow: TextOverflow.ellipsis,
           ),
           trailing: Text(
-            chat_utils.DateUtils.formatTime(thread.lastMessageTime),
+            app_date_utils.DateUtils.formatTime(thread.lastMessageTime),
             style: const TextStyle(
               fontSize: ChatThreadListPageConstants.trailingFontSize,
             ),

@@ -4,7 +4,8 @@ import '../../constants/chat_thread_list_page_constants.dart';
 import '../../domain/entities/chat_thread.dart';
 import '../../presentation/cubit/chat_thread_list_cubit.dart';
 import 'package:chatas/core/constants/app_route_constants.dart';
-import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
+import 'package:chatas/shared/utils/date_utils.dart' as app_date_utils;
+import 'package:chatas/shared/widgets/smart_image.dart';
 
 /// Dialog widget for searching chat threads.
 class ChatSearchDialog extends StatefulWidget {
@@ -143,9 +144,10 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
       itemBuilder: (context, index) {
         final thread = _searchResults[index];
         return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: NetworkImage(thread.avatarUrl),
+          leading: SmartAvatar(
+            imageUrl: thread.avatarUrl,
             radius: ChatThreadListPageConstants.avatarRadius,
+            fallbackText: thread.name,
           ),
           title: Text(thread.name),
           subtitle: Text(
@@ -154,7 +156,7 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
             overflow: TextOverflow.ellipsis,
           ),
           trailing: Text(
-            chat_utils.DateUtils.formatTime(thread.lastMessageTime),
+            app_date_utils.DateUtils.formatTime(thread.lastMessageTime),
             style: const TextStyle(
               fontSize: ChatThreadListPageConstants.trailingFontSize,
             ),
