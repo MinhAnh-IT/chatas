@@ -38,6 +38,12 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     _cubit.fetchChatThreads();
   }
 
+  void _onTabTapped(int index) {
+    if (index == 3) {
+      context.go('/profile');
+    }
+  }
+
   /// Navigates to chat message page when a thread is tapped.
   void _navigateToChatMessage(
     BuildContext context,
@@ -140,7 +146,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
         ),
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
-          onTap: (index) {},
+          onTap: _onTabTapped,
         ),
       ),
     );
