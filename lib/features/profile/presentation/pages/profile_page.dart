@@ -85,10 +85,9 @@ class _ProfilePageState extends State<ProfilePage>
             .collection('users')
             .doc(user.uid)
             .get();
-
+        
         if (userDoc.exists) {
           final data = userDoc.data()!;
-
           DateTime birthDate;
           if (data['birthDate'] is Timestamp) {
             birthDate = (data['birthDate'] as Timestamp).toDate();

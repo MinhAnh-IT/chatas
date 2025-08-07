@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../constants/chat_message_page_constants.dart';
 import '../../../../shared/utils/date_utils.dart' as app_date_utils;
+import '../../../../shared/widgets/smart_image.dart';
 
 /// Widget for displaying a single chat message bubble.
 /// Handles different message types, reactions, and selection states.
@@ -76,14 +77,10 @@ class MessageBubble extends StatelessWidget {
 
   /// Builds the user avatar for received messages.
   Widget _buildAvatar() {
-    return CircleAvatar(
+    return SmartAvatar(
+      imageUrl: message.senderAvatarUrl,
       radius: ChatMessagePageConstants.avatarRadius,
-      backgroundImage: message.senderAvatarUrl.isNotEmpty
-          ? NetworkImage(message.senderAvatarUrl)
-          : null,
-      child: message.senderAvatarUrl.isEmpty
-          ? Text(message.senderName.isNotEmpty ? message.senderName[0] : '?')
-          : null,
+      fallbackText: message.senderName,
     );
   }
 
