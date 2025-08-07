@@ -114,24 +114,19 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
           onTap: (index) {
-            print('Navigation tapped: index = $index');
             switch (index) {
               case 0:
                 // Đã ở trang Chat (hiện tại)
-                print('Staying on Chat page');
                 break;
               case 1:
                 // Chuyển đến trang Bạn bè
-                print('Navigating to Friends page: /friends');
-                context.go('/friends');
+                context.go(AppRouteConstants.friendsPath);
                 break;
               case 2:
                 // Trang Thông báo (chưa implement)
-                print('Notifications page not implemented');
                 break;
               case 3:
                 // Chuyển đến trang Profile
-                print('Navigating to Profile page: /profile');
                 context.go('/profile');
                 break;
             }
