@@ -14,7 +14,9 @@ class UserProfileModel extends UserProfile {
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
     DateTime birthDate;
     try {
-      birthDate = DateTime.parse(json['birthDate'] ?? DateTime.now().toIso8601String());
+      birthDate = DateTime.parse(
+        json['birthDate'] ?? DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       birthDate = DateTime.now();
     }
@@ -26,7 +28,8 @@ class UserProfileModel extends UserProfile {
       username: json['username'] ?? '',
       gender: json['gender'] ?? '',
       birthDate: birthDate,
-      profileImageUrl: json['avatarUrl'] ?? null, // Chỉ lấy avatarUrl từ Firebase
+      profileImageUrl:
+          json['avatarUrl'] ?? null, // Chỉ lấy avatarUrl từ Firebase
     );
   }
 
@@ -61,4 +64,4 @@ class UserProfileModel extends UserProfile {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
     );
   }
-} 
+}

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
-import '../../domain/entities/register_request.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
 import '../../data/models/user_model.dart';
@@ -25,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
   final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  
+
   String _selectedGender = '';
   DateTime? _selectedDate;
   bool _obscurePassword = true;
@@ -88,10 +87,11 @@ class _RegisterPageState extends State<RegisterPage> {
           return;
         }
 
-        final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
+        final userCredential = await _firebaseAuth
+            .createUserWithEmailAndPassword(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            );
 
         if (userCredential.user != null) {
           final userModel = UserModel(
@@ -142,13 +142,10 @@ class _RegisterPageState extends State<RegisterPage> {
             message = 'Thao tác không được phép';
             break;
         }
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(message), backgroundColor: Colors.red),
           );
         }
       } catch (e) {
@@ -222,10 +219,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 8),
                     const Text(
                       'Tạo tài khoản mới',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
@@ -234,7 +228,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       label: 'Họ và tên',
                       hint: 'Nguyễn Văn A',
                       icon: Icons.person_outline,
-                      validator: (value) => AuthValidator.validateFullName(value),
+                      validator: (value) =>
+                          AuthValidator.validateFullName(value),
                     ),
                     const SizedBox(height: 16),
                     AuthTextField(
@@ -242,7 +237,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       label: 'Tên đăng nhập',
                       hint: 'username123',
                       icon: Icons.person_outline,
-                      validator: (value) => AuthValidator.validateUsername(value),
+                      validator: (value) =>
+                          AuthValidator.validateUsername(value),
                     ),
                     const SizedBox(height: 16),
                     AuthTextField(
@@ -270,18 +266,27 @@ class _RegisterPageState extends State<RegisterPage> {
                               const SizedBox(height: 8),
                               Container(
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: DropdownButtonFormField<String>(
-                                  value: _selectedGender.isEmpty ? null : _selectedGender,
+                                  value: _selectedGender.isEmpty
+                                      ? null
+                                      : _selectedGender,
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 16,
+                                    ),
                                     icon: Icon(Icons.person_outline),
                                   ),
                                   hint: const Text('Chọn'),
-                                  items: AuthConstants.genderOptions.map((gender) {
+                                  items: AuthConstants.genderOptions.map((
+                                    gender,
+                                  ) {
                                     return DropdownMenuItem(
                                       value: gender,
                                       child: Text(gender),
@@ -314,21 +319,31 @@ class _RegisterPageState extends State<RegisterPage> {
                               InkWell(
                                 onTap: _selectDate,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.calendar_today, color: Colors.grey),
+                                      const Icon(
+                                        Icons.calendar_today,
+                                        color: Colors.grey,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         _selectedDate == null
                                             ? 'dd/mm/yyyy'
                                             : '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year}',
                                         style: TextStyle(
-                                          color: _selectedDate == null ? Colors.grey : Colors.black87,
+                                          color: _selectedDate == null
+                                              ? Colors.grey
+                                              : Colors.black87,
                                         ),
                                       ),
                                     ],
@@ -353,7 +368,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           _obscurePassword = !_obscurePassword;
                         });
                       },
-                      validator: (value) => AuthValidator.validatePassword(value),
+                      validator: (value) =>
+                          AuthValidator.validatePassword(value),
                     ),
                     const SizedBox(height: 8),
                     AuthTextField(
@@ -368,7 +384,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           _obscureConfirmPassword = !_obscureConfirmPassword;
                         });
                       },
-                      validator: (value) => AuthValidator.validateConfirmPassword(value, _passwordController.text),
+                      validator: (value) =>
+                          AuthValidator.validateConfirmPassword(
+                            value,
+                            _passwordController.text,
+                          ),
                     ),
                     const SizedBox(height: 32),
                     AuthButton(
@@ -380,7 +400,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Đã có tài khoản? ', style: TextStyle(fontSize: 14)),
+                        const Text(
+                          'Đã có tài khoản? ',
+                          style: TextStyle(fontSize: 14),
+                        ),
                         TextButton(
                           onPressed: () {
                             context.push('/login');
@@ -406,4 +429,4 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
-} 
+}

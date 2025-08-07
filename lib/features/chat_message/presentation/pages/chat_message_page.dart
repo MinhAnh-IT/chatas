@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:chatas/core/constants/app_route_constants.dart';
 import 'package:chatas/core/constants/color_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -199,7 +200,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       context.pop();
     } else {
       // Fallback to home route if can't pop
-      context.go('/');
+      context.go(AppRouteConstants.homePath);
     }
   }
 

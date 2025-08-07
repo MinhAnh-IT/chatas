@@ -11,4 +11,4 @@ class GetUserProfileUseCase {
   Future<Either<ProfileException, UserProfile>> call() {
     return repository.getUserProfile();
   }
-} 
+}
