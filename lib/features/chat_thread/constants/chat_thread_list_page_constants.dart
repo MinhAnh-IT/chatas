@@ -5,6 +5,7 @@ class ChatThreadListPageConstants {
   static const String noChats = 'Không có đoạn chat nào';
   static const String loading = 'Loading...';
   static const String chatCountText = 'Bạn đã nhấn nút này:';
+  static const String refreshedMessage = 'Đã làm mới danh sách chat';
 
   /// Temporary constants for development
   static const String temporaryUserId =

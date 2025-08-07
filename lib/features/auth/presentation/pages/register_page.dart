@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
-import '../../domain/entities/register_request.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
 import '../../data/models/user_model.dart';
