@@ -6,51 +6,53 @@ class FriendRequestModel {
   final String fromUserId;
   final String toUserId;
   final DateTime sentAt;
+  final String status;
 
   FriendRequestModel({
     required this.id,
     required this.fromUserId,
     required this.toUserId,
     required this.sentAt,
+    this.status = 'pending',
   });
 
-  /// Tạo từ JSON (Firestore data)
   factory FriendRequestModel.fromJson(Map<String, dynamic> json) {
     return FriendRequestModel(
       id: json['id'] as String? ?? '',
       fromUserId: json['fromUserId'] as String,
       toUserId: json['toUserId'] as String,
       sentAt: (json['sentAt'] as Timestamp).toDate(),
+      status: json['status'] as String? ?? 'pending',
     );
   }
 
-  /// Convert sang JSON để lưu vào Firestore
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'fromUserId': fromUserId,
       'toUserId': toUserId,
       'sentAt': Timestamp.fromDate(sentAt),
+      'status': status,
     };
   }
 
-  /// Convert từ Entity sang Model
-  factory FriendRequestModel.fromEntity(FriendRequest friendRequest) {
-    return FriendRequestModel(
-      id: friendRequest.id,
-      fromUserId: friendRequest.fromUserId,
-      toUserId: friendRequest.toUserId,
-      sentAt: friendRequest.sentAt,
-    );
-  }
-
-  /// Convert từ Model sang Entity
   FriendRequest toEntity() {
     return FriendRequest(
       id: id,
       fromUserId: fromUserId,
       toUserId: toUserId,
       sentAt: sentAt,
+      status: status,
+    );
+  }
+
+  factory FriendRequestModel.fromEntity(FriendRequest friendRequest) {
+    return FriendRequestModel(
+      id: friendRequest.id,
+      fromUserId: friendRequest.fromUserId,
+      toUserId: friendRequest.toUserId,
+      sentAt: friendRequest.sentAt,
+      status: friendRequest.status,
     );
   }
 }

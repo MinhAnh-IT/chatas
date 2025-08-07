@@ -11,285 +11,320 @@ class FriendRemoteDataSource {
   FriendRemoteDataSource({FirebaseFirestore? firestore})
     : firestore = firestore ?? FirebaseFirestore.instance;
 
-  /// 1. Xem danh sách bạn bè
+  /// Xem danh sách bạn bè
   Future<List<Friend>> getFriends(String userId) async {
-    // Query friends where the current user is part of the friendship
-    final snapshot = await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .where('friendId', isGreaterThanOrEqualTo: '${userId}_')
-        .where('friendId', isLessThan: '${userId}_\uf8ff')
-        .get();
-
-    final snapshot2 = await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .where('friendId', isGreaterThanOrEqualTo: '')
-        .where('friendId', isLessThan: '\uf8ff')
-        .get();
-
-    // Filter results to get friends of current user
-    final allDocs = [...snapshot.docs, ...snapshot2.docs];
-    final userFriends = allDocs
-        .where(
-          (doc) =>
-              doc.id.startsWith('${userId}_') || doc.id.endsWith('_$userId'),
-        )
-        .toList();
-
-    return userFriends
-        .map((doc) => FriendModel.fromJson(doc.data()).toEntity())
-        .toList();
+    try {
+      if (userId.isEmpty) {
+        throw Exception('User ID không được để trống');
+      }
+      final snapshot = await firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .where('friendId', isGreaterThanOrEqualTo: '${userId}_')
+          .where('friendId', isLessThan: '${userId}_\uf8ff')
+          .get();
+      return snapshot.docs
+          .map((doc) => FriendModel.fromJson(doc.data()).toEntity())
+          .toList();
+    } catch (e) {
+      throw Exception('Không thể tải danh sách bạn bè: $e');
+    }
   }
 
-  /// 2. Gửi lời mời kết bạn
+  /// Gửi lời mời kết bạn
   Future<void> sendFriendRequest(FriendRequest friendRequest) async {
-    final model = FriendRequestModel.fromEntity(friendRequest);
-    await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .doc(friendRequest.id)
-        .set(model.toJson());
+    try {
+      final model = FriendRequestModel.fromEntity(friendRequest);
+      await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .doc(friendRequest.id)
+          .set(model.toJson());
+    } catch (e) {
+      throw Exception('Không thể gửi lời mời kết bạn: $e');
+    }
   }
 
-  /// 3. Chấp nhận lời mời kết bạn
+  /// Chấp nhận lời mời kết bạn
   Future<void> acceptFriendRequest(
     String requestId,
     String senderId,
     String receiverId,
   ) async {
-    final batch = firestore.batch();
+    try {
+      final batch = firestore.batch();
+      final requestRef = firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .doc(requestId);
+      batch.update(requestRef, {'status': 'accepted'});
 
-    // Update request status to accepted
-    final requestRef = firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .doc(requestId);
-    batch.update(requestRef, {'status': 'accepted'});
+      // Lấy tên người dùng từ collection users
+      final senderDoc = await firestore.collection('users').doc(senderId).get();
+      final receiverDoc = await firestore
+          .collection('users')
+          .doc(receiverId)
+          .get();
+      final senderName = senderDoc.data()?['name'] ?? 'Friend';
+      final receiverName = receiverDoc.data()?['name'] ?? 'Friend';
 
-    // Add friend relationship for sender
-    final friend1 = Friend(
-      friendId: '${senderId}_$receiverId',
-      nickName: 'Friend', // You might want to get actual user name
-      addAt: DateTime.now(),
-      isBlock: false,
-    );
-    final friend1Ref = firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc(friend1.friendId);
-    batch.set(friend1Ref, FriendModel.fromEntity(friend1).toJson());
+      final friend1 = Friend(
+        friendId: '${senderId}_$receiverId',
+        nickName: receiverName,
+        addAt: DateTime.now(),
+        isBlock: false,
+      );
+      final friend1Ref = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc(friend1.friendId);
+      batch.set(friend1Ref, FriendModel.fromEntity(friend1).toJson());
 
-    // Add friend relationship for receiver
-    final friend2 = Friend(
-      friendId: '${receiverId}_$senderId',
-      nickName: 'Friend', // You might want to get actual user name
-      addAt: DateTime.now(),
-      isBlock: false,
-    );
-    final friend2Ref = firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc(friend2.friendId);
-    batch.set(friend2Ref, FriendModel.fromEntity(friend2).toJson());
+      final friend2 = Friend(
+        friendId: '${receiverId}_$senderId',
+        nickName: senderName,
+        addAt: DateTime.now(),
+        isBlock: false,
+      );
+      final friend2Ref = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc(friend2.friendId);
+      batch.set(friend2Ref, FriendModel.fromEntity(friend2).toJson());
 
-    await batch.commit();
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể chấp nhận lời mời kết bạn: $e');
+    }
   }
 
-  /// 4. Từ chối lời mời kết bạn
+  /// Từ chối lời mời kết bạn
   Future<void> rejectFriendRequest(String requestId) async {
-    await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .doc(requestId)
-        .update({'status': 'rejected'});
+    try {
+      await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .doc(requestId)
+          .update({'status': 'rejected'});
+    } catch (e) {
+      throw Exception('Không thể từ chối lời mời kết bạn: $e');
+    }
   }
 
-  /// 5. Xóa bạn bè
+  /// Xóa bạn bè
   Future<void> removeFriend(String userId, String friendId) async {
-    final batch = firestore.batch();
-
-    // Remove friend relationship for user
-    final friend1Ref = firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc('${userId}_$friendId');
-    batch.delete(friend1Ref);
-
-    // Remove friend relationship for friend
-    final friend2Ref = firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc('${friendId}_$userId');
-    batch.delete(friend2Ref);
-
-    await batch.commit();
+    try {
+      final batch = firestore.batch();
+      final friend1Ref = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc('${userId}_$friendId');
+      batch.delete(friend1Ref);
+      final friend2Ref = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc('${friendId}_$userId');
+      batch.delete(friend2Ref);
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể xóa bạn bè: $e');
+    }
   }
 
-  /// 6. Lấy danh sách lời mời kết bạn nhận được
+  /// Lấy danh sách lời mời kết bạn nhận được
   Future<List<FriendRequest>> getReceivedFriendRequests(String userId) async {
-    final snapshot = await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .where('receiverId', isEqualTo: userId)
-        .where('status', isEqualTo: 'pending')
-        .get();
-    return snapshot.docs
-        .map((doc) => FriendRequestModel.fromJson(doc.data()).toEntity())
-        .toList();
+    try {
+      final snapshot = await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .where('receiverId', isEqualTo: userId)
+          .where('status', isEqualTo: 'pending')
+          .get();
+      return snapshot.docs
+          .map((doc) => FriendRequestModel.fromJson(doc.data()).toEntity())
+          .toList();
+    } catch (e) {
+      throw Exception('Không thể tải danh sách lời mời nhận được: $e');
+    }
   }
 
-  /// 7. Lấy danh sách lời mời kết bạn đã gửi
+  /// Lấy danh sách lời mời kết bạn đã gửi
   Future<List<FriendRequest>> getSentFriendRequests(String userId) async {
-    final snapshot = await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .where('senderId', isEqualTo: userId)
-        .where('status', isEqualTo: 'pending')
-        .get();
-    return snapshot.docs
-        .map((doc) => FriendRequestModel.fromJson(doc.data()).toEntity())
-        .toList();
+    try {
+      final snapshot = await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .where('senderId', isEqualTo: userId)
+          .where('status', isEqualTo: 'pending')
+          .get();
+      return snapshot.docs
+          .map((doc) => FriendRequestModel.fromJson(doc.data()).toEntity())
+          .toList();
+    } catch (e) {
+      throw Exception('Không thể tải danh sách lời mời đã gửi: $e');
+    }
   }
 
-  /// 8. Kiểm tra trạng thái kết bạn
+  /// Kiểm tra trạng thái kết bạn
   Future<String?> getFriendshipStatus(String userId, String otherUserId) async {
-    // Check if they are already friends
-    final friendSnapshot = await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc('${userId}_$otherUserId')
-        .get();
+    try {
+      final friendSnapshot = await firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc('${userId}_$otherUserId')
+          .get();
+      if (friendSnapshot.exists) {
+        return 'friends';
+      }
 
-    if (friendSnapshot.exists) {
-      return 'friends';
+      final sentRequestSnapshot = await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .where('senderId', isEqualTo: userId)
+          .where('receiverId', isEqualTo: otherUserId)
+          .where('status', isEqualTo: 'pending')
+          .get();
+      if (sentRequestSnapshot.docs.isNotEmpty) {
+        return 'request_sent';
+      }
+
+      final receivedRequestSnapshot = await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .where('senderId', isEqualTo: otherUserId)
+          .where('receiverId', isEqualTo: userId)
+          .where('status', isEqualTo: 'pending')
+          .get();
+      if (receivedRequestSnapshot.docs.isNotEmpty) {
+        return 'request_received';
+      }
+
+      return null;
+    } catch (e) {
+      throw Exception('Không thể kiểm tra trạng thái kết bạn: $e');
     }
-
-    // Check if there's a pending request from current user
-    final sentRequestSnapshot = await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .where('senderId', isEqualTo: userId)
-        .where('receiverId', isEqualTo: otherUserId)
-        .where('status', isEqualTo: 'pending')
-        .get();
-
-    if (sentRequestSnapshot.docs.isNotEmpty) {
-      return 'request_sent';
-    }
-
-    // Check if there's a pending request to current user
-    final receivedRequestSnapshot = await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .where('senderId', isEqualTo: otherUserId)
-        .where('receiverId', isEqualTo: userId)
-        .where('status', isEqualTo: 'pending')
-        .get();
-
-    if (receivedRequestSnapshot.docs.isNotEmpty) {
-      return 'request_received';
-    }
-
-    return null; // No relationship
   }
 
-  /// 9. Hủy lời mời kết bạn đã gửi
+  /// Hủy lời mời kết bạn đã gửi
   Future<void> cancelFriendRequest(String senderId, String receiverId) async {
-    final snapshot = await firestore
-        .collection(Friendremoteconstants.friendRequestCollection)
-        .where('senderId', isEqualTo: senderId)
-        .where('receiverId', isEqualTo: receiverId)
-        .where('status', isEqualTo: 'pending')
-        .get();
-
-    for (final doc in snapshot.docs) {
-      await doc.reference.delete();
+    try {
+      final snapshot = await firestore
+          .collection(Friendremoteconstants.friendRequestCollection)
+          .where('senderId', isEqualTo: senderId)
+          .where('receiverId', isEqualTo: receiverId)
+          .where('status', isEqualTo: 'pending')
+          .get();
+      final batch = firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể hủy lời mời kết bạn: $e');
     }
   }
 
-  /// 10. Thêm bạn (tạo quan hệ bạn bè trực tiếp)
+  /// Thêm bạn (tạo quan hệ bạn bè trực tiếp)
   Future<void> addFriend(String userId, String friendUserId) async {
-    final batch = firestore.batch();
-    final now = DateTime.now();
+    try {
+      final batch = firestore.batch();
+      final now = DateTime.now();
+      final userDoc = await firestore.collection('users').doc(userId).get();
+      final friendDoc = await firestore
+          .collection('users')
+          .doc(friendUserId)
+          .get();
+      final userName = userDoc.data()?['name'] ?? 'Friend';
+      final friendName = friendDoc.data()?['name'] ?? 'Friend';
 
-    // Add friend relationship for user
-    final friend1 = Friend(
-      friendId: '${userId}_$friendUserId',
-      nickName: 'Friend', // You might want to get actual user name
-      addAt: now,
-      isBlock: false,
-    );
-    final friend1Ref = firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc(friend1.friendId);
-    batch.set(friend1Ref, FriendModel.fromEntity(friend1).toJson());
+      final friend1 = Friend(
+        friendId: '${userId}_$friendUserId',
+        nickName: friendName,
+        addAt: now,
+        isBlock: false,
+      );
+      final friend1Ref = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc(friend1.friendId);
+      batch.set(friend1Ref, FriendModel.fromEntity(friend1).toJson());
 
-    // Add friend relationship for friend
-    final friend2 = Friend(
-      friendId: '${friendUserId}_$userId',
-      nickName: 'Friend', // You might want to get actual user name
-      addAt: now,
-      isBlock: false,
-    );
-    final friend2Ref = firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc(friend2.friendId);
-    batch.set(friend2Ref, FriendModel.fromEntity(friend2).toJson());
+      final friend2 = Friend(
+        friendId: '${friendUserId}_$userId',
+        nickName: userName,
+        addAt: now,
+        isBlock: false,
+      );
+      final friend2Ref = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc(friend2.friendId);
+      batch.set(friend2Ref, FriendModel.fromEntity(friend2).toJson());
 
-    await batch.commit();
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể thêm bạn bè: $e');
+    }
   }
 
-  /// 11. Cập nhật trạng thái bạn bè
+  /// Cập nhật trạng thái bạn bè
   Future<void> updateFriendStatus(String friendId, String status) async {
-    await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc(friendId)
-        .update({'status': status});
+    try {
+      await firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc(friendId)
+          .update({'status': status});
+    } catch (e) {
+      throw Exception('Không thể cập nhật trạng thái bạn bè: $e');
+    }
   }
 
-  /// 12. Cập nhật trạng thái online
+  /// Cập nhật trạng thái online
   Future<void> updateFriendOnlineStatus(String userId, bool isOnline) async {
-    final now = DateTime.now();
-    final updateData = <String, dynamic>{'isOnline': isOnline};
+    try {
+      final now = DateTime.now();
+      final updateData = <String, dynamic>{'isOnline': isOnline};
+      if (!isOnline) {
+        updateData['lastActive'] = Timestamp.fromDate(now);
+      }
 
-    if (!isOnline) {
-      updateData['lastActive'] = Timestamp.fromDate(now);
+      final userFriendsSnapshot = await firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .where('friendId', isGreaterThanOrEqualTo: '${userId}_')
+          .where('friendId', isLessThan: '${userId}_\uf8ff')
+          .get();
+
+      if (userFriendsSnapshot.docs.length > 500) {
+        throw Exception('Quá nhiều bạn bè để cập nhật trong một batch');
+      }
+
+      final batch = firestore.batch();
+      for (final doc in userFriendsSnapshot.docs) {
+        batch.update(doc.reference, updateData);
+      }
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Không thể cập nhật trạng thái online: $e');
     }
-
-    // Update all friend relationships where this user is involved
-    final userFriendsSnapshot = await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .where('userId', isEqualTo: userId)
-        .get();
-
-    final batch = firestore.batch();
-    for (final doc in userFriendsSnapshot.docs) {
-      batch.update(doc.reference, updateData);
-    }
-    await batch.commit();
   }
 
-  /// 13. Cập nhật tin nhắn cuối cùng
+  /// Cập nhật tin nhắn cuối cùng
   Future<void> updateLastMessage(
     String friendId,
     String messageId,
     DateTime timestamp,
   ) async {
-    await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .doc(friendId)
-        .update({
-          'lastMessageId': messageId,
-          'lastMessageAt': Timestamp.fromDate(timestamp),
-        });
+    try {
+      await firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc(friendId)
+          .update({
+            'lastMessageId': messageId,
+            'lastMessageAt': Timestamp.fromDate(timestamp),
+          });
+    } catch (e) {
+      throw Exception('Không thể cập nhật tin nhắn cuối cùng: $e');
+    }
   }
 
-  /// 14. Cập nhật trạng thái block/unblock bạn bè
+  /// Cập nhật trạng thái block/unblock bạn bè
   Future<void> updateBlockStatus(
     String userId,
     String friendId,
     bool isBlock,
   ) async {
-    await firestore
-        .collection(Friendremoteconstants.friendCollection)
-        .where('userId', isEqualTo: userId)
-        .where('friendId', isEqualTo: friendId)
-        .get()
-        .then((snapshot) {
-          if (snapshot.docs.isNotEmpty) {
-            final batch = firestore.batch();
-            for (final doc in snapshot.docs) {
-              batch.update(doc.reference, {'isBlock': isBlock});
-            }
-            return batch.commit();
-          }
-        });
+    try {
+      final friendRef = firestore
+          .collection(Friendremoteconstants.friendCollection)
+          .doc('${userId}_$friendId');
+      await friendRef.update({'isBlock': isBlock});
+    } catch (e) {
+      throw Exception('Không thể cập nhật trạng thái chặn: $e');
+    }
   }
 }
