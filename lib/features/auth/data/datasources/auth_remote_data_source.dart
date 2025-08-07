@@ -21,10 +21,6 @@ class AuthRemoteDataSource {
 
   Future<AuthResult> register(RegisterRequest request) async {
     try {
-      if (request.password != request.confirmPassword) {
-        return const AuthFailure(AuthConstants.passwordsDoNotMatch);
-      }
-
       if (request.password.length < AuthConstants.minPasswordLength) {
         return const AuthFailure(AuthConstants.weakPassword);
       }
@@ -44,14 +40,14 @@ class AuthRemoteDataSource {
 
       if (userCredential.user != null) {
         final userModel = UserModel(
-          userid: userCredential.user!.uid,
+          userId: userCredential.user!.uid,
+          isOnline: false, 
+          lastActive: DateTime.now(),
           fullName: request.fullName,
           username: request.username,
           email: request.email,
           gender: request.gender,
           birthDate: request.birthDate,
-          password: request.password,
-          confirmPassword: request.confirmPassword,
           avatarUrl: '',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),

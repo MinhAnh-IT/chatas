@@ -1,30 +1,47 @@
+import 'package:equatable/equatable.dart';
+
 import '../../domain/entities/User.dart';
 
-class UserModel extends User {
+class UserModel extends Equatable {
+  final String userId;
+  final bool isOnline;
+  final DateTime lastActive;
+  final String fullName;
+  final String username;
+  final String email;
+  final String gender;
+  // final String password;
+  final DateTime birthDate;
+  final String avatarUrl;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
   const UserModel({
-    required super.userid,
-    required super.fullName,
-    required super.username,
-    required super.email,
-    required super.gender,
-    required super.birthDate,
-    required super.password,
-    required super.confirmPassword,
-    required super.avatarUrl,
-    required super.createdAt,
-    required super.updatedAt,
+    required this.userId,
+    required this.isOnline,
+    required this.lastActive,
+    required this.fullName,
+    required this.username,
+    required this.email,
+    // required this.password,
+    required this.gender,
+    required this.birthDate,
+    required this.avatarUrl,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      userid: json['id'] ?? '',
+      userId: json['userId'] ?? '',
+      isOnline: json['isOnline'] ?? false,
+      lastActive: json['lastActive'] ?? DateTime.now().toIso8601String(),
       fullName: json['fullName'] ?? '',
       username: json['username'] ?? '',
       email: json['email'] ?? '',
+      // password: json['password'] ?? '',
       gender: json['gender'] ?? '',
       birthDate: DateTime.parse(json['birthDate'] ?? DateTime.now().toIso8601String()),
-      password: json['password'] ?? '',
-      confirmPassword: json['confirmPassword'] ?? '',
       avatarUrl: json['avatarUrl'] ?? '',
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
@@ -33,14 +50,12 @@ class UserModel extends User {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': userid,
+      'userId': userId,
       'fullName': fullName,
       'username': username,
       'email': email,
       'gender': gender,
       'birthDate': birthDate.toIso8601String(),
-      'password': password,
-      'confirmPassword': confirmPassword,
       'avatarUrl': avatarUrl,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -49,14 +64,14 @@ class UserModel extends User {
 
   factory UserModel.fromEntity(User user) {
     return UserModel(
-      userid: user.userid,
+      userId: user.userId,
+      isOnline:user.isOnline,
+      lastActive:user.lastActive,
       fullName: user.fullName,
       username: user.username,
       email: user.email,
       gender: user.gender,
       birthDate: user.birthDate,
-      password: user.password,
-      confirmPassword: user.confirmPassword,
       avatarUrl: user.avatarUrl,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -65,14 +80,14 @@ class UserModel extends User {
 
   User toEntity() {
     return User(
-      userid: userid,
+      userId: userId,
+      isOnline:isOnline,
+      lastActive:lastActive,
       fullName: fullName,
       username: username,
       email: email,
       gender: gender,
       birthDate: birthDate,
-      password: password,
-      confirmPassword: confirmPassword,
       avatarUrl: avatarUrl,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -80,30 +95,35 @@ class UserModel extends User {
   }
 
   UserModel copyWith({
-    String? id,
+    String? userId,
+    bool? isOnline,
+    DateTime?lastActive,
     String? fullName,
     String? username,
     String? email,
     String? gender,
     DateTime? birthDate,
     String? password,
-    String? confirmPassword,
     String? avatarUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return UserModel(
-      userid: id ?? this.userid,
+      userId: userId ?? this.userId,
+      isOnline:isOnline ?? this.isOnline,
+      lastActive:lastActive ?? this.lastActive,
       fullName: fullName ?? this.fullName,
       username: username ?? this.username,
       email: email ?? this.email,
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
-      password: password ?? this.password,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => throw UnimplementedError();
 } 

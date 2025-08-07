@@ -7,7 +7,6 @@ class RegisterRequest extends Equatable {
   final String gender;
   final DateTime birthDate;
   final String password;
-  final String confirmPassword;
 
   const RegisterRequest({
     required this.fullName,
@@ -16,7 +15,6 @@ class RegisterRequest extends Equatable {
     required this.gender,
     required this.birthDate,
     required this.password,
-    required this.confirmPassword,
   });
 
   @override
@@ -27,6 +25,5 @@ class RegisterRequest extends Equatable {
     gender,
     birthDate,
     password,
-    confirmPassword,
   ];
 } 
