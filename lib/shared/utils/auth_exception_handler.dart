@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../features/auth/domain/exceptions/auth_exceptions.dart';
 
 class AuthExceptionHandler {
-  static AuthException handleFirebaseAuthException(firebase_auth.FirebaseAuthException e) {
+  static AuthException handleFirebaseAuthException(
+    firebase_auth.FirebaseAuthException e,
+  ) {
     switch (e.code) {
       case 'email-already-in-use':
         return const EmailAlreadyInUseException();
@@ -29,9 +31,10 @@ class AuthExceptionHandler {
   }
 
   static AuthException handleGenericException(dynamic e) {
-    if (e.toString().contains('network') || e.toString().contains('connection')) {
+    if (e.toString().contains('network') ||
+        e.toString().contains('connection')) {
       return const NetworkException();
     }
     return UnknownAuthException(e.toString());
   }
-} 
+}

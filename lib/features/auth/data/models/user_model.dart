@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/User.dart';
+import '../../domain/entities/user.dart';
 
 class UserModel extends Equatable {
   final String userId;
@@ -124,6 +124,5 @@ class UserModel extends Equatable {
   }
 
   @override
-  // TODO: implement props
   List<Object?> get props => throw UnimplementedError();
 } 

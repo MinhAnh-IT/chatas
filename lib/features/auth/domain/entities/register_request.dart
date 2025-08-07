@@ -26,4 +26,4 @@ class RegisterRequest extends Equatable {
     birthDate,
     password,
   ];
-} 
+}

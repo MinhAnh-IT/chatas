@@ -4,10 +4,12 @@ import '../models/user_model.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/entities/login_request.dart';
 import '../../domain/entities/register_request.dart';
-import '../../domain/entities/User.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/exceptions/auth_exceptions.dart';
 import '../../../../shared/utils/auth_exception_handler.dart';
 import '../../constants/auth_constants.dart';
+
+
 
 class AuthRemoteDataSource {
   final firebase_auth.FirebaseAuth _firebaseAuth;

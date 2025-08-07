@@ -72,10 +72,13 @@ class AuthTextField extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Colors.red),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 16,
+            ),
           ),
         ),
       ],
     );
   }
-} 
+}
