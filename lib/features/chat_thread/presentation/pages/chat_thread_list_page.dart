@@ -3,6 +3,8 @@ import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_u
 import 'package:flutter/material.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
+import 'package:chatas/core/constants/app_route_constants.dart';
+import 'package:go_router/go_router.dart';
 import '../../constants/chat_thread_list_page_constants.dart';
 import '../../data/repositories/chat_thread_repository_impl.dart';
 import '../cubit/chat_thread_list_cubit.dart';
@@ -34,6 +36,15 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     _cubit.fetchChatThreads();
   }
 
+  /// Navigates to chat message page when a thread is tapped.
+  void _navigateToChatMessage(BuildContext context, String threadId, String threadName) {
+    final route = AppRouteConstants.chatMessageRoute(
+      threadId,
+      currentUserId: ChatThreadListPageConstants.temporaryUserId,
+      otherUserName: threadName,
+    );
+    context.go(route);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +92,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                       style: const TextStyle(fontSize: ChatThreadListPageConstants.trailingFontSize),
                     ),
                     onTap: () {
-                      // TODO: Mở chi tiết đoạn chat
+                      _navigateToChatMessage(context, thread.id, thread.name);
                     },
                   );
                 },

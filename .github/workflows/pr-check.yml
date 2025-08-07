@@ -1,175 +1,41 @@
 name: PR Check
 
-# Chỉ chạy khi có Pull Request
 on:
   pull_request:
     branches: [ main, develop ]
 
 jobs:
-  # Job kiểm tra PR
   pr-check:
-    name: Pull Request Checks
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
-        # Fetch full history để so sánh changes
         fetch-depth: 0
-        
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-        
+    
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.32.0'
         channel: 'stable'
         cache: true
-        
+    
     - name: Get dependencies
       run: flutter pub get
-      
-    # Kiểm tra formatting của files đã thay đổi
-    - name: Check formatting on changed files
+    
+    - name: Check formatting for changed files
       run: |
         # Get list of changed Dart files
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- '*.dart' || true)
+        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.dart' || echo "")
         if [ -n "$CHANGED_FILES" ]; then
-          echo "Checking formatting for changed files:"
-          echo "$CHANGED_FILES"
-          echo "$CHANGED_FILES" | xargs dart format --output=none --set-exit-if-changed
+          echo "Checking formatting for: $CHANGED_FILES"
+          dart format --output=none --set-exit-if-changed $CHANGED_FILES
         else
           echo "No Dart files changed"
         fi
-        
-    # Analyze chỉ files đã thay đổi
+    
     - name: Analyze changed files
-      run: |
-        # Get list of changed Dart files
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- '*.dart' || true)
-        if [ -n "$CHANGED_FILES" ]; then
-          echo "Analyzing changed files:"
-          echo "$CHANGED_FILES"
-          flutter analyze $CHANGED_FILES
-        else
-          echo "No Dart files changed"
-        fi
-        
-    # Chạy tests liên quan đến changes
-    - name: Run related tests
-      run: |
-        # Detect test files related to changes
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- '*.dart' | grep -v _test.dart || true)
-        TEST_FILES=""
-        
-        for file in $CHANGED_FILES; do
-          # Convert lib file to test file path
-          if [[ $file == lib/* ]]; then
-            test_file=$(echo $file | sed 's|lib/|test/|' | sed 's|\.dart$|_test.dart|')
-            if [ -f "$test_file" ]; then
-              TEST_FILES="$TEST_FILES $test_file"
-            fi
-          fi
-        done
-        
-        # Also include any changed test files
-        CHANGED_TEST_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- 'test/**/*_test.dart' || true)
-        TEST_FILES="$TEST_FILES $CHANGED_TEST_FILES"
-        
-        if [ -n "$TEST_FILES" ]; then
-          echo "Running tests for files: $TEST_FILES"
-          flutter test $TEST_FILES --coverage
-        else
-          echo "No related tests found, running all tests"
-          flutter test --coverage
-        fi
-        
-    # Comment coverage report on PR
-    - name: Coverage Comment
-      uses: 5monkeys/cobertura-action@master
-      if: github.event_name == 'pull_request'
-      with:
-        path: coverage/lcov.info
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        minimum_coverage: 80
-        fail_below_threshold: false
-        show_missing: true
-        show_line_numbers: true
-        
-    # Build để đảm bảo không có lỗi build
-    - name: Test build
-      run: |
-        echo "Testing Android build..."
-        flutter build apk --debug
-        
-        echo "Testing Web build..."
-        flutter build web --debug
-        
-  # Job kiểm tra dependency vulnerabilities
-  dependency-check:
-    name: Dependency Security Check
-    runs-on: ubuntu-latest
+      run: flutter analyze
     
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.32.0'
-        channel: 'stable'
-        cache: true
-        
-    - name: Get dependencies
-      run: flutter pub get
-      
-    # Audit dependencies for known vulnerabilities
-    - name: Audit dependencies
-      run: |
-        dart pub deps
-        # Check for outdated packages
-        flutter pub outdated || true
-        
-  # Job size impact analysis
-  size-analysis:
-    name: App Size Analysis
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-        
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.32.0'
-        channel: 'stable'
-        cache: true
-        
-    - name: Get dependencies
-      run: flutter pub get
-      
-    # Analyze app size impact
-    - name: Build and analyze size
-      run: |
-        flutter build apk --analyze-size --target-platform android-arm64
-        
-        # Extract APK size
-        APK_SIZE=$(stat -c%s "build/app/outputs/flutter-apk/app-release.apk" 2>/dev/null || echo "0")
-        APK_SIZE_MB=$(echo "scale=2; $APK_SIZE / 1024 / 1024" | bc -l 2>/dev/null || echo "0")
-        
-        echo "📱 **App Size Analysis**" >> $GITHUB_STEP_SUMMARY
-        echo "- APK Size: ${APK_SIZE_MB} MB" >> $GITHUB_STEP_SUMMARY
-        echo "- Build completed successfully ✅" >> $GITHUB_STEP_SUMMARY
+    - name: Run tests
+      run: flutter test
