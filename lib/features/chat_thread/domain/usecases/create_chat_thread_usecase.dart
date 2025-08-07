@@ -13,14 +13,17 @@ class CreateChatThreadUseCase {
     String? initialMessage,
   }) async {
     final now = DateTime.now();
-    
+
     final newChatThread = ChatThread(
       id: 'chat_${friendId}_${now.millisecondsSinceEpoch}',
       name: friendName,
       lastMessage: initialMessage ?? 'Đoạn chat mới được tạo',
       lastMessageTime: now,
       avatarUrl: friendAvatarUrl,
-      members: ['current_user', friendId], // current_user is the current logged-in user
+      members: [
+        'current_user',
+        friendId,
+      ], // current_user is the current logged-in user
       isGroup: false,
       unreadCount: 0,
       createdAt: now,

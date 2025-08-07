@@ -1,0 +1,59 @@
+# Dependabot configuration để tự động update dependencies
+version: 2
+updates:
+  # Pub dependencies (Flutter/Dart)
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    assignees:
+      - "MinhAnh-IT"
+    reviewers:
+      - "MinhAnh-IT"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "flutter"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    assignees:
+      - "MinhAnh-IT"
+    reviewers:
+      - "MinhAnh-IT"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Gradle dependencies (Android)
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    assignees:
+      - "MinhAnh-IT"
+    reviewers:
+      - "MinhAnh-IT"
+    commit-message:
+      prefix: "deps(android)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "android"

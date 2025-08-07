@@ -9,4 +9,4 @@ class LogoutUseCase {
   Future<AuthResult> call() async {
     return await repository.logout();
   }
-} 
+}
