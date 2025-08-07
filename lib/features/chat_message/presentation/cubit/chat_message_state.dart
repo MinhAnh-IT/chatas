@@ -24,10 +24,7 @@ class ChatMessageLoaded extends ChatMessageState {
   final List<ChatMessage> messages;
   final String? selectedMessageId; // For showing timestamp
 
-  const ChatMessageLoaded({
-    required this.messages,
-    this.selectedMessageId,
-  });
+  const ChatMessageLoaded({required this.messages, this.selectedMessageId});
 
   @override
   List<Object?> get props => [messages, selectedMessageId];
@@ -40,7 +37,9 @@ class ChatMessageLoaded extends ChatMessageState {
   }) {
     return ChatMessageLoaded(
       messages: messages ?? this.messages,
-      selectedMessageId: clearSelection ? null : (selectedMessageId ?? this.selectedMessageId),
+      selectedMessageId: clearSelection
+          ? null
+          : (selectedMessageId ?? this.selectedMessageId),
     );
   }
 }

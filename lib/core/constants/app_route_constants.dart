@@ -1,5 +1,4 @@
 class AppRouteConstants {
-
   static const String homePathName = 'home';
   static const String loginPathName = "login";
   static const String chatMessagePathName = 'chat_message';
@@ -7,9 +6,10 @@ class AppRouteConstants {
   static const String homePath = '/';
   static const String loginPath = '/login';
   static const String chatMessagePath = '/chat-message';
-  
+
   /// Generates a chat message route with parameters
-  static String chatMessageRoute(String threadId, {
+  static String chatMessageRoute(
+    String threadId, {
     String? currentUserId,
     String? otherUserName,
   }) {

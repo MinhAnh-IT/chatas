@@ -2,7 +2,7 @@
 class ChatMessageRemoteConstants {
   /// Firestore collection name for chat messages.
   static const String collectionName = 'chat_messages';
-  
+
   /// Firestore field names for chat message documents.
   static const String idField = 'id';
   static const String chatThreadIdField = 'chatThreadId';
@@ -19,7 +19,7 @@ class ChatMessageRemoteConstants {
   static const String replyToMessageIdField = 'replyToMessageId';
   static const String createdAtField = 'createdAt';
   static const String updatedAtField = 'updatedAt';
-  
+
   /// Query limits and pagination.
   static const int defaultMessageLimit = 50;
   static const int maxMessageLimit = 100;

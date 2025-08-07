@@ -21,9 +21,7 @@ class AuthButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           elevation: 2,
         ),
         child: isLoading
@@ -45,4 +43,4 @@ class AuthButton extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -5,7 +5,9 @@ import 'package:chatas/shared/constants/refreshable_list_view_constants.dart';
 
 void main() {
   group('RefreshableListView Widget Tests', () {
-    testWidgets('displays loading indicator when isLoading is true', (WidgetTester tester) async {
+    testWidgets('displays loading indicator when isLoading is true', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
@@ -24,10 +26,12 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('displays error widget when errorMessage is provided', (WidgetTester tester) async {
+    testWidgets('displays error widget when errorMessage is provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const errorMessage = 'Test error message';
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -42,11 +46,18 @@ void main() {
       );
 
       // Assert
-      expect(find.text('${RefreshableListViewConstants.defaultErrorPrefix}$errorMessage'), findsOneWidget);
+      expect(
+        find.text(
+          '${RefreshableListViewConstants.defaultErrorPrefix}$errorMessage',
+        ),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.error_outline), findsOneWidget);
     });
 
-    testWidgets('displays empty widget when items list is empty', (WidgetTester tester) async {
+    testWidgets('displays empty widget when items list is empty', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
@@ -61,14 +72,19 @@ void main() {
       );
 
       // Assert
-      expect(find.text(RefreshableListViewConstants.defaultEmptyMessage), findsOneWidget);
+      expect(
+        find.text(RefreshableListViewConstants.defaultEmptyMessage),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.inbox_outlined), findsOneWidget);
     });
 
-    testWidgets('displays custom empty widget when provided', (WidgetTester tester) async {
+    testWidgets('displays custom empty widget when provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const customEmptyWidget = Text('Custom empty message');
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -84,13 +100,18 @@ void main() {
 
       // Assert
       expect(find.text('Custom empty message'), findsOneWidget);
-      expect(find.text(RefreshableListViewConstants.defaultEmptyMessage), findsNothing);
+      expect(
+        find.text(RefreshableListViewConstants.defaultEmptyMessage),
+        findsNothing,
+      );
     });
 
-    testWidgets('displays list items when items are provided', (WidgetTester tester) async {
+    testWidgets('displays list items when items are provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const items = ['Item 1', 'Item 2', 'Item 3'];
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -110,11 +131,13 @@ void main() {
       expect(find.byType(RefreshIndicator), findsOneWidget);
     });
 
-    testWidgets('calls onRefresh when pull to refresh is triggered', (WidgetTester tester) async {
+    testWidgets('calls onRefresh when pull to refresh is triggered', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       var refreshCalled = false;
       const items = ['Item 1'];
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -138,10 +161,12 @@ void main() {
       expect(refreshCalled, isTrue);
     });
 
-    testWidgets('calls onRetry when retry button is pressed in error state', (WidgetTester tester) async {
+    testWidgets('calls onRetry when retry button is pressed in error state', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       var retryCalled = false;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -159,18 +184,25 @@ void main() {
       );
 
       // Act
-      await tester.tap(find.text(RefreshableListViewConstants.defaultRetryButtonText));
+      await tester.tap(
+        find.text(RefreshableListViewConstants.defaultRetryButtonText),
+      );
       await tester.pump();
 
       // Assert
       expect(retryCalled, isTrue);
     });
 
-    testWidgets('uses custom scroll controller when provided', (WidgetTester tester) async {
+    testWidgets('uses custom scroll controller when provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       final scrollController = ScrollController();
-      final items = List.generate(20, (index) => 'Item ${index + 1}'); // More items to enable scrolling
-      
+      final items = List.generate(
+        20,
+        (index) => 'Item ${index + 1}',
+      ); // More items to enable scrolling
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -178,10 +210,8 @@ void main() {
               items: items,
               onRefresh: () async {},
               scrollController: scrollController,
-              itemBuilder: (context, item, index) => SizedBox(
-                height: 100,
-                child: Text(item),
-              ),
+              itemBuilder: (context, item, index) =>
+                  SizedBox(height: 100, child: Text(item)),
             ),
           ),
         ),
@@ -190,16 +220,18 @@ void main() {
       // Assert - Check that the ListView is using our controller
       final listView = tester.widget<ListView>(find.byType(ListView));
       expect(listView.controller, equals(scrollController));
-      
+
       // Cleanup
       scrollController.dispose();
     });
 
-    testWidgets('applies custom padding when provided', (WidgetTester tester) async {
+    testWidgets('applies custom padding when provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const customPadding = EdgeInsets.all(32.0);
       const items = ['Item 1'];
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

@@ -12,9 +12,13 @@ import 'package:chatas/features/chat_message/presentation/cubit/chat_message_sta
 import 'package:chatas/features/chat_message/constants/chat_message_page_constants.dart';
 
 /// Mock implementations for testing.
-class MockGetMessagesStreamUseCase extends Mock implements GetMessagesStreamUseCase {}
+class MockGetMessagesStreamUseCase extends Mock
+    implements GetMessagesStreamUseCase {}
+
 class MockSendMessageUseCase extends Mock implements SendMessageUseCase {}
+
 class MockAddReactionUseCase extends Mock implements AddReactionUseCase {}
+
 class MockRemoveReactionUseCase extends Mock implements RemoveReactionUseCase {}
 
 void main() {
@@ -84,8 +88,9 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits [Loading, Loaded] when messages are loaded successfully',
         build: () {
-          when(() => mockGetMessagesStreamUseCase.call(any()))
-              .thenAnswer((_) => messagesStreamController.stream);
+          when(
+            () => mockGetMessagesStreamUseCase.call(any()),
+          ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
         act: (cubit) {
@@ -104,8 +109,9 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits [Loading, Error] when stream throws error',
         build: () {
-          when(() => mockGetMessagesStreamUseCase.call(any()))
-              .thenAnswer((_) => messagesStreamController.stream);
+          when(
+            () => mockGetMessagesStreamUseCase.call(any()),
+          ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
         act: (cubit) {
@@ -121,8 +127,9 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'cancels previous subscription when loading new messages',
         build: () {
-          when(() => mockGetMessagesStreamUseCase.call(any()))
-              .thenAnswer((_) => messagesStreamController.stream);
+          when(
+            () => mockGetMessagesStreamUseCase.call(any()),
+          ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
         act: (cubit) async {
@@ -143,8 +150,9 @@ void main() {
 
       setUp(() {
         // Set up cubit with loaded state
-        when(() => mockGetMessagesStreamUseCase.call(any()))
-            .thenAnswer((_) => messagesStreamController.stream);
+        when(
+          () => mockGetMessagesStreamUseCase.call(any()),
+        ).thenAnswer((_) => messagesStreamController.stream);
         cubit.loadMessages(testThreadId);
         messagesStreamController.add([]);
       });
@@ -152,24 +160,36 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits [Sending] when sending message successfully',
         build: () {
-          when(() => mockSendMessageUseCase.call(
-            chatThreadId: any(named: 'chatThreadId'),
-            content: any(named: 'content'),
-          )).thenAnswer((_) async {});
+          when(
+            () => mockSendMessageUseCase.call(
+              chatThreadId: any(named: 'chatThreadId'),
+              content: any(named: 'content'),
+            ),
+          ).thenAnswer((_) async {});
           return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
         act: (cubit) => cubit.sendMessage(testContent),
         expect: () => [
           isA<ChatMessageSending>()
-              .having((state) => state.pendingMessage.content, 'content', testContent)
-              .having((state) => state.pendingMessage.status, 'status', MessageStatus.sending),
+              .having(
+                (state) => state.pendingMessage.content,
+                'content',
+                testContent,
+              )
+              .having(
+                (state) => state.pendingMessage.status,
+                'status',
+                MessageStatus.sending,
+              ),
         ],
         verify: (_) {
-          verify(() => mockSendMessageUseCase.call(
-            chatThreadId: testThreadId,
-            content: testContent,
-          )).called(1);
+          verify(
+            () => mockSendMessageUseCase.call(
+              chatThreadId: testThreadId,
+              content: testContent,
+            ),
+          ).called(1);
         },
       );
 
@@ -189,18 +209,21 @@ void main() {
         act: (cubit) => cubit.sendMessage(testContent),
         expect: () => [],
         verify: (_) {
-          verifyNever(() => mockSendMessageUseCase.call(
-            chatThreadId: any(named: 'chatThreadId'),
-            content: any(named: 'content'),
-          ));
+          verifyNever(
+            () => mockSendMessageUseCase.call(
+              chatThreadId: any(named: 'chatThreadId'),
+              content: any(named: 'content'),
+            ),
+          );
         },
       );
 
       blocTest<ChatMessageCubit, ChatMessageState>(
         'does not send empty message',
         build: () {
-          when(() => mockGetMessagesStreamUseCase.call(any()))
-              .thenAnswer((_) => messagesStreamController.stream);
+          when(
+            () => mockGetMessagesStreamUseCase.call(any()),
+          ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
@@ -209,22 +232,27 @@ void main() {
           cubit.sendMessage('');
         },
         verify: (_) {
-          verifyNever(() => mockSendMessageUseCase.call(
-            chatThreadId: any(named: 'chatThreadId'),
-            content: any(named: 'content'),
-          ));
+          verifyNever(
+            () => mockSendMessageUseCase.call(
+              chatThreadId: any(named: 'chatThreadId'),
+              content: any(named: 'content'),
+            ),
+          );
         },
       );
 
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits Error when send message fails',
         build: () {
-          when(() => mockSendMessageUseCase.call(
-            chatThreadId: any(named: 'chatThreadId'),
-            content: any(named: 'content'),
-          )).thenThrow(Exception('Send failed'));
-          when(() => mockGetMessagesStreamUseCase.call(any()))
-              .thenAnswer((_) => Stream.value(<ChatMessage>[]));
+          when(
+            () => mockSendMessageUseCase.call(
+              chatThreadId: any(named: 'chatThreadId'),
+              content: any(named: 'content'),
+            ),
+          ).thenThrow(Exception('Send failed'));
+          when(
+            () => mockGetMessagesStreamUseCase.call(any()),
+          ).thenAnswer((_) => Stream.value(<ChatMessage>[]));
           return cubit;
         },
         act: (cubit) async {
@@ -263,10 +291,12 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits [ReactionAdding] when adding reaction successfully',
         build: () {
-          when(() => mockAddReactionUseCase.call(
-            messageId: any(named: 'messageId'),
-            reaction: any(named: 'reaction'),
-          )).thenAnswer((_) async {});
+          when(
+            () => mockAddReactionUseCase.call(
+              messageId: any(named: 'messageId'),
+              reaction: any(named: 'reaction'),
+            ),
+          ).thenAnswer((_) async {});
           return cubit;
         },
         seed: () => ChatMessageLoaded(messages: testMessages),
@@ -279,20 +309,24 @@ void main() {
           ),
         ],
         verify: (_) {
-          verify(() => mockAddReactionUseCase.call(
-            messageId: testMessageId,
-            reaction: testReaction,
-          )).called(1);
+          verify(
+            () => mockAddReactionUseCase.call(
+              messageId: testMessageId,
+              reaction: testReaction,
+            ),
+          ).called(1);
         },
       );
 
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits Error when add reaction fails',
         build: () {
-          when(() => mockAddReactionUseCase.call(
-            messageId: any(named: 'messageId'),
-            reaction: any(named: 'reaction'),
-          )).thenThrow(Exception('Add reaction failed'));
+          when(
+            () => mockAddReactionUseCase.call(
+              messageId: any(named: 'messageId'),
+              reaction: any(named: 'reaction'),
+            ),
+          ).thenThrow(Exception('Add reaction failed'));
           return cubit;
         },
         seed: () => ChatMessageLoaded(messages: testMessages),
@@ -315,29 +349,35 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'calls removeReactionUseCase when state is loaded',
         build: () {
-          when(() => mockRemoveReactionUseCase.call(
-            messageId: any(named: 'messageId'),
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async {});
+          when(
+            () => mockRemoveReactionUseCase.call(
+              messageId: any(named: 'messageId'),
+              userId: any(named: 'userId'),
+            ),
+          ).thenAnswer((_) async {});
           return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
         act: (cubit) => cubit.removeReaction(testMessageId, testUserId),
         verify: (_) {
-          verify(() => mockRemoveReactionUseCase.call(
-            messageId: testMessageId,
-            userId: testUserId,
-          )).called(1);
+          verify(
+            () => mockRemoveReactionUseCase.call(
+              messageId: testMessageId,
+              userId: testUserId,
+            ),
+          ).called(1);
         },
       );
 
       blocTest<ChatMessageCubit, ChatMessageState>(
         'emits Error when remove reaction fails',
         build: () {
-          when(() => mockRemoveReactionUseCase.call(
-            messageId: any(named: 'messageId'),
-            userId: any(named: 'userId'),
-          )).thenThrow(Exception('Remove reaction failed'));
+          when(
+            () => mockRemoveReactionUseCase.call(
+              messageId: any(named: 'messageId'),
+              userId: any(named: 'userId'),
+            ),
+          ).thenThrow(Exception('Remove reaction failed'));
           return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
@@ -354,8 +394,9 @@ void main() {
       blocTest<ChatMessageCubit, ChatMessageState>(
         'reloads messages when currentChatThreadId is available',
         build: () {
-          when(() => mockGetMessagesStreamUseCase.call(any()))
-              .thenAnswer((_) => messagesStreamController.stream);
+          when(
+            () => mockGetMessagesStreamUseCase.call(any()),
+          ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
         act: (cubit) {
@@ -364,7 +405,9 @@ void main() {
         },
         verify: (_) {
           // loadMessages called twice - once for initial load, once for refresh
-          verify(() => mockGetMessagesStreamUseCase.call(testThreadId)).called(2);
+          verify(
+            () => mockGetMessagesStreamUseCase.call(testThreadId),
+          ).called(2);
         },
       );
 
@@ -430,10 +473,12 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        cubit.emit(ChatMessageSending(
-          messages: testMessages,
-          pendingMessage: pendingMessage,
-        ));
+        cubit.emit(
+          ChatMessageSending(
+            messages: testMessages,
+            pendingMessage: pendingMessage,
+          ),
+        );
 
         expect(cubit.currentMessages.length, equals(2));
         expect(cubit.currentMessages, contains(pendingMessage));
@@ -449,19 +494,20 @@ void main() {
       });
 
       test('returns true when message is selected in loaded state', () {
-        cubit.emit(const ChatMessageLoaded(
-          messages: [],
-          selectedMessageId: testMessageId,
-        ));
+        cubit.emit(
+          const ChatMessageLoaded(
+            messages: [],
+            selectedMessageId: testMessageId,
+          ),
+        );
 
         expect(cubit.isMessageSelected(testMessageId), isTrue);
       });
 
       test('returns false when different message is selected', () {
-        cubit.emit(const ChatMessageLoaded(
-          messages: [],
-          selectedMessageId: 'other_msg',
-        ));
+        cubit.emit(
+          const ChatMessageLoaded(messages: [], selectedMessageId: 'other_msg'),
+        );
 
         expect(cubit.isMessageSelected(testMessageId), isFalse);
       });

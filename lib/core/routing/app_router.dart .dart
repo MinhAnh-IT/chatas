@@ -11,14 +11,14 @@ import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class AppRouter{
+class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(
-         path: '/',
-         name: AppRouteConstants.homePathName,
-         builder: (context, state) => const ChatThreadListPage(),
+        path: '/',
+        name: AppRouteConstants.homePathName,
+        builder: (context, state) => const ChatThreadListPage(),
       ),
       GoRoute(
         path: AppRouteConstants.loginPath,
@@ -30,16 +30,20 @@ class AppRouter{
         name: AppRouteConstants.chatMessagePathName,
         builder: (context, state) {
           final threadId = state.pathParameters['threadId']!;
-          final currentUserId = state.uri.queryParameters['currentUserId'] ?? '';
-          final otherUserName = state.uri.queryParameters['otherUserName'] ?? '';
-          
+          final currentUserId =
+              state.uri.queryParameters['currentUserId'] ?? '';
+          final otherUserName =
+              state.uri.queryParameters['otherUserName'] ?? '';
+
           // Setup repository and use cases for ChatMessage feature
           final repository = ChatMessageRepositoryImpl();
           final sendMessageUseCase = SendMessageUseCase(repository);
           final addReactionUseCase = AddReactionUseCase(repository);
-          final removeReactionUseCase = RemoveReactionUseCase(repository: repository);
+          final removeReactionUseCase = RemoveReactionUseCase(
+            repository: repository,
+          );
           final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
-          
+
           return BlocProvider(
             create: (context) => ChatMessageCubit(
               getMessagesStreamUseCase: getMessagesStreamUseCase,
@@ -55,6 +59,6 @@ class AppRouter{
           );
         },
       ),
-    ]
+    ],
   );
 }

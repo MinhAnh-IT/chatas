@@ -10,4 +10,4 @@ class RegisterUseCase {
   Future<AuthResult> call(RegisterRequest request) async {
     return await repository.register(request);
   }
-} 
+}

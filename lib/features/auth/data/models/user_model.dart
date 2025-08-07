@@ -20,12 +20,18 @@ class UserModel extends User {
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       gender: json['gender'] ?? '',
-      birthDate: DateTime.parse(json['birthDate'] ?? DateTime.now().toIso8601String()),
+      birthDate: DateTime.parse(
+        json['birthDate'] ?? DateTime.now().toIso8601String(),
+      ),
       password: json['password'] ?? '',
       confirmPassword: json['confirmPassword'] ?? '',
       avatarUrl: json['avatarUrl'] ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -99,4 +105,4 @@ class UserModel extends User {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-} 
+}

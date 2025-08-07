@@ -27,15 +27,15 @@ class ChatThread extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        lastMessage,
-        lastMessageTime,
-        avatarUrl,
-        members,
-        isGroup,
-        unreadCount,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    lastMessage,
+    lastMessageTime,
+    avatarUrl,
+    members,
+    isGroup,
+    unreadCount,
+    createdAt,
+    updatedAt,
+  ];
 }

@@ -24,7 +24,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void _handleSendReset() {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthCubit>().sendPasswordResetEmail(_emailController.text.trim());
+      context.read<AuthCubit>().sendPasswordResetEmail(
+        _emailController.text.trim(),
+      );
     }
   }
 
@@ -36,8 +38,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           builder: (context, constraints) {
             return Center(
               child: SingleChildScrollView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Card(
@@ -46,7 +52,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 32,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -78,7 +87,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               label: 'Email',
                               hint: 'example@email.com',
                               icon: Icons.email_outlined,
-                              validator: (value) => AuthValidator.validateEmail(value),
+                              validator: (value) =>
+                                  AuthValidator.validateEmail(value),
                             ),
                             const SizedBox(height: 24),
                             BlocConsumer<AuthCubit, AuthState>(
@@ -86,13 +96,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                 if (state is PasswordResetEmailSent) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Đã gửi email đặt lại mật khẩu!'),
+                                      content: Text(
+                                        'Đã gửi email đặt lại mật khẩu!',
+                                      ),
                                       backgroundColor: Colors.green,
                                     ),
                                   );
-                                  Future.delayed(const Duration(milliseconds: 700), () {
-                                    Navigator.pop(context);
-                                  });
+                                  Future.delayed(
+                                    const Duration(milliseconds: 700),
+                                    () {
+                                      Navigator.pop(context);
+                                    },
+                                  );
                                 } else if (state is AuthFailure) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -105,7 +120,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               builder: (context, state) {
                                 return AuthButton(
                                   text: 'Gửi liên kết',
-                                  onPressed: state is AuthLoading ? null : _handleSendReset,
+                                  onPressed: state is AuthLoading
+                                      ? null
+                                      : _handleSendReset,
                                   isLoading: state is AuthLoading,
                                 );
                               },
@@ -128,4 +145,4 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ),
     );
   }
-} 
+}

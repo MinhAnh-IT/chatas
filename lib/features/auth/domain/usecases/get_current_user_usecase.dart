@@ -9,4 +9,4 @@ class GetCurrentUserUseCase {
   Future<User?> call() async {
     return await repository.getCurrentUser();
   }
-} 
+}

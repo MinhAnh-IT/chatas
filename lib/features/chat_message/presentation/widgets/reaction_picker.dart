@@ -27,7 +27,7 @@ class ReactionPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
       onTap: onDismiss,
       child: Container(
@@ -122,10 +122,7 @@ class ReactionPicker extends StatelessWidget {
           ),
         ),
         child: Center(
-          child: Text(
-            emoji,
-            style: const TextStyle(fontSize: 24.0),
-          ),
+          child: Text(emoji, style: const TextStyle(fontSize: 24.0)),
         ),
       ),
     );
@@ -167,29 +164,25 @@ class MessageReactions extends StatelessWidget {
     if (reactions.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    
+
     return Wrap(
       spacing: 4.0,
       runSpacing: 4.0,
       children: reactions.entries.map((entry) {
         final reaction = entry.key;
         final count = entry.value;
-        
+
         if (count <= 0) return const SizedBox.shrink();
-        
+
         return _buildReactionChip(theme, reaction, count);
       }).toList(),
     );
   }
 
   /// Builds a chip showing a reaction and its count.
-  Widget _buildReactionChip(
-    ThemeData theme,
-    ReactionType reaction,
-    int count,
-  ) {
+  Widget _buildReactionChip(ThemeData theme, ReactionType reaction, int count) {
     final emoji = _getEmojiForReaction(reaction);
-    
+
     return GestureDetector(
       onTap: onReactionTap != null ? () => onReactionTap!(reaction) : null,
       child: Container(
@@ -205,10 +198,7 @@ class MessageReactions extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              emoji,
-              style: const TextStyle(fontSize: 14.0),
-            ),
+            Text(emoji, style: const TextStyle(fontSize: 14.0)),
             if (count > 1) ...[
               const SizedBox(width: 4.0),
               Text(

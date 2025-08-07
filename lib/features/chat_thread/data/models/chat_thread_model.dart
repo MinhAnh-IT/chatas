@@ -29,17 +29,17 @@ class ChatThreadModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        lastMessage,
-        lastMessageTime,
-        avatarUrl,
-        members,
-        isGroup,
-        unreadCount,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    lastMessage,
+    lastMessageTime,
+    avatarUrl,
+    members,
+    isGroup,
+    unreadCount,
+    createdAt,
+    updatedAt,
+  ];
 
   factory ChatThreadModel.fromJson(Map<String, dynamic> map) {
     DateTime parseDate(dynamic value) {
@@ -51,6 +51,7 @@ class ChatThreadModel extends Equatable {
         return DateTime.now();
       }
     }
+
     return ChatThreadModel(
       id: map['id'] ?? '',
       name: map['name'] ?? '',

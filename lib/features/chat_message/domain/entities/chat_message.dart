@@ -2,31 +2,13 @@ import 'package:equatable/equatable.dart';
 import '../../constants/chat_message_page_constants.dart';
 
 /// Enum representing different types of messages.
-enum MessageType {
-  text,
-  image,
-  file,
-  system,
-}
+enum MessageType { text, image, file, system }
 
 /// Enum representing message status.
-enum MessageStatus {
-  sending,
-  sent,
-  delivered,
-  read,
-  failed,
-}
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 /// Enum representing reaction types for messages.
-enum ReactionType {
-  like,
-  love,
-  sad,
-  angry,
-  laugh,
-  wow,
-}
+enum ReactionType { like, love, sad, angry, laugh, wow }
 
 /// Represents a chat message entity with all its properties and behaviors.
 /// This is the core domain model for chat messages in the application.
@@ -66,7 +48,8 @@ class ChatMessage extends Equatable {
   });
 
   /// Checks if this message is from the current user.
-  bool get isFromCurrentUser => senderId == ChatMessagePageConstants.temporaryUserId;
+  bool get isFromCurrentUser =>
+      senderId == ChatMessagePageConstants.temporaryUserId;
 
   /// Checks if this message has any reactions.
   bool get hasReactions => reactions.isNotEmpty;
@@ -126,8 +109,20 @@ class ChatMessage extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, chatThreadId, senderId, senderName, senderAvatarUrl,
-    content, type, status, sentAt, editedAt, isDeleted,
-    reactions, replyToMessageId, createdAt, updatedAt,
+    id,
+    chatThreadId,
+    senderId,
+    senderName,
+    senderAvatarUrl,
+    content,
+    type,
+    status,
+    sentAt,
+    editedAt,
+    isDeleted,
+    reactions,
+    replyToMessageId,
+    createdAt,
+    updatedAt,
   ];
 }

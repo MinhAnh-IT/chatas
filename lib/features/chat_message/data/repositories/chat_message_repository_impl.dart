@@ -9,7 +9,7 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
   final ChatMessageRemoteDataSource _remoteDataSource;
 
   ChatMessageRepositoryImpl({ChatMessageRemoteDataSource? remoteDataSource})
-      : _remoteDataSource = remoteDataSource ?? ChatMessageRemoteDataSource();
+    : _remoteDataSource = remoteDataSource ?? ChatMessageRemoteDataSource();
 
   @override
   Future<List<ChatMessage>> getMessages(String chatThreadId) async {
@@ -62,7 +62,11 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
   }
 
   @override
-  Future<void> addReaction(String messageId, String userId, ReactionType reaction) async {
+  Future<void> addReaction(
+    String messageId,
+    String userId,
+    ReactionType reaction,
+  ) async {
     try {
       final reactionString = _reactionTypeToString(reaction);
       await _remoteDataSource.addReaction(messageId, userId, reactionString);

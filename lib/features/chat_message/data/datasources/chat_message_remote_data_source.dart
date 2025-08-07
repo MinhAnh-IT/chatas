@@ -8,14 +8,17 @@ class ChatMessageRemoteDataSource {
   final FirebaseFirestore firestore;
 
   ChatMessageRemoteDataSource({FirebaseFirestore? firestore})
-      : firestore = firestore ?? FirebaseFirestore.instance;
+    : firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Fetches all messages for a specific chat thread from Firestore.
   /// Returns messages sorted by creation time in ascending order.
   Future<List<ChatMessageModel>> fetchMessages(String chatThreadId) async {
     final snapshot = await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
-        .where(ChatMessageRemoteConstants.chatThreadIdField, isEqualTo: chatThreadId)
+        .where(
+          ChatMessageRemoteConstants.chatThreadIdField,
+          isEqualTo: chatThreadId,
+        )
         .orderBy(ChatMessageRemoteConstants.createdAtField, descending: false)
         .limit(ChatMessageRemoteConstants.defaultMessageLimit)
         .get();
@@ -32,14 +35,19 @@ class ChatMessageRemoteDataSource {
   Stream<List<ChatMessageModel>> messagesStream(String chatThreadId) {
     return firestore
         .collection(ChatMessageRemoteConstants.collectionName)
-        .where(ChatMessageRemoteConstants.chatThreadIdField, isEqualTo: chatThreadId)
+        .where(
+          ChatMessageRemoteConstants.chatThreadIdField,
+          isEqualTo: chatThreadId,
+        )
         .orderBy(ChatMessageRemoteConstants.createdAtField, descending: false)
         .limit(ChatMessageRemoteConstants.defaultMessageLimit)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ChatMessageModel.fromJson(doc.data()))
-            .where((message) => !message.isDeleted)
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ChatMessageModel.fromJson(doc.data()))
+              .where((message) => !message.isDeleted)
+              .toList(),
+        );
   }
 
   /// Adds a new message to Firestore.
@@ -67,21 +75,27 @@ class ChatMessageRemoteDataSource {
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(messageId)
         .update({
-      ChatMessageRemoteConstants.isDeletedField: true,
-      ChatMessageRemoteConstants.updatedAtField: FieldValue.serverTimestamp(),
-    });
+          ChatMessageRemoteConstants.isDeletedField: true,
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
+        });
   }
 
   /// Adds a reaction to a specific message.
   /// Updates the reactions map with the user's reaction.
-  Future<void> addReaction(String messageId, String userId, String reaction) async {
+  Future<void> addReaction(
+    String messageId,
+    String userId,
+    String reaction,
+  ) async {
     await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(messageId)
         .update({
-      '${ChatMessageRemoteConstants.reactionsField}.$userId': reaction,
-      ChatMessageRemoteConstants.updatedAtField: FieldValue.serverTimestamp(),
-    });
+          '${ChatMessageRemoteConstants.reactionsField}.$userId': reaction,
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
+        });
   }
 
   /// Removes a reaction from a specific message.
@@ -91,9 +105,11 @@ class ChatMessageRemoteDataSource {
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(messageId)
         .update({
-      '${ChatMessageRemoteConstants.reactionsField}.$userId': FieldValue.delete(),
-      ChatMessageRemoteConstants.updatedAtField: FieldValue.serverTimestamp(),
-    });
+          '${ChatMessageRemoteConstants.reactionsField}.$userId':
+              FieldValue.delete(),
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
+        });
   }
 
   /// Updates message status (e.g., delivered, read).
@@ -103,9 +119,10 @@ class ChatMessageRemoteDataSource {
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(messageId)
         .update({
-      ChatMessageRemoteConstants.statusField: status,
-      ChatMessageRemoteConstants.updatedAtField: FieldValue.serverTimestamp(),
-    });
+          ChatMessageRemoteConstants.statusField: status,
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
+        });
   }
 
   /// Fetches messages with pagination support.
@@ -117,7 +134,10 @@ class ChatMessageRemoteDataSource {
   }) async {
     Query query = firestore
         .collection(ChatMessageRemoteConstants.collectionName)
-        .where(ChatMessageRemoteConstants.chatThreadIdField, isEqualTo: chatThreadId)
+        .where(
+          ChatMessageRemoteConstants.chatThreadIdField,
+          isEqualTo: chatThreadId,
+        )
         .where(ChatMessageRemoteConstants.isDeletedField, isEqualTo: false)
         .orderBy(ChatMessageRemoteConstants.createdAtField, descending: true)
         .limit(limit);
@@ -128,7 +148,10 @@ class ChatMessageRemoteDataSource {
 
     final snapshot = await query.get();
     return snapshot.docs
-        .map((doc) => ChatMessageModel.fromJson(doc.data() as Map<String, dynamic>))
+        .map(
+          (doc) =>
+              ChatMessageModel.fromJson(doc.data() as Map<String, dynamic>),
+        )
         .toList();
   }
 }

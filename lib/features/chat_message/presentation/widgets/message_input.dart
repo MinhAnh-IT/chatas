@@ -51,16 +51,11 @@ class _MessageInputState extends State<MessageInput> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        border: Border(
-          top: BorderSide(
-            color: theme.dividerColor,
-            width: 0.5,
-          ),
-        ),
+        border: Border(top: BorderSide(color: theme.dividerColor, width: 0.5)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(

@@ -4,11 +4,10 @@ import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repo
 import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
 
 class ChatThreadRepositoryImpl implements ChatThreadRepository {
-  
   final ChatThreadRemoteDataSource _remoteDataSource;
 
   ChatThreadRepositoryImpl({ChatThreadRemoteDataSource? remoteDataSource})
-      : _remoteDataSource = remoteDataSource ?? ChatThreadRemoteDataSource();
+    : _remoteDataSource = remoteDataSource ?? ChatThreadRemoteDataSource();
 
   @override
   Future<List<ChatThread>> getChatThreads() async {
