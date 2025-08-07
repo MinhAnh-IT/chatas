@@ -88,7 +88,6 @@ class _ProfilePageState extends State<ProfilePage>
 
         if (userDoc.exists) {
           final data = userDoc.data()!;
-
           DateTime birthDate;
           if (data['birthDate'] is Timestamp) {
             birthDate = (data['birthDate'] as Timestamp).toDate();
