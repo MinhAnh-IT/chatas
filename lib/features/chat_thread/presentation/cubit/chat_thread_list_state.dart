@@ -27,3 +27,11 @@ class ChatThreadListError extends ChatThreadListState {
   @override
   List<Object?> get props => [message];
 }
+
+class ChatThreadDeleting extends ChatThreadListState {
+  final String threadId;
+  const ChatThreadDeleting(this.threadId);
+
+  @override
+  List<Object?> get props => [threadId];
+}
