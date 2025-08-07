@@ -4,10 +4,7 @@ class BottomNavTab {
   final IconData icon;
   final String label;
 
-  const BottomNavTab({
-    required this.icon,
-    required this.label,
-  });
+  const BottomNavTab({required this.icon, required this.label});
 }
 
 const List<BottomNavTab> bottomNavTabs = [

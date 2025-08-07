@@ -1,0 +1,38 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  pr-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.0'
+        channel: 'stable'
+        cache: true
+    
+    - name: Get dependencies
+      run: flutter pub get
+    
+    - name: Check formatting for changed files
+      run: |
+        # Get list of changed Dart files
+        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.dart' || echo "")
+        if [ -n "$CHANGED_FILES" ]; then
+          echo "Checking formatting for: $CHANGED_FILES"
+          dart format --output=none --set-exit-if-changed $CHANGED_FILES
+        else
+          echo "No Dart files changed"
+        fi
+    
+    - name: Run tests
+      run: flutter test
