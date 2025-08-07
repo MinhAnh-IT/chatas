@@ -11,6 +11,77 @@ class FriendRemoteDataSource {
   FriendRemoteDataSource({FirebaseFirestore? firestore})
     : firestore = firestore ?? FirebaseFirestore.instance;
 
+  ///Tìm kiếm người dùng theo tên
+  Future<List<Map<String, dynamic>>> searchUsers(
+    String query,
+    String currentUserId,
+  ) async {
+    try {
+      if (query.isEmpty) {
+        return [];
+      }
+      print('DEBUG: Searching in Firebase for query: $query');
+
+      // Normalize query - lowercase để search case-insensitive
+      final normalizedQuery = query.toLowerCase();
+      print('DEBUG: Normalized query: $normalizedQuery');
+
+      // Search theo fullName trước
+      var snapshot = await firestore
+          .collection('users')
+          .get(); // Lấy tất cả users để filter local
+
+      print('DEBUG: Firebase returned ${snapshot.docs.length} total documents');
+
+      // Filter local để tìm users match query
+      final matchedDocs = snapshot.docs.where((doc) {
+        final data = doc.data();
+        final fullName = (data['fullName'] as String?)?.toLowerCase() ?? '';
+        final name = (data['name'] as String?)?.toLowerCase() ?? '';
+        final username = (data['username'] as String?)?.toLowerCase() ?? '';
+
+        return fullName.contains(normalizedQuery) ||
+            name.contains(normalizedQuery) ||
+            username.contains(normalizedQuery);
+      }).toList();
+
+      print('DEBUG: Found ${matchedDocs.length} matching documents');
+
+      final users = matchedDocs.where((doc) => doc.id != currentUserId).map((
+        doc,
+      ) {
+        final data = doc.data();
+        print('DEBUG: User document: ${doc.id}, data: $data');
+        return {
+          'userId': doc.id,
+          'fullName': data['fullName'] ?? data['name'] ?? 'Unknown',
+          'email': data['email'] ?? '',
+          'username': data['username'] ?? '',
+        };
+      }).toList();
+      print('DEBUG: After filtering currentUser, ${users.length} users remain');
+
+      final filteredUsers = <Map<String, dynamic>>[];
+      for (var user in users) {
+        final friendshipStatus = await getFriendshipStatus(
+          currentUserId,
+          user['userId'],
+        );
+        print(
+          'DEBUG: User ${user['userId']} friendship status: $friendshipStatus',
+        );
+        if (friendshipStatus == null) {
+          filteredUsers.add(user);
+        }
+      }
+      print('DEBUG: Final filtered users: ${filteredUsers.length}');
+      return filteredUsers;
+    } catch (e) {
+      print('DEBUG: Error in searchUsers: $e');
+      throw Exception('Không có kết quả cho tìm kiếm $e');
+    }
+  }
+
   /// Xem danh sách bạn bè
   Future<List<Friend>> getFriends(String userId) async {
     try {

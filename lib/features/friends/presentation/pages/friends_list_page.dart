@@ -23,7 +23,6 @@ class _FriendsListPageState extends State<FriendsListPage> {
   @override
   void initState() {
     super.initState();
-    // Load danh sách bạn bè khi page được khởi tạo
     context.read<FriendsListCubit>().loadFriends(widget.currentUserId);
   }
 
@@ -41,6 +40,30 @@ class _FriendsListPageState extends State<FriendsListPage> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.go(AppRouteConstants.friendSearchPath);
+              },
+              icon: const Icon(Icons.person_add, color: Colors.blue),
+              label: const Text(
+                'Tìm bạn mới',
+                style: TextStyle(color: Colors.blue, fontSize: 12),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 2,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -48,12 +71,12 @@ class _FriendsListPageState extends State<FriendsListPage> {
                 widget.currentUserId,
               );
             },
+            tooltip: 'Làm mới danh sách',
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -72,7 +95,6 @@ class _FriendsListPageState extends State<FriendsListPage> {
               },
             ),
           ),
-          // Friends list
           Expanded(
             child: BlocConsumer<FriendsListCubit, FriendsState>(
               listener: (context, state) {
@@ -97,47 +119,43 @@ class _FriendsListPageState extends State<FriendsListPage> {
               builder: (context, state) {
                 if (state is FriendsLoading) {
                   return const Center(child: CircularProgressIndicator());
-                }
-
-                if (state is FriendsLoaded) {
+                } else if (state is FriendsLoaded) {
                   if (state.friends.isEmpty) {
                     return _buildEmptyState();
                   }
-
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<FriendsListCubit>().refreshFriends(
-                        widget.currentUserId,
+                  return ListView.builder(
+                    itemCount: state.friends.length,
+                    itemBuilder: (context, index) {
+                      final friend = state.friends[index];
+                      return ListTile(
+                        title: Text(friend.nickName),
+                        subtitle: Text(
+                          'Thêm vào: ${_formatDate(friend.addAt)}',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.block, color: Colors.red),
+                          onPressed: () => _showBlockDialog(friend),
+                        ),
+                        onTap: () => _openChat(friend),
                       );
                     },
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: state.friends.length,
-                      itemBuilder: (context, index) {
-                        final friend = state.friends[index];
-                        return _buildFriendItem(friend);
-                      },
-                    ),
                   );
-                }
-
-                if (state is FriendsError) {
+                } else if (state is FriendsError) {
                   return _buildErrorState(state.message);
                 }
-
-                return _buildEmptyState();
+                return const Center(child: Text('Khởi tạo danh sách bạn bè'));
               },
             ),
           ),
         ],
       ),
       bottomNavigationBar: CommonBottomNavigation(
-        currentIndex: 1, // Index cho tab Bạn bè
+        currentIndex: 1, // Friends tab is index 1
         onTap: (index) {
           switch (index) {
             case 0:
               // Chuyển đến trang Chat
-              context.go(AppRouteConstants.homePath);
+              context.go('/');
               break;
             case 1:
               // Đã ở trang Bạn bè (hiện tại)
@@ -155,85 +173,53 @@ class _FriendsListPageState extends State<FriendsListPage> {
     );
   }
 
-  Widget _buildFriendItem(Friend friend) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue,
-          child: Text(
-            friend.nickName.isNotEmpty ? friend.nickName[0].toUpperCase() : '?',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        title: Text(
-          friend.nickName,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
-        subtitle: Text(
-          'Kết bạn: ${_formatDate(friend.addAt)}',
-          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            switch (value) {
-              case 'block':
-                _showBlockDialog(friend);
-                break;
-              case 'chat':
-                _openChat(friend);
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'chat',
-              child: Row(
-                children: [
-                  Icon(Icons.chat, size: 20),
-                  SizedBox(width: 8),
-                  Text('Nhắn tin'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'block',
-              child: Row(
-                children: [
-                  Icon(Icons.block, size: 20, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Chặn', style: TextStyle(color: Colors.red)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.people_outline, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          Icon(Icons.people_outline, size: 100, color: Colors.grey[400]),
+          const SizedBox(height: 24),
           Text(
-            'Chưa có bạn bè nào',
+            'Chưa có bạn bè',
             style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
+              fontSize: 20,
+              color: Colors.grey[700],
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
-            'Hãy thêm bạn bè để bắt đầu trò chuyện',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            'Hãy kết bạn với mọi người để bắt đầu trò chuyện',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[500],
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: () {
+              context.go(AppRouteConstants.friendSearchPath);
+            },
+            icon: const Icon(Icons.person_search, color: Colors.white),
+            label: const Text(
+              'Tìm kiếm bạn bè',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+              elevation: 3,
+            ),
           ),
         ],
       ),
@@ -302,7 +288,6 @@ class _FriendsListPageState extends State<FriendsListPage> {
   }
 
   void _openChat(Friend friend) {
-    // Navigate đến chat screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Mở chat với ${friend.nickName}'),
@@ -328,7 +313,6 @@ class _FriendsListPageState extends State<FriendsListPage> {
   }
 }
 
-// Example App để demo
 class FriendsApp extends StatelessWidget {
   final String currentUserId;
 
@@ -336,9 +320,7 @@ class FriendsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize dependencies
     FriendsDependencyInjection.init();
-
     return MaterialApp(
       title: 'Friends List Demo',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),

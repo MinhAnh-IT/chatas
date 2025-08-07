@@ -89,4 +89,12 @@ class FriendRepositoryImpl implements FriendRepository {
   ) async {
     await remoteDataSource.updateBlockStatus(userId, friendId, isBlock);
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> searchUsers(
+    String query,
+    String currentUserId,
+  ) async {
+    return await remoteDataSource.searchUsers(query, currentUserId);
+  }
 }
