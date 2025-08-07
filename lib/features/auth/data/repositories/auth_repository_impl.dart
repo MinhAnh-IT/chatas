@@ -9,7 +9,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 
   AuthRepositoryImpl({AuthRemoteDataSource? remoteDataSource})
-    : _remoteDataSource = remoteDataSource ?? AuthRemoteDataSource();
+      : _remoteDataSource = remoteDataSource ?? AuthRemoteDataSource();
 
   @override
   Future<AuthResult> register(RegisterRequest request) async {
@@ -50,4 +50,4 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthResult> deleteAccount() async {
     return await _remoteDataSource.deleteAccount();
   }
-}
+} 
