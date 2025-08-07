@@ -147,7 +147,11 @@ class FriendsListCubit extends Cubit<FriendsState> {
       final actualFriendId = parts[1];
 
       final newBlockStatus = !friend.isBlock;
-      await blockFriendUseCase.call(currentUserId, actualFriendId, newBlockStatus);
+      await blockFriendUseCase.call(
+        currentUserId,
+        actualFriendId,
+        newBlockStatus,
+      );
 
       // Cập nhật friend trong danh sách
       final updatedFriends = currentFriends.map((f) {
@@ -162,16 +166,11 @@ class FriendsListCubit extends Cubit<FriendsState> {
         return f;
       }).toList();
 
-      final message = newBlockStatus 
+      final message = newBlockStatus
           ? 'Đã chặn ${friend.nickName} thành công'
           : 'Đã bỏ chặn ${friend.nickName} thành công';
 
-      emit(
-        FriendsLoaded(
-          friends: updatedFriends,
-          successMessage: message,
-        ),
-      );
+      emit(FriendsLoaded(friends: updatedFriends, successMessage: message));
     } catch (e) {
       emit(FriendsError('Không thể thay đổi trạng thái chặn: ${e.toString()}'));
     }

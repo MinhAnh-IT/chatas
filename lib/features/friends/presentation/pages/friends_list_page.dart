@@ -152,8 +152,8 @@ class _FriendsListPageState extends State<FriendsListPage> {
                             ),
                           ),
                           title: Text(
-                            friend.nickName.isNotEmpty 
-                                ? friend.nickName 
+                            friend.nickName.isNotEmpty
+                                ? friend.nickName
                                 : 'Người dùng',
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
@@ -186,14 +186,21 @@ class _FriendsListPageState extends State<FriendsListPage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  friend.isBlock ? Icons.block : Icons.block_outlined,
-                                  color: friend.isBlock ? Colors.red : Colors.grey,
+                                  friend.isBlock
+                                      ? Icons.block
+                                      : Icons.block_outlined,
+                                  color: friend.isBlock
+                                      ? Colors.red
+                                      : Colors.grey,
                                 ),
                                 onPressed: () => _showBlockDialog(friend),
                                 tooltip: friend.isBlock ? 'Bỏ chặn' : 'Chặn',
                               ),
                               IconButton(
-                                icon: const Icon(Icons.chat, color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.chat,
+                                  color: Colors.blue,
+                                ),
                                 onPressed: () => _openChat(friend),
                                 tooltip: 'Nhắn tin',
                               ),
@@ -329,15 +336,15 @@ class _FriendsListPageState extends State<FriendsListPage> {
     final isBlocked = friend.isBlock;
     final actionText = isBlocked ? 'Bỏ chặn' : 'Chặn';
     final actionColor = isBlocked ? Colors.green : Colors.red;
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('$actionText bạn bè'),
         content: Text(
-          isBlocked 
+          isBlocked
               ? 'Bạn có chắc chắn muốn bỏ chặn ${friend.nickName}?'
-              : 'Bạn có chắc chắn muốn chặn ${friend.nickName}?'
+              : 'Bạn có chắc chắn muốn chặn ${friend.nickName}?',
         ),
         actions: [
           TextButton(
