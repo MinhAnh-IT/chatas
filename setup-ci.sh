@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Chatas CI/CD Setup Script
-# Script này giúp setup GitHub Actions workflows cho dự án Flutter
+# Chatas CI Setup Script
+# Script này giúp setup GitHub Actions workflows cho dự án Flutter (chỉ CI)
 
 set -e
 
-echo "🚀 Setting up Chatas CI/CD..."
+echo "🚀 Setting up Chatas CI..."
 
 # Colors for output
 RED='\033[0;31m'

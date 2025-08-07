@@ -1,15 +1,16 @@
-# 🚀 Hướng dẫn CI/CD với GitHub Actions cho Dự án Chatas
+# Hướng dẫn CI với GitHub Actions cho Dự án Chatas
 
-## 📋 Tổng quan
+## Tổng quan
 
-Dự án này đã được setup với một hệ thống CI/CD hoàn chỉnh sử dụng GitHub Actions, bao gồm:
+Dự án này đã được setup với hệ thống CI (Continuous Integration) đơn giản sử dụng GitHub Actions, bao gồm:
 
-- **CI (Continuous Integration)**: Tự động test, build và kiểm tra code quality
-- **CD (Continuous Deployment)**: Tự động deploy lên Firebase khi release
-- **PR Checks**: Kiểm tra code quality cho Pull Requests
+- **CI (Continuous Integration)**: Kiểm tra code formatting, analyze và run tests
+- **PR Checks**: Kiểm tra code quality cho Pull Requests  
 - **Dependency Management**: Tự động update dependencies với Dependabot
 
-## 🔄 Workflows
+**Không bao gồm:** Build applications, deployment, hay artifacts
+
+## Workflows
 
 ### 1. CI Workflow (`ci.yml`)
 **Khi nào chạy:**
@@ -17,36 +18,20 @@ Dự án này đã được setup với một hệ thống CI/CD hoàn chỉnh s
 - Tạo Pull Request vào `main` hoặc `develop`
 
 **Những gì được thực hiện:**
-- ✅ Kiểm tra code formatting
-- ✅ Analyze code với Flutter analyzer
-- ✅ Chạy tất cả unit tests với coverage
-- ✅ Build APK cho Android
-- ✅ Build cho iOS (không sign)
-- ✅ Build web app
-- ✅ Security scan (chỉ trên main branch)
+- Kiểm tra code formatting
+- Analyze code với Flutter analyzer
+- Chạy tất cả unit tests
 
-### 2. CD Workflow (`cd.yml`)
-**Khi nào chạy:**
-- Push tag version (ví dụ: `v1.0.0`, `v2.1.3`)
-
-**Những gì được thực hiện:**
-- 🚀 Deploy APK lên Firebase App Distribution
-- 🌐 Deploy web app lên Firebase Hosting
-- 📦 Tạo GitHub Release với artifacts
-- 📱 Gửi notification đến testers
-
-### 3. PR Check Workflow (`pr-check.yml`)
+### 2. PR Check Workflow (`pr-check.yml`)
 **Khi nào chạy:**
 - Tạo hoặc update Pull Request
 
 **Những gì được thực hiện:**
-- 🔍 Kiểm tra formatting chỉ cho files đã thay đổi
-- 📊 Chạy tests liên quan đến thay đổi
-- 📈 Comment coverage report trên PR
-- 🔒 Scan dependencies vulnerabilities
-- 📏 Analyze app size impact
+- Kiểm tra formatting chỉ cho files đã thay đổi
+- Analyze code
+- Chạy tests
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 ### Bước 1: Setup GitHub Repository
 
@@ -63,54 +48,16 @@ Dự án này đã được setup với một hệ thống CI/CD hoàn chỉnh s
 2. **Branch Protection Rules:**
    - Đi đến Settings > Branches
    - Add rule cho `main` branch:
-     - ✅ Require pull request reviews
-     - ✅ Require status checks to pass before merging
-     - ✅ Require branches to be up to date before merging
-     - ✅ Include administrators
+     - Require pull request reviews
+     - Require status checks to pass before merging
+     - Require branches to be up to date before merging
+     - Include administrators
 
-### Bước 2: Setup Firebase
-
-1. **Tạo Firebase Project:**
-   ```bash
-   # Install Firebase CLI
-   npm install -g firebase-tools
-   
-   # Login
-   firebase login
-   
-   # Init project
-   firebase init
-   ```
-
-2. **Enable App Distribution:**
-   - Đi đến Firebase Console > App Distribution
-   - Add Android app
-   - Lưu App ID
-
-3. **Enable Hosting:**
-   - Đi đến Firebase Console > Hosting
-   - Setup domain (nếu cần)
-
-4. **Tạo Service Account:**
-   ```bash
-   # Đi đến Google Cloud Console
-   # IAM & Admin > Service Accounts
-   # Create Service Account với Editor role
-   # Download JSON key file
-   ```
-
-### Bước 3: Setup GitHub Secrets
+### Bước 2: Setup GitHub Secrets (Tùy chọn)
 
 Đi đến GitHub repository > Settings > Secrets and variables > Actions:
 
-**Firebase Secrets:**
-```
-FIREBASE_APP_ID=1:123456789:android:abcdef123456
-FIREBASE_PROJECT_ID=chatas-app-12345
-FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
-```
-
-**Android Signing (Production):**
+**Android Signing (Chỉ nếu muốn build signed APK):**
 ```
 ANDROID_KEYSTORE_BASE64=base64_encoded_keystore_content
 ANDROID_KEY_ALIAS=chatas-key
@@ -118,42 +65,7 @@ ANDROID_KEY_PASSWORD=your_key_password
 ANDROID_STORE_PASSWORD=your_store_password
 ```
 
-### Bước 4: Configure Android Signing
-
-1. **Tạo keystore:**
-   ```bash
-   keytool -genkey -v -keystore chatas-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias chatas-key
-   ```
-
-2. **Convert to base64:**
-   ```bash
-   base64 -i chatas-key.jks | tr -d '\n' | pbcopy
-   ```
-
-3. **Update `android/app/build.gradle`:**
-   ```gradle
-   android {
-       ...
-       signingConfigs {
-           release {
-               if (System.getenv("CI")) {
-                   storeFile file("../keystore.jks")
-                   storePassword System.getenv("ANDROID_STORE_PASSWORD")
-                   keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                   keyPassword System.getenv("ANDROID_KEY_PASSWORD")
-               }
-           }
-       }
-       buildTypes {
-           release {
-               signingConfig signingConfigs.release
-               ...
-           }
-       }
-   }
-   ```
-
-## 🚀 Usage Guide
+## Usage Guide
 
 ### Development Workflow
 
@@ -174,18 +86,7 @@ ANDROID_STORE_PASSWORD=your_store_password
    - GitHub sẽ tự động chạy PR checks
    - Review code và merge sau khi pass tất cả checks
 
-3. **Release Process:**
-   ```bash
-   # Merge vào main
-   git checkout main
-   git pull origin main
-   
-   # Tạo tag
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-### Monitor CI/CD
+### Monitor CI
 
 1. **Xem workflow progress:**
    - Đi đến GitHub Actions tab
@@ -194,10 +95,6 @@ ANDROID_STORE_PASSWORD=your_store_password
 2. **Download artifacts:**
    - APK files sẽ có sẵn trong GitHub Actions artifacts
    - Web build cũng có thể download
-
-3. **Check deployment:**
-   - Firebase App Distribution: Check email notification
-   - Firebase Hosting: Visit deployed URL
 
 ## 🔍 Troubleshooting
 
@@ -222,9 +119,7 @@ cd android
 ```
 
 **3. Firebase deployment fail:**
-- Verify service account permissions
-- Check Firebase project ID
-- Ensure App Distribution is enabled
+- Không áp dụng vì chỉ dùng CI
 
 **4. Coverage thấp:**
 ```bash
@@ -246,9 +141,9 @@ flutter build web --debug
 # Check formatting
 dart format --output=none --set-exit-if-changed .
 
-# Verify Firebase setup
-firebase projects:list
-firebase apps:list
+# Verify CI setup
+firebase projects:list  # Chỉ nếu cần Firebase
+firebase apps:list       # Chỉ nếu cần Firebase
 ```
 
 ## 📊 Metrics & Monitoring
@@ -260,8 +155,7 @@ firebase apps:list
 
 ### Deployment Metrics
 - **Build Success Rate**: Monitor failed builds
-- **Deployment Time**: Track CI/CD duration
-- **App Distribution**: Track download rates
+- **CI Duration**: Track CI workflow duration
 
 ### Setup Monitoring Dashboard
 Có thể setup monitoring với:
@@ -355,7 +249,7 @@ jobs:
 
 ## 📞 Support
 
-Nếu gặp vấn đề với CI/CD setup:
+Nếu gặp vấn đề với CI setup:
 
 1. Check [GitHub Actions documentation](https://docs.github.com/en/actions)
 2. Review workflow logs trong GitHub Actions tab
@@ -364,4 +258,4 @@ Nếu gặp vấn đề với CI/CD setup:
 
 ---
 
-**Happy coding with automated CI/CD! 🚀**
+**Happy coding with automated CI! 🚀**

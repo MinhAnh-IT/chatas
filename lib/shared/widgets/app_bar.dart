@@ -1,3 +1,4 @@
+import 'package:chatas/core/constants/color_constant.dart';
 import 'package:flutter/material.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -18,7 +19,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title),
       leading: leading,
       actions: actions,
-      backgroundColor: Colors.lightBlue,
+      backgroundColor: ColorConstant.appBarColor,
       elevation: 1,
     );
   }
