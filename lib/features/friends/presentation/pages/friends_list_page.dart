@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../injection/friends_injection.dart';
 import '../cubit/friends_list_cubit.dart';
 import '../../domain/entities/friend.dart';
 import '../../../../shared/widgets/bottom_navigation.dart';
@@ -40,6 +39,13 @@ class _FriendsListPageState extends State<FriendsListPage> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.mail_outline),
+            onPressed: () {
+              context.go(AppRouteConstants.friendRequestsPath);
+            },
+            tooltip: 'Lời mời kết bạn',
+          ),
           Container(
             margin: const EdgeInsets.only(right: 8.0),
             child: ElevatedButton.icon(
@@ -127,16 +133,74 @@ class _FriendsListPageState extends State<FriendsListPage> {
                     itemCount: state.friends.length,
                     itemBuilder: (context, index) {
                       final friend = state.friends[index];
-                      return ListTile(
-                        title: Text(friend.nickName),
-                        subtitle: Text(
-                          'Thêm vào: ${_formatDate(friend.addAt)}',
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 4.0,
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.block, color: Colors.red),
-                          onPressed: () => _showBlockDialog(friend),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue,
+                            child: Text(
+                              friend.nickName.isNotEmpty
+                                  ? friend.nickName[0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            friend.nickName.isNotEmpty 
+                                ? friend.nickName 
+                                : 'Người dùng',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Thêm vào: ${_formatDate(friend.addAt)}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (friend.isBlock)
+                                const Text(
+                                  'Đã chặn',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  friend.isBlock ? Icons.block : Icons.block_outlined,
+                                  color: friend.isBlock ? Colors.red : Colors.grey,
+                                ),
+                                onPressed: () => _showBlockDialog(friend),
+                                tooltip: friend.isBlock ? 'Bỏ chặn' : 'Chặn',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.chat, color: Colors.blue),
+                                onPressed: () => _openChat(friend),
+                                tooltip: 'Nhắn tin',
+                              ),
+                            ],
+                          ),
+                          onTap: () => _openChat(friend),
                         ),
-                        onTap: () => _openChat(friend),
                       );
                     },
                   );
@@ -262,21 +326,29 @@ class _FriendsListPageState extends State<FriendsListPage> {
   }
 
   void _showBlockDialog(Friend friend) {
+    final isBlocked = friend.isBlock;
+    final actionText = isBlocked ? 'Bỏ chặn' : 'Chặn';
+    final actionColor = isBlocked ? Colors.green : Colors.red;
+    
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Chặn bạn bè'),
-        content: Text('Bạn có chắc chắn muốn chặn ${friend.nickName}?'),
+        title: Text('$actionText bạn bè'),
+        content: Text(
+          isBlocked 
+              ? 'Bạn có chắc chắn muốn bỏ chặn ${friend.nickName}?'
+              : 'Bạn có chắc chắn muốn chặn ${friend.nickName}?'
+        ),
         actions: [
           TextButton(
             child: const Text('Hủy'),
             onPressed: () => Navigator.pop(dialogContext),
           ),
           TextButton(
-            child: const Text('Chặn', style: TextStyle(color: Colors.red)),
+            child: Text(actionText, style: TextStyle(color: actionColor)),
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.read<FriendsListCubit>().blockFriend(
+              context.read<FriendsListCubit>().toggleBlockFriend(
                 widget.currentUserId,
                 friend.friendId,
               );
@@ -310,24 +382,5 @@ class _FriendsListPageState extends State<FriendsListPage> {
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
-  }
-}
-
-class FriendsApp extends StatelessWidget {
-  final String currentUserId;
-
-  const FriendsApp({Key? key, required this.currentUserId}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    FriendsDependencyInjection.init();
-    return MaterialApp(
-      title: 'Friends List Demo',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: BlocProvider(
-        create: (_) => FriendsDependencyInjection.createFriendsListCubit(),
-        child: FriendsListPage(currentUserId: currentUserId),
-      ),
-    );
   }
 }

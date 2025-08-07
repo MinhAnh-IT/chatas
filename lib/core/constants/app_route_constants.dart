@@ -6,6 +6,7 @@ class AppRouteConstants {
   static const String profilePathName = "profile";
   static const String friendsPathName = "friends";
   static const String friendSearchPathName = "friend-search";
+  static const String friendRequestsPathName = "friend-requests";
 
   static const String chatMessagePathName = 'chat_message';
 
@@ -13,6 +14,7 @@ class AppRouteConstants {
   static const String loginPath = '/login';
   static const String friendsPath = '/friends';
   static const String friendSearchPath = '/friend-search';
+  static const String friendRequestsPath = '/friends/requests';
   static const String chatMessagePath = '/chat-message';
 
   /// Generates a chat message route with parameters

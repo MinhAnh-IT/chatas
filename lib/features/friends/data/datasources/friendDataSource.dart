@@ -93,6 +93,7 @@ class FriendRemoteDataSource {
           .where('friendId', isGreaterThanOrEqualTo: '${userId}_')
           .where('friendId', isLessThan: '${userId}_\uf8ff')
           .get();
+      
       return snapshot.docs
           .map((doc) => FriendModel.fromJson(doc.data()).toEntity())
           .toList();
@@ -133,12 +134,15 @@ class FriendRemoteDataSource {
           .collection('users')
           .doc(receiverId)
           .get();
-      final senderName = senderDoc.data()?['name'] ?? 'Friend';
-      final receiverName = receiverDoc.data()?['name'] ?? 'Friend';
+      final senderData = senderDoc.data();
+      final receiverData = receiverDoc.data();
+      
+      final senderName = senderData?['fullName'] ?? senderData?['name'] ?? 'Friend';
+      final receiverName = receiverData?['fullName'] ?? receiverData?['name'] ?? 'Friend';
 
       final friend1 = Friend(
         friendId: '${senderId}_$receiverId',
-        nickName: receiverName,
+        nickName: receiverName, // nickName mặc định = fullName
         addAt: DateTime.now(),
         isBlock: false,
       );
@@ -149,7 +153,7 @@ class FriendRemoteDataSource {
 
       final friend2 = Friend(
         friendId: '${receiverId}_$senderId',
-        nickName: senderName,
+        nickName: senderName, // nickName mặc định = fullName
         addAt: DateTime.now(),
         isBlock: false,
       );
@@ -199,12 +203,35 @@ class FriendRemoteDataSource {
     try {
       final snapshot = await firestore
           .collection(Friendremoteconstants.friendRequestCollection)
-          .where('receiverId', isEqualTo: userId)
+          .where('toUserId', isEqualTo: userId)
           .where('status', isEqualTo: 'pending')
           .get();
-      return snapshot.docs
-          .map((doc) => FriendRequestModel.fromJson(doc.data()).toEntity())
-          .toList();
+
+      final List<FriendRequest> requests = [];
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final fromUserId = data['fromUserId'] as String;
+
+        // Lấy thông tin tên người gửi
+        final senderDoc = await firestore
+            .collection('users')
+            .doc(fromUserId)
+            .get();
+        final senderData = senderDoc.data();
+        final senderName =
+            senderData?['fullName'] ?? senderData?['name'] ?? 'Người dùng';
+
+        // Tạo enhanced model với tên
+        final enhancedData = Map<String, dynamic>.from(data);
+        enhancedData['senderName'] = senderName;
+        enhancedData['receiverName'] =
+            ''; // Không cần thiết cho received requests
+
+        requests.add(FriendRequestModel.fromJson(enhancedData).toEntity());
+      }
+
+      return requests;
     } catch (e) {
       throw Exception('Không thể tải danh sách lời mời nhận được: $e');
     }
@@ -215,12 +242,34 @@ class FriendRemoteDataSource {
     try {
       final snapshot = await firestore
           .collection(Friendremoteconstants.friendRequestCollection)
-          .where('senderId', isEqualTo: userId)
+          .where('fromUserId', isEqualTo: userId)
           .where('status', isEqualTo: 'pending')
           .get();
-      return snapshot.docs
-          .map((doc) => FriendRequestModel.fromJson(doc.data()).toEntity())
-          .toList();
+
+      final List<FriendRequest> requests = [];
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final toUserId = data['toUserId'] as String;
+
+        // Lấy thông tin tên người nhận
+        final receiverDoc = await firestore
+            .collection('users')
+            .doc(toUserId)
+            .get();
+        final receiverData = receiverDoc.data();
+        final receiverName =
+            receiverData?['fullName'] ?? receiverData?['name'] ?? 'Người dùng';
+
+        // Tạo enhanced model với tên
+        final enhancedData = Map<String, dynamic>.from(data);
+        enhancedData['senderName'] = ''; // Không cần thiết cho sent requests
+        enhancedData['receiverName'] = receiverName;
+
+        requests.add(FriendRequestModel.fromJson(enhancedData).toEntity());
+      }
+
+      return requests;
     } catch (e) {
       throw Exception('Không thể tải danh sách lời mời đã gửi: $e');
     }
@@ -239,8 +288,8 @@ class FriendRemoteDataSource {
 
       final sentRequestSnapshot = await firestore
           .collection(Friendremoteconstants.friendRequestCollection)
-          .where('senderId', isEqualTo: userId)
-          .where('receiverId', isEqualTo: otherUserId)
+          .where('fromUserId', isEqualTo: userId)
+          .where('toUserId', isEqualTo: otherUserId)
           .where('status', isEqualTo: 'pending')
           .get();
       if (sentRequestSnapshot.docs.isNotEmpty) {
@@ -249,8 +298,8 @@ class FriendRemoteDataSource {
 
       final receivedRequestSnapshot = await firestore
           .collection(Friendremoteconstants.friendRequestCollection)
-          .where('senderId', isEqualTo: otherUserId)
-          .where('receiverId', isEqualTo: userId)
+          .where('fromUserId', isEqualTo: otherUserId)
+          .where('toUserId', isEqualTo: userId)
           .where('status', isEqualTo: 'pending')
           .get();
       if (receivedRequestSnapshot.docs.isNotEmpty) {
@@ -268,8 +317,8 @@ class FriendRemoteDataSource {
     try {
       final snapshot = await firestore
           .collection(Friendremoteconstants.friendRequestCollection)
-          .where('senderId', isEqualTo: senderId)
-          .where('receiverId', isEqualTo: receiverId)
+          .where('fromUserId', isEqualTo: senderId)
+          .where('toUserId', isEqualTo: receiverId)
           .where('status', isEqualTo: 'pending')
           .get();
       final batch = firestore.batch();
@@ -292,12 +341,15 @@ class FriendRemoteDataSource {
           .collection('users')
           .doc(friendUserId)
           .get();
-      final userName = userDoc.data()?['name'] ?? 'Friend';
-      final friendName = friendDoc.data()?['name'] ?? 'Friend';
+      final userData = userDoc.data();
+      final friendData = friendDoc.data();
+      
+      final userName = userData?['fullName'] ?? userData?['name'] ?? 'Friend';
+      final friendName = friendData?['fullName'] ?? friendData?['name'] ?? 'Friend';
 
       final friend1 = Friend(
         friendId: '${userId}_$friendUserId',
-        nickName: friendName,
+        nickName: friendName, // nickName mặc định = fullName
         addAt: now,
         isBlock: false,
       );
@@ -308,7 +360,7 @@ class FriendRemoteDataSource {
 
       final friend2 = Friend(
         friendId: '${friendUserId}_$userId',
-        nickName: userName,
+        nickName: userName, // nickName mặc định = fullName
         addAt: now,
         isBlock: false,
       );
