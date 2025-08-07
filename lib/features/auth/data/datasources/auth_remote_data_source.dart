@@ -9,8 +9,6 @@ import '../../domain/exceptions/auth_exceptions.dart';
 import '../../../../shared/utils/auth_exception_handler.dart';
 import '../../constants/auth_constants.dart';
 
-
-
 class AuthRemoteDataSource {
   final firebase_auth.FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
@@ -18,8 +16,8 @@ class AuthRemoteDataSource {
   AuthRemoteDataSource({
     firebase_auth.FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
-  })  : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  }) : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<AuthResult> register(RegisterRequest request) async {
     try {
@@ -35,15 +33,16 @@ class AuthRemoteDataSource {
         return const AuthFailure('Username was already taken');
       }
 
-      final firebase_auth.UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: request.email,
-        password: request.password,
-      );
+      final firebase_auth.UserCredential userCredential = await _firebaseAuth
+          .createUserWithEmailAndPassword(
+            email: request.email,
+            password: request.password,
+          );
 
       if (userCredential.user != null) {
         final userModel = UserModel(
           userId: userCredential.user!.uid,
-          isOnline: false, 
+          isOnline: false,
           lastActive: DateTime.now(),
           fullName: request.fullName,
           username: request.username,
@@ -54,7 +53,6 @@ class AuthRemoteDataSource {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-
 
         await _firestore
             .collection(AuthConstants.usersCollection)
@@ -77,7 +75,7 @@ class AuthRemoteDataSource {
   Future<AuthResult> login(LoginRequest request) async {
     try {
       String userEmail = request.emailOrUsername;
-      
+
       if (!request.emailOrUsername.contains('@')) {
         final userQuery = await _firestore
             .collection(AuthConstants.usersCollection)
@@ -86,20 +84,23 @@ class AuthRemoteDataSource {
             .get();
 
         if (userQuery.docs.isEmpty) {
-          return const AuthFailure('User not found', exception: UserNotFoundException());
+          return const AuthFailure(
+            'User not found',
+            exception: UserNotFoundException(),
+          );
         }
 
         final userData = userQuery.docs.first.data();
         userEmail = userData['email'] as String;
       }
 
-      final firebase_auth.UserCredential userCredential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: userEmail,
-        password: request.password,
-      );
+      final firebase_auth.UserCredential userCredential = await _firebaseAuth
+          .signInWithEmailAndPassword(
+            email: userEmail,
+            password: request.password,
+          );
 
       if (userCredential.user != null) {
-
         final userDoc = await _firestore
             .collection(AuthConstants.usersCollection)
             .doc(userCredential.user!.uid)
@@ -220,7 +221,9 @@ class AuthRemoteDataSource {
       final exception = AuthExceptionHandler.handleFirebaseAuthException(e);
       throw Exception(exception.message);
     } catch (e) {
-      throw Exception('Lỗi không xác định khi gửi email đặt lại mật khẩu: ${e.toString()}');
+      throw Exception(
+        'Lỗi không xác định khi gửi email đặt lại mật khẩu: ${e.toString()}',
+      );
     }
   }
-} 
+}

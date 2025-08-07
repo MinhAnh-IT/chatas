@@ -20,12 +20,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (e is ProfileException) {
         return Left(e);
       }
-      return Left(ProfileUpdateException('Không thể lấy thông tin profile: ${e.toString()}'));
+      return Left(
+        ProfileUpdateException(
+          'Không thể lấy thông tin profile: ${e.toString()}',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<ProfileException, UserProfile>> updateProfile(UpdateProfileRequest request) async {
+  Future<Either<ProfileException, UserProfile>> updateProfile(
+    UpdateProfileRequest request,
+  ) async {
     try {
       final profile = await remoteDataSource.updateProfile(request);
       return Right(profile);
@@ -33,12 +39,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (e is ProfileException) {
         return Left(e);
       }
-      return Left(ProfileUpdateException('Không thể cập nhật profile: ${e.toString()}'));
+      return Left(
+        ProfileUpdateException('Không thể cập nhật profile: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<ProfileException, void>> changePassword(ChangePasswordRequest request) async {
+  Future<Either<ProfileException, void>> changePassword(
+    ChangePasswordRequest request,
+  ) async {
     try {
       await remoteDataSource.changePassword(request);
       return const Right(null);
@@ -46,22 +56,28 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (e is ProfileException) {
         return Left(e);
       }
-      return Left(PasswordChangeException('Không thể thay đổi mật khẩu: ${e.toString()}'));
+      return Left(
+        PasswordChangeException('Không thể thay đổi mật khẩu: ${e.toString()}'),
+      );
     }
   }
 
-
-
   @override
-  Future<Either<ProfileException, bool>> checkUsernameAvailability(String username) async {
+  Future<Either<ProfileException, bool>> checkUsernameAvailability(
+    String username,
+  ) async {
     try {
-      final isAvailable = await remoteDataSource.checkUsernameAvailability(username);
+      final isAvailable = await remoteDataSource.checkUsernameAvailability(
+        username,
+      );
       return Right(isAvailable);
     } catch (e) {
       if (e is ProfileException) {
         return Left(e);
       }
-      return Left(ProfileUpdateException('Không thể kiểm tra username: ${e.toString()}'));
+      return Left(
+        ProfileUpdateException('Không thể kiểm tra username: ${e.toString()}'),
+      );
     }
   }
-} 
+}

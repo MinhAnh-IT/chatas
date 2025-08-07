@@ -41,10 +41,16 @@ class UserModel extends Equatable {
       email: json['email'] ?? '',
       // password: json['password'] ?? '',
       gender: json['gender'] ?? '',
-      birthDate: DateTime.parse(json['birthDate'] ?? DateTime.now().toIso8601String()),
+      birthDate: DateTime.parse(
+        json['birthDate'] ?? DateTime.now().toIso8601String(),
+      ),
       avatarUrl: json['avatarUrl'] ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -65,8 +71,8 @@ class UserModel extends Equatable {
   factory UserModel.fromEntity(User user) {
     return UserModel(
       userId: user.userId,
-      isOnline:user.isOnline,
-      lastActive:user.lastActive,
+      isOnline: user.isOnline,
+      lastActive: user.lastActive,
       fullName: user.fullName,
       username: user.username,
       email: user.email,
@@ -81,8 +87,8 @@ class UserModel extends Equatable {
   User toEntity() {
     return User(
       userId: userId,
-      isOnline:isOnline,
-      lastActive:lastActive,
+      isOnline: isOnline,
+      lastActive: lastActive,
       fullName: fullName,
       username: username,
       email: email,
@@ -97,7 +103,7 @@ class UserModel extends Equatable {
   UserModel copyWith({
     String? userId,
     bool? isOnline,
-    DateTime?lastActive,
+    DateTime? lastActive,
     String? fullName,
     String? username,
     String? email,
@@ -110,8 +116,8 @@ class UserModel extends Equatable {
   }) {
     return UserModel(
       userId: userId ?? this.userId,
-      isOnline:isOnline ?? this.isOnline,
-      lastActive:lastActive ?? this.lastActive,
+      isOnline: isOnline ?? this.isOnline,
+      lastActive: lastActive ?? this.lastActive,
       fullName: fullName ?? this.fullName,
       username: username ?? this.username,
       email: email ?? this.email,
@@ -125,4 +131,4 @@ class UserModel extends Equatable {
 
   @override
   List<Object?> get props => throw UnimplementedError();
-} 
+}

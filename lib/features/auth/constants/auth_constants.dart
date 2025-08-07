@@ -19,7 +19,8 @@ class AuthConstants {
   static const String invalidEmail = 'Địa chỉ email không hợp lệ';
   static const String userNotFound = 'Không tìm thấy người dùng';
   static const String wrongPassword = 'Sai mật khẩu';
-  static const String tooManyRequests = 'Thử quá nhiều lần. Vui lòng thử lại sau';
+  static const String tooManyRequests =
+      'Thử quá nhiều lần. Vui lòng thử lại sau';
 
   static const int minPasswordLength = 8;
   static const int minUsernameLength = 3;

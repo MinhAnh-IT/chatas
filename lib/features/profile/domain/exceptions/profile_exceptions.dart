@@ -29,5 +29,6 @@ class UsernameAlreadyExistsException extends ProfileException {
 }
 
 class CurrentPasswordIncorrectException extends ProfileException {
-  const CurrentPasswordIncorrectException() : super('Mật khẩu hiện tại không đúng');
-} 
+  const CurrentPasswordIncorrectException()
+    : super('Mật khẩu hiện tại không đúng');
+}

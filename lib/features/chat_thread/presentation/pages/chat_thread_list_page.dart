@@ -55,7 +55,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
   /// Handles refresh action when user pulls down to refresh.
   Future<void> _handleRefresh() async {
     await _cubit.fetchChatThreads();
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -88,7 +88,8 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                 items: const [],
                 onRefresh: _handleRefresh,
                 isLoading: true,
-                itemBuilder: (context, thread, index) => const SizedBox.shrink(),
+                itemBuilder: (context, thread, index) =>
+                    const SizedBox.shrink(),
               );
             }
 
@@ -98,7 +99,8 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                 onRefresh: _handleRefresh,
                 errorMessage: state.message,
                 onRetry: () => _cubit.fetchChatThreads(),
-                itemBuilder: (context, thread, index) => const SizedBox.shrink(),
+                itemBuilder: (context, thread, index) =>
+                    const SizedBox.shrink(),
               );
             }
 

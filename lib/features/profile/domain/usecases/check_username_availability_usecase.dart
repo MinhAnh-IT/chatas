@@ -10,4 +10,4 @@ class CheckUsernameAvailabilityUseCase {
   Future<Either<ProfileException, bool>> call(String username) {
     return repository.checkUsernameAvailability(username);
   }
-} 
+}

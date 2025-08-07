@@ -11,4 +11,4 @@ class ChangePasswordUseCase {
   Future<Either<ProfileException, void>> call(ChangePasswordRequest request) {
     return repository.changePassword(request);
   }
-} 
+}
