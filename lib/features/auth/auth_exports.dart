@@ -1,6 +1,6 @@
 export 'constants/auth_constants.dart';
 
-export 'domain/entities/User.dart';
+export 'domain/entities/user.dart';
 export 'domain/entities/login_request.dart';
 export 'domain/entities/register_request.dart';
 

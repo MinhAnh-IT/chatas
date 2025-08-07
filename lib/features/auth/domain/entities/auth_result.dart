@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'User.dart';
+import 'user.dart';
 import '../exceptions/auth_exceptions.dart';
 
 abstract class AuthResult extends Equatable {
