@@ -93,7 +93,7 @@ class FriendRemoteDataSource {
           .where('friendId', isGreaterThanOrEqualTo: '${userId}_')
           .where('friendId', isLessThan: '${userId}_\uf8ff')
           .get();
-      
+
       return snapshot.docs
           .map((doc) => FriendModel.fromJson(doc.data()).toEntity())
           .toList();
@@ -136,9 +136,11 @@ class FriendRemoteDataSource {
           .get();
       final senderData = senderDoc.data();
       final receiverData = receiverDoc.data();
-      
-      final senderName = senderData?['fullName'] ?? senderData?['name'] ?? 'Friend';
-      final receiverName = receiverData?['fullName'] ?? receiverData?['name'] ?? 'Friend';
+
+      final senderName =
+          senderData?['fullName'] ?? senderData?['name'] ?? 'Friend';
+      final receiverName =
+          receiverData?['fullName'] ?? receiverData?['name'] ?? 'Friend';
 
       final friend1 = Friend(
         friendId: '${senderId}_$receiverId',
@@ -343,9 +345,10 @@ class FriendRemoteDataSource {
           .get();
       final userData = userDoc.data();
       final friendData = friendDoc.data();
-      
+
       final userName = userData?['fullName'] ?? userData?['name'] ?? 'Friend';
-      final friendName = friendData?['fullName'] ?? friendData?['name'] ?? 'Friend';
+      final friendName =
+          friendData?['fullName'] ?? friendData?['name'] ?? 'Friend';
 
       final friend1 = Friend(
         friendId: '${userId}_$friendUserId',
