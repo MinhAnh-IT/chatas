@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../injection/friends_injection.dart';
 import '../cubit/friends_list_cubit.dart';
 import '../../domain/entities/friend.dart';
+import '../../../../shared/widgets/bottom_navigation.dart';
+import '../../../../core/constants/app_route_constants.dart';
 
 class FriendsListPage extends StatefulWidget {
   final String currentUserId;
@@ -127,6 +130,27 @@ class _FriendsListPageState extends State<FriendsListPage> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: CommonBottomNavigation(
+        currentIndex: 1, // Index cho tab Bạn bè
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Chuyển đến trang Chat
+              context.go(AppRouteConstants.homePath);
+              break;
+            case 1:
+              // Đã ở trang Bạn bè (hiện tại)
+              break;
+            case 2:
+              // Trang Thông báo (chưa implement)
+              break;
+            case 3:
+              // Chuyển đến trang Profile
+              context.go('/profile');
+              break;
+          }
+        },
       ),
     );
   }

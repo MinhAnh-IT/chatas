@@ -113,7 +113,24 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
         ),
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
-          onTap: (index) {},
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                // Đã ở trang Chat (hiện tại)
+                break;
+              case 1:
+                // Chuyển đến trang Bạn bè
+                context.go(AppRouteConstants.friendsPath);
+                break;
+              case 2:
+                // Trang Thông báo (chưa implement)
+                break;
+              case 3:
+                // Chuyển đến trang Profile
+                context.go('/profile');
+                break;
+            }
+          },
         ),
       ),
     );
