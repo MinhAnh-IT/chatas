@@ -95,17 +95,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (userCredential.user != null) {
           final userModel = UserModel(
-            userid: userCredential.user!.uid,
+            userId: userCredential.user!.uid,
             fullName: _fullNameController.text.trim(),
             username: _usernameController.text.trim(),
             email: _emailController.text.trim(),
             gender: _selectedGender,
             birthDate: _selectedDate!,
-            password: _passwordController.text,
-            confirmPassword: _confirmPasswordController.text,
             avatarUrl: '',
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
+            isOnline: false,
+            lastActive: DateTime.now(),
           );
 
           await _firestore
@@ -355,7 +355,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                       validator: (value) => AuthValidator.validatePassword(value),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     AuthTextField(
                       controller: _confirmPasswordController,
                       label: 'Xác nhận mật khẩu',
@@ -376,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       onPressed: _isLoading ? null : _handleRegister,
                       isLoading: _isLoading,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

@@ -100,8 +100,8 @@ class AuthValidator {
     final passwordError = validatePassword(request.password);
     if (passwordError != null) return passwordError;
     
-    final confirmPasswordError = validateConfirmPassword(request.confirmPassword, request.password);
-    if (confirmPasswordError != null) return confirmPasswordError;
+    // final confirmPasswordError = validateConfirmPassword(request.confirmPassword, request.password);
+    // if (confirmPasswordError != null) return confirmPasswordError;
     
     final fullNameError = validateFullName(request.fullName);
     if (fullNameError != null) return fullNameError;
