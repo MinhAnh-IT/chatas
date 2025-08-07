@@ -7,6 +7,8 @@ class FriendRequestModel {
   final String toUserId;
   final DateTime sentAt;
   final String status;
+  final String senderName;
+  final String receiverName;
 
   FriendRequestModel({
     required this.id,
@@ -14,6 +16,8 @@ class FriendRequestModel {
     required this.toUserId,
     required this.sentAt,
     this.status = 'pending',
+    this.senderName = '',
+    this.receiverName = '',
   });
 
   factory FriendRequestModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class FriendRequestModel {
       toUserId: json['toUserId'] as String,
       sentAt: (json['sentAt'] as Timestamp).toDate(),
       status: json['status'] as String? ?? 'pending',
+      senderName: json['senderName'] as String? ?? '',
+      receiverName: json['receiverName'] as String? ?? '',
     );
   }
 
@@ -33,6 +39,8 @@ class FriendRequestModel {
       'toUserId': toUserId,
       'sentAt': Timestamp.fromDate(sentAt),
       'status': status,
+      'senderName': senderName,
+      'receiverName': receiverName,
     };
   }
 
@@ -43,6 +51,8 @@ class FriendRequestModel {
       toUserId: toUserId,
       sentAt: sentAt,
       status: status,
+      senderName: senderName,
+      receiverName: receiverName,
     );
   }
 
@@ -53,6 +63,8 @@ class FriendRequestModel {
       toUserId: friendRequest.toUserId,
       sentAt: friendRequest.sentAt,
       status: friendRequest.status,
+      senderName: friendRequest.senderName,
+      receiverName: friendRequest.receiverName,
     );
   }
 }

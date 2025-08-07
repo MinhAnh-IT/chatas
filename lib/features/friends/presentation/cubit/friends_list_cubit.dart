@@ -72,7 +72,14 @@ class FriendsListCubit extends Cubit<FriendsState> {
     final currentFriends = (state as FriendsLoaded).friends;
 
     try {
-      await blockFriendUseCase.call(currentUserId, friendId, true);
+      // Extract actualFriendId từ friendId (format: userId_actualFriendId)
+      final parts = friendId.split('_');
+      if (parts.length != 2) {
+        throw Exception('Invalid friendId format');
+      }
+      final actualFriendId = parts[1];
+
+      await blockFriendUseCase.call(currentUserId, actualFriendId, true);
 
       // Cập nhật danh sách local - loại bỏ người bạn bị block
       final updatedFriends = currentFriends
@@ -98,7 +105,14 @@ class FriendsListCubit extends Cubit<FriendsState> {
   /// Unblock bạn bè (để có thể hiển thị lại trong danh sách)
   Future<void> unblockFriend(String currentUserId, String friendId) async {
     try {
-      await blockFriendUseCase.call(currentUserId, friendId, false);
+      // Extract actualFriendId từ friendId (format: userId_actualFriendId)
+      final parts = friendId.split('_');
+      if (parts.length != 2) {
+        throw Exception('Invalid friendId format');
+      }
+      final actualFriendId = parts[1];
+
+      await blockFriendUseCase.call(currentUserId, actualFriendId, false);
 
       // Reload lại danh sách để hiển thị người bạn đã unblock
       await loadFriends(currentUserId);
@@ -111,6 +125,55 @@ class FriendsListCubit extends Cubit<FriendsState> {
       }
     } catch (e) {
       emit(FriendsError('Không thể bỏ chặn bạn bè: ${e.toString()}'));
+    }
+  }
+
+  /// Toggle block/unblock bạn bè
+  Future<void> toggleBlockFriend(String currentUserId, String friendId) async {
+    if (state is! FriendsLoaded) return;
+
+    final currentFriends = (state as FriendsLoaded).friends;
+    final friend = currentFriends.firstWhere(
+      (f) => f.friendId == friendId,
+      orElse: () => throw Exception('Không tìm thấy bạn bè'),
+    );
+
+    try {
+      // Extract actualFriendId từ friendId (format: userId_actualFriendId)
+      final parts = friendId.split('_');
+      if (parts.length != 2) {
+        throw Exception('Invalid friendId format');
+      }
+      final actualFriendId = parts[1];
+
+      final newBlockStatus = !friend.isBlock;
+      await blockFriendUseCase.call(currentUserId, actualFriendId, newBlockStatus);
+
+      // Cập nhật friend trong danh sách
+      final updatedFriends = currentFriends.map((f) {
+        if (f.friendId == friendId) {
+          return Friend(
+            friendId: f.friendId,
+            nickName: f.nickName,
+            addAt: f.addAt,
+            isBlock: newBlockStatus,
+          );
+        }
+        return f;
+      }).toList();
+
+      final message = newBlockStatus 
+          ? 'Đã chặn ${friend.nickName} thành công'
+          : 'Đã bỏ chặn ${friend.nickName} thành công';
+
+      emit(
+        FriendsLoaded(
+          friends: updatedFriends,
+          successMessage: message,
+        ),
+      );
+    } catch (e) {
+      emit(FriendsError('Không thể thay đổi trạng thái chặn: ${e.toString()}'));
     }
   }
 
