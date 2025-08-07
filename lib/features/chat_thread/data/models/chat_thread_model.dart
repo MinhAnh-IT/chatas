@@ -14,7 +14,7 @@ class ChatThreadModel extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  ChatThreadModel({
+  const ChatThreadModel({
     required this.id,
     required this.name,
     required this.lastMessage,

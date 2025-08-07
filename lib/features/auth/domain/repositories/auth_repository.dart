@@ -1,7 +1,7 @@
 import '../entities/auth_result.dart';
 import '../entities/login_request.dart';
 import '../entities/register_request.dart';
-import '../entities/User.dart';
+import '../entities/user.dart';
 
 abstract class AuthRepository {
   Future<AuthResult> register(RegisterRequest request);

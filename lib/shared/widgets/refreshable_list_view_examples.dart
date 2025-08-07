@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:chatas/shared/widgets/refreshable_list_view.dart';
+
 /// Example usage of RefreshableListView in different scenarios.
 /// This file demonstrates how to use the reusable RefreshableListView widget
 /// across different features in the application.
-
-import 'package:flutter/material.dart';
-import 'package:chatas/shared/widgets/refreshable_list_view.dart';
 
 /// Example 1: Simple string list with basic functionality
 class SimpleListExample extends StatelessWidget {

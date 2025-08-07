@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../domain/entities/auth_result.dart' as domain;
 import '../../domain/entities/login_request.dart';
 import '../../domain/entities/register_request.dart';
-import '../../domain/entities/User.dart';
+import '../../domain/entities/user.dart';
 import '../../di/auth_dependency_injection.dart';
 
 // States
