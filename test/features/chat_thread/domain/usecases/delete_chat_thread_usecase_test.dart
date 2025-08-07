@@ -37,26 +37,26 @@ void main() {
     });
 
     group('call method', () {
-      test('should call repository deleteChatThread with correct thread ID', () async {
-        // arrange
-        const threadId = 'test_thread_id';
+      test(
+        'should call repository deleteChatThread with correct thread ID',
+        () async {
+          // arrange
+          const threadId = 'test_thread_id';
 
-        // act
-        await useCase(threadId);
+          // act
+          await useCase(threadId);
 
-        // assert
-        expect(repository.deletedThreadIds, contains(threadId));
-      });
+          // assert
+          expect(repository.deletedThreadIds, contains(threadId));
+        },
+      );
 
       test('should throw ArgumentError when thread ID is empty', () async {
         // arrange
         const emptyThreadId = '';
 
         // act & assert
-        expect(
-          () => useCase(emptyThreadId),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(() => useCase(emptyThreadId), throwsA(isA<ArgumentError>()));
       });
 
       test('should propagate repository exceptions', () async {
@@ -65,10 +65,7 @@ void main() {
         const threadId = 'test_thread_id';
 
         // act & assert
-        expect(
-          () => useCase(threadId),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => useCase(threadId), throwsA(isA<Exception>()));
       });
 
       test('should handle multiple thread deletions', () async {

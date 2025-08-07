@@ -6,7 +6,7 @@ class ChatThreadListPageConstants {
   static const String loading = 'Loading...';
   static const String chatCountText = 'Bạn đã nhấn nút này:';
   static const String refreshedMessage = 'Đã làm mới danh sách chat';
-  
+
   // Search constants
   static const String searchHint = 'Tìm kiếm đoạn chat...';
   static const String searchTitle = 'Tìm kiếm';
@@ -18,7 +18,8 @@ class ChatThreadListPageConstants {
 
   // Delete constants
   static const String deleteTitle = 'Xóa đoạn chat';
-  static const String deleteMessage = 'Bạn có chắc chắn muốn xóa đoạn chat này?';
+  static const String deleteMessage =
+      'Bạn có chắc chắn muốn xóa đoạn chat này?';
   static const String deleteConfirm = 'Xóa';
   static const String deleteCancel = 'Hủy';
   static const String deleteSuccess = 'Đã xóa đoạn chat thành công';

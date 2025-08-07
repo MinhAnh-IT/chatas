@@ -7,7 +7,7 @@ import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repo
 // Fake repository for testing
 class FakeChatThreadRepository implements ChatThreadRepository {
   final List<ChatThread> _threads;
-  
+
   FakeChatThreadRepository(this._threads);
 
   @override
@@ -28,13 +28,11 @@ class FakeChatThreadRepository implements ChatThreadRepository {
 class TestChatThreadListWidget extends StatefulWidget {
   final List<ChatThread> chatThreads;
 
-  const TestChatThreadListWidget({
-    super.key,
-    required this.chatThreads,
-  });
+  const TestChatThreadListWidget({super.key, required this.chatThreads});
 
   @override
-  State<TestChatThreadListWidget> createState() => _TestChatThreadListWidgetState();
+  State<TestChatThreadListWidget> createState() =>
+      _TestChatThreadListWidgetState();
 }
 
 class _TestChatThreadListWidgetState extends State<TestChatThreadListWidget> {
@@ -81,9 +79,11 @@ class _TestChatThreadListWidgetState extends State<TestChatThreadListWidget> {
     }
 
     final results = widget.chatThreads
-        .where((thread) => thread.name.toLowerCase().contains(query.toLowerCase()))
+        .where(
+          (thread) => thread.name.toLowerCase().contains(query.toLowerCase()),
+        )
         .toList();
-    
+
     setState(() {
       _searchResults = results;
     });
@@ -95,10 +95,7 @@ class _TestChatThreadListWidgetState extends State<TestChatThreadListWidget> {
       appBar: AppBar(
         title: const Text(ChatThreadListPageConstants.title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _toggleSearch,
-          ),
+          IconButton(icon: const Icon(Icons.search), onPressed: _toggleSearch),
         ],
       ),
       body: Column(
@@ -125,9 +122,7 @@ class _TestChatThreadListWidgetState extends State<TestChatThreadListWidget> {
               ),
             ),
           // Content
-          Expanded(
-            child: _buildContent(),
-          ),
+          Expanded(child: _buildContent()),
         ],
       ),
     );
@@ -216,7 +211,9 @@ void main() {
       );
     }
 
-    testWidgets('should display app bar with title and search icon', (tester) async {
+    testWidgets('should display app bar with title and search icon', (
+      tester,
+    ) async {
       // act
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -225,7 +222,9 @@ void main() {
       expect(find.byIcon(Icons.search), findsOneWidget);
     });
 
-    testWidgets('should show search bar when search icon is tapped', (tester) async {
+    testWidgets('should show search bar when search icon is tapped', (
+      tester,
+    ) async {
       // act
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.tap(find.byIcon(Icons.search));
@@ -237,14 +236,16 @@ void main() {
       expect(find.byIcon(Icons.close), findsOneWidget);
     });
 
-    testWidgets('should hide search bar when close icon is tapped', (tester) async {
+    testWidgets('should hide search bar when close icon is tapped', (
+      tester,
+    ) async {
       // act
       await tester.pumpWidget(createWidgetUnderTest());
-      
+
       // Open search bar
       await tester.tap(find.byIcon(Icons.search));
       await tester.pump();
-      
+
       // Close search bar
       await tester.tap(find.byIcon(Icons.close));
       await tester.pump();
@@ -271,28 +272,33 @@ void main() {
       expect(find.text('Jane Smith'), findsOneWidget);
     });
 
-    testWidgets('should display empty hint when search is visible but empty', (tester) async {
+    testWidgets('should display empty hint when search is visible but empty', (
+      tester,
+    ) async {
       // act
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump(); // Complete loading
-      
+
       // Open search bar
       await tester.tap(find.byIcon(Icons.search));
       await tester.pump();
 
       // assert
-      expect(find.text(ChatThreadListPageConstants.searchEmptyHint), findsOneWidget);
+      expect(
+        find.text(ChatThreadListPageConstants.searchEmptyHint),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should perform search when text is entered', (tester) async {
       // act
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump(); // Complete loading
-      
+
       // Open search bar
       await tester.tap(find.byIcon(Icons.search));
       await tester.pump();
-      
+
       // Enter search text
       await tester.enterText(find.byType(TextField), 'john');
       await tester.pump();
@@ -302,21 +308,26 @@ void main() {
       expect(find.text('Jane Smith'), findsNothing);
     });
 
-    testWidgets('should show no results message when search returns empty', (tester) async {
+    testWidgets('should show no results message when search returns empty', (
+      tester,
+    ) async {
       // act
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump(); // Complete loading
-      
+
       // Open search bar
       await tester.tap(find.byIcon(Icons.search));
       await tester.pump();
-      
+
       // Enter search text that returns no results
       await tester.enterText(find.byType(TextField), 'xyz');
       await tester.pump();
 
       // assert
-      expect(find.text(ChatThreadListPageConstants.noSearchResults), findsOneWidget);
+      expect(
+        find.text(ChatThreadListPageConstants.noSearchResults),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -13,7 +13,7 @@ import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repo
 class FakeGetChatThreadsUseCase implements GetChatThreadsUseCase {
   final List<ChatThread> _threads;
   bool shouldThrowError;
-  
+
   FakeGetChatThreadsUseCase(this._threads, {this.shouldThrowError = false});
 
   @override
@@ -30,7 +30,7 @@ class FakeGetChatThreadsUseCase implements GetChatThreadsUseCase {
 
 class FakeCreateChatThreadUseCase implements CreateChatThreadUseCase {
   bool shouldThrowError;
-  
+
   FakeCreateChatThreadUseCase({this.shouldThrowError = false});
 
   @override
@@ -46,7 +46,7 @@ class FakeCreateChatThreadUseCase implements CreateChatThreadUseCase {
     if (shouldThrowError) {
       throw Exception('Creation failed');
     }
-    
+
     final now = DateTime.now();
     return ChatThread(
       id: 'chat_${friendId}_${now.millisecondsSinceEpoch}',
@@ -66,7 +66,7 @@ class FakeCreateChatThreadUseCase implements CreateChatThreadUseCase {
 class FakeSearchChatThreadsUseCase implements SearchChatThreadsUseCase {
   final List<ChatThread> _threads;
   bool shouldThrowError;
-  
+
   FakeSearchChatThreadsUseCase(this._threads, {this.shouldThrowError = false});
 
   @override
@@ -77,15 +77,15 @@ class FakeSearchChatThreadsUseCase implements SearchChatThreadsUseCase {
     if (shouldThrowError) {
       throw Exception('Search error');
     }
-    
+
     if (query.trim().isEmpty) {
       return [];
     }
-    
+
     final lowerQuery = query.toLowerCase();
     return _threads.where((thread) {
       return thread.name.toLowerCase().contains(lowerQuery) ||
-             thread.lastMessage.toLowerCase().contains(lowerQuery);
+          thread.lastMessage.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 }
@@ -93,7 +93,7 @@ class FakeSearchChatThreadsUseCase implements SearchChatThreadsUseCase {
 class FakeDeleteChatThreadUseCase implements DeleteChatThreadUseCase {
   final List<String> deletedThreadIds = [];
   bool shouldThrowError;
-  
+
   FakeDeleteChatThreadUseCase({this.shouldThrowError = false});
 
   @override
@@ -104,11 +104,11 @@ class FakeDeleteChatThreadUseCase implements DeleteChatThreadUseCase {
     if (shouldThrowError) {
       throw Exception('Delete error');
     }
-    
+
     if (threadId.isEmpty) {
       throw ArgumentError('Thread ID cannot be empty');
     }
-    
+
     deletedThreadIds.add(threadId);
   }
 }
@@ -152,9 +152,11 @@ void main() {
     setUp(() {
       fakeGetChatThreadsUseCase = FakeGetChatThreadsUseCase(testChatThreads);
       fakeCreateChatThreadUseCase = FakeCreateChatThreadUseCase();
-      fakeSearchChatThreadsUseCase = FakeSearchChatThreadsUseCase(testChatThreads);
+      fakeSearchChatThreadsUseCase = FakeSearchChatThreadsUseCase(
+        testChatThreads,
+      );
       fakeDeleteChatThreadUseCase = FakeDeleteChatThreadUseCase();
-      
+
       cubit = ChatThreadListCubit(
         getChatThreadsUseCase: fakeGetChatThreadsUseCase,
         createChatThreadUseCase: fakeCreateChatThreadUseCase,
@@ -267,7 +269,9 @@ void main() {
           initialMessage: initialMessage,
         ),
         expect: () => [
-          ChatThreadListError('Failed to create chat: Exception: Creation failed'),
+          ChatThreadListError(
+            'Failed to create chat: Exception: Creation failed',
+          ),
         ],
       );
     });
@@ -290,9 +294,7 @@ void main() {
         'should emit error when thread ID is empty',
         build: () => cubit,
         act: (cubit) => cubit.deleteChatThread(''),
-        expect: () => [
-          const ChatThreadListError('Invalid thread ID'),
-        ],
+        expect: () => [const ChatThreadListError('Invalid thread ID')],
       );
 
       blocTest<ChatThreadListCubit, ChatThreadListState>(
@@ -313,7 +315,10 @@ void main() {
         await cubit.deleteChatThread(threadId);
 
         // assert
-        expect(fakeDeleteChatThreadUseCase.deletedThreadIds, contains(threadId));
+        expect(
+          fakeDeleteChatThreadUseCase.deletedThreadIds,
+          contains(threadId),
+        );
       });
     });
   });

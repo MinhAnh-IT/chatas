@@ -57,7 +57,7 @@ class SmartImage extends StatelessWidget {
     if (url.startsWith('file://') || url.startsWith('/')) {
       final filePath = url.startsWith('file://') ? url.substring(7) : url;
       final file = File(filePath);
-      
+
       if (file.existsSync()) {
         return Image.file(
           file,
@@ -127,7 +127,9 @@ class SmartAvatar extends StatelessWidget {
         radius: radius,
         backgroundColor: backgroundColor ?? Colors.grey[300],
         child: Text(
-          fallbackText?.isNotEmpty == true ? fallbackText![0].toUpperCase() : '?',
+          fallbackText?.isNotEmpty == true
+              ? fallbackText![0].toUpperCase()
+              : '?',
           style: TextStyle(
             fontSize: radius * 0.8,
             fontWeight: FontWeight.w600,
@@ -149,7 +151,9 @@ class SmartAvatar extends StatelessWidget {
           // Will show fallback child
         },
         child: Text(
-          fallbackText?.isNotEmpty == true ? fallbackText![0].toUpperCase() : '?',
+          fallbackText?.isNotEmpty == true
+              ? fallbackText![0].toUpperCase()
+              : '?',
           style: TextStyle(
             fontSize: radius * 0.8,
             fontWeight: FontWeight.w600,
@@ -163,7 +167,7 @@ class SmartAvatar extends StatelessWidget {
     if (url.startsWith('file://') || url.startsWith('/')) {
       final filePath = url.startsWith('file://') ? url.substring(7) : url;
       final file = File(filePath);
-      
+
       if (file.existsSync()) {
         return CircleAvatar(
           radius: radius,
@@ -173,7 +177,9 @@ class SmartAvatar extends StatelessWidget {
             // Will show fallback child
           },
           child: Text(
-            fallbackText?.isNotEmpty == true ? fallbackText![0].toUpperCase() : '?',
+            fallbackText?.isNotEmpty == true
+                ? fallbackText![0].toUpperCase()
+                : '?',
             style: TextStyle(
               fontSize: radius * 0.8,
               fontWeight: FontWeight.w600,
@@ -194,7 +200,9 @@ class SmartAvatar extends StatelessWidget {
           // Will show fallback child
         },
         child: Text(
-          fallbackText?.isNotEmpty == true ? fallbackText![0].toUpperCase() : '?',
+          fallbackText?.isNotEmpty == true
+              ? fallbackText![0].toUpperCase()
+              : '?',
           style: TextStyle(
             fontSize: radius * 0.8,
             fontWeight: FontWeight.w600,

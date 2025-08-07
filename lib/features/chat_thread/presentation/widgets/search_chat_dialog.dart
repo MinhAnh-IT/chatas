@@ -43,29 +43,30 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
       _isSearching = true;
     });
 
-    widget.cubit.searchChatThreads(query).then((results) {
-      if (mounted) {
-        setState(() {
-          _searchResults = results;
-          _isSearching = false;
+    widget.cubit
+        .searchChatThreads(query)
+        .then((results) {
+          if (mounted) {
+            setState(() {
+              _searchResults = results;
+              _isSearching = false;
+            });
+          }
+        })
+        .catchError((error) {
+          if (mounted) {
+            setState(() {
+              _searchResults = [];
+              _isSearching = false;
+            });
+          }
         });
-      }
-    }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _searchResults = [];
-          _isSearching = false;
-        });
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
         height: MediaQuery.of(context).size.height * 0.7,
@@ -78,10 +79,7 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
               children: [
                 const Text(
                   ChatThreadListPageConstants.searchDialogTitle,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -91,7 +89,7 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Search field
             TextField(
               controller: _searchController,
@@ -104,11 +102,9 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
               autofocus: true,
             ),
             const SizedBox(height: 16),
-            
+
             // Search results
-            Expanded(
-              child: _buildSearchResults(),
-            ),
+            Expanded(child: _buildSearchResults()),
           ],
         ),
       ),
@@ -120,28 +116,20 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
       return const Center(
         child: Text(
           ChatThreadListPageConstants.searchEmptyHint,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Colors.grey, fontSize: 16),
         ),
       );
     }
 
     if (_isSearching) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_searchResults.isEmpty) {
       return const Center(
         child: Text(
           ChatThreadListPageConstants.noSearchResults,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Colors.grey, fontSize: 16),
         ),
       );
     }

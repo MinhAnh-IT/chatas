@@ -13,11 +13,7 @@ class ChatThreadListTile extends StatelessWidget {
   final ChatThread thread;
   final VoidCallback? onTap;
 
-  const ChatThreadListTile({
-    super.key,
-    required this.thread,
-    this.onTap,
-  });
+  const ChatThreadListTile({super.key, required this.thread, this.onTap});
 
   /// Handles the long press gesture to show delete options.
   void _handleLongPress(BuildContext context) {
@@ -67,8 +63,9 @@ class ChatThreadListTile extends StatelessWidget {
       },
       child: BlocBuilder<ChatThreadListCubit, ChatThreadListState>(
         builder: (context, state) {
-          final isDeleting = state is ChatThreadDeleting && state.threadId == thread.id;
-          
+          final isDeleting =
+              state is ChatThreadDeleting && state.threadId == thread.id;
+
           return Opacity(
             opacity: isDeleting ? 0.5 : 1.0,
             child: ListTile(
@@ -92,7 +89,9 @@ class ChatThreadListTile extends StatelessWidget {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -102,15 +101,11 @@ class ChatThreadListTile extends StatelessWidget {
               ),
               title: Text(
                 thread.name,
-                style: TextStyle(
-                  color: isDeleting ? Colors.grey : null,
-                ),
+                style: TextStyle(color: isDeleting ? Colors.grey : null),
               ),
               subtitle: Text(
                 thread.lastMessage,
-                style: TextStyle(
-                  color: isDeleting ? Colors.grey : null,
-                ),
+                style: TextStyle(color: isDeleting ? Colors.grey : null),
               ),
               trailing: Text(
                 app_date_utils.DateUtils.formatTime(thread.lastMessageTime),

@@ -11,10 +11,7 @@ import 'package:chatas/shared/widgets/smart_image.dart';
 class ChatSearchDialog extends StatefulWidget {
   final ChatThreadListCubit cubit;
 
-  const ChatSearchDialog({
-    super.key,
-    required this.cubit,
-  });
+  const ChatSearchDialog({super.key, required this.cubit});
 
   @override
   State<ChatSearchDialog> createState() => _ChatSearchDialogState();
@@ -46,7 +43,7 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
     });
 
     final results = await widget.cubit.searchChatThreads(query);
-    
+
     if (mounted) {
       setState(() {
         _searchResults = results;
@@ -62,7 +59,7 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
       currentUserId: ChatThreadListPageConstants.temporaryUserId,
       otherUserName: thread.name,
     );
-    
+
     // Close dialog and navigate
     Navigator.of(context).pop();
     context.go(route);
@@ -82,10 +79,7 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
               children: [
                 const Text(
                   ChatThreadListPageConstants.searchTitle,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 TextButton(
@@ -95,7 +89,7 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Search input field
             TextField(
               controller: _searchController,
@@ -108,11 +102,9 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
               autofocus: true,
             ),
             const SizedBox(height: 16),
-            
+
             // Search results
-            Expanded(
-              child: _buildSearchResults(),
-            ),
+            Expanded(child: _buildSearchResults()),
           ],
         ),
       ),
@@ -122,15 +114,11 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
   /// Builds the search results list widget.
   Widget _buildSearchResults() {
     if (_isSearching) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_searchController.text.trim().isEmpty) {
-      return const Center(
-        child: Text(ChatThreadListPageConstants.searchEmpty),
-      );
+      return const Center(child: Text(ChatThreadListPageConstants.searchEmpty));
     }
 
     if (_searchResults.isEmpty) {
