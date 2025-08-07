@@ -11,6 +11,10 @@ import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_use
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart';
 import 'package:chatas/features/chat_message/data/repositories/chat_message_repository_impl.dart';
 import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_page.dart';
+import 'package:chatas/features/friends/presentation/pages/friends_list_page.dart';
+import 'package:chatas/features/friends/presentation/pages/friend_search_page.dart';
+import 'package:chatas/features/friends/presentation/pages/friend_requests_page.dart';
+import 'package:chatas/features/friends/injection/friends_injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -61,6 +65,50 @@ class AppRouter {
         path: '/profile',
         name: AppRouteConstants.profilePathName,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: AppRouteConstants.friendsPath,
+        name: AppRouteConstants.friendsPathName,
+        builder: (context, state) {
+          // Lấy currentUserId từ Firebase Auth
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+          return BlocProvider(
+            create: (context) =>
+                FriendsDependencyInjection.createFriendsListCubit(),
+            child: FriendsListPage(currentUserId: currentUserId),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRouteConstants.friendRequestsPath,
+        name: AppRouteConstants.friendRequestsPathName,
+        builder: (context, state) {
+          // Lấy currentUserId từ Firebase Auth
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+          return BlocProvider(
+            create: (context) =>
+                FriendsDependencyInjection.createFriendRequestCubit(
+                  currentUserId,
+                ),
+            child: const FriendRequestsPage(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRouteConstants.friendSearchPath,
+        name: AppRouteConstants.friendSearchPathName,
+        builder: (context, state) {
+          // Lấy currentUserId từ Firebase Auth
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+          return BlocProvider(
+            create: (context) =>
+                FriendsDependencyInjection.createFriendSearchCubit(),
+            child: FriendSearchPage(currentUserId: currentUserId),
+          );
+        },
       ),
       GoRoute(
         path: '${AppRouteConstants.chatMessagePath}/:threadId',
