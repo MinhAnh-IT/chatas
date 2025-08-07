@@ -12,7 +12,7 @@ class AuthValidator {
     if (!emailRegex.hasMatch(email)) {
       return AuthConstants.invalidEmail;
     }
-
+    
     return null;
   }
 
@@ -20,26 +20,23 @@ class AuthValidator {
     if (password == null || password.isEmpty) {
       return AuthConstants.passwordRequired;
     }
-
+    
     if (password.length < AuthConstants.minPasswordLength) {
       return AuthConstants.weakPassword;
     }
-
+    
     return null;
   }
 
-  static String? validateConfirmPassword(
-    String? confirmPassword,
-    String password,
-  ) {
+  static String? validateConfirmPassword(String? confirmPassword, String password) {
     if (confirmPassword == null || confirmPassword.isEmpty) {
       return AuthConstants.confirmPasswordRequired;
     }
-
+    
     if (confirmPassword != password) {
       return AuthConstants.passwordsDoNotMatch;
     }
-
+    
     return null;
   }
 
@@ -47,7 +44,7 @@ class AuthValidator {
     if (fullName == null || fullName.trim().isEmpty) {
       return AuthConstants.fullNameRequired;
     }
-
+    
     return null;
   }
 
@@ -75,6 +72,7 @@ class AuthValidator {
     return null;
   }
 
+
   static String? validateBirthDate(DateTime? birthDate) {
     if (birthDate == null) {
       return AuthConstants.birthDateRequired;
@@ -94,43 +92,41 @@ class AuthValidator {
     return null;
   }
 
+
   static String? validateRegisterRequest(RegisterRequest request) {
     final emailError = validateEmail(request.email);
     if (emailError != null) return emailError;
-
+    
     final passwordError = validatePassword(request.password);
     if (passwordError != null) return passwordError;
-
-    final confirmPasswordError = validateConfirmPassword(
-      request.confirmPassword,
-      request.password,
-    );
-    if (confirmPasswordError != null) return confirmPasswordError;
-
+    
+    // final confirmPasswordError = validateConfirmPassword(request.confirmPassword, request.password);
+    // if (confirmPasswordError != null) return confirmPasswordError;
+    
     final fullNameError = validateFullName(request.fullName);
     if (fullNameError != null) return fullNameError;
-
+    
     final usernameError = validateUsername(request.username);
     if (usernameError != null) return usernameError;
-
+    
     final genderError = validateGender(request.gender);
     if (genderError != null) return genderError;
-
+    
     final birthDateError = validateBirthDate(request.birthDate);
     if (birthDateError != null) return birthDateError;
-
+    
     return null;
   }
 
   static String? validateLoginRequest(LoginRequest request) {
-    final emailOrUsernameError = validateEmailOrUsername(
-      request.emailOrUsername,
-    );
+
+    final emailOrUsernameError = validateEmailOrUsername(request.emailOrUsername);
     if (emailOrUsernameError != null) return emailOrUsernameError;
+    
 
     final passwordError = validatePassword(request.password);
     if (passwordError != null) return passwordError;
-
+    
     return null;
   }
 
@@ -138,7 +134,7 @@ class AuthValidator {
     if (emailOrUsername == null || emailOrUsername.trim().isEmpty) {
       return 'Email hoặc tên đăng nhập là bắt buộc';
     }
-
+    
     // If it's an email, validate email format
     if (emailOrUsername.contains('@')) {
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -151,7 +147,7 @@ class AuthValidator {
         return 'Tên đăng nhập phải có ít nhất ${AuthConstants.minUsernameLength} ký tự';
       }
     }
-
+    
     return null;
   }
-}
+} 

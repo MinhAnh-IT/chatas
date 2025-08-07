@@ -1,29 +1,26 @@
 import 'package:equatable/equatable.dart';
 
-class RegisterRequest extends Equatable {
+class UpdateProfileRequest extends Equatable {
   final String fullName;
   final String username;
-  final String email;
   final String gender;
   final DateTime birthDate;
-  final String password;
+  final String? profileImageUrl;
 
-  const RegisterRequest({
+  const UpdateProfileRequest({
     required this.fullName,
     required this.username,
-    required this.email,
     required this.gender,
     required this.birthDate,
-    required this.password,
+    this.profileImageUrl,
   });
 
   @override
   List<Object?> get props => [
-    fullName,
-    username,
-    email,
-    gender,
-    birthDate,
-    password,
-  ];
-}
+        fullName,
+        username,
+        gender,
+        birthDate,
+        profileImageUrl,
+      ];
+} 

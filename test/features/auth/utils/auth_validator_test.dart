@@ -148,7 +148,7 @@ void main() {
         gender: AuthConstants.genderOptions.first,
         birthDate: DateTime(now.year - 20, now.month, now.day),
         password: '12345678',
-        confirmPassword: '12345678',
+        // confirmPassword: '12345678',
       );
       expect(AuthValidator.validateRegisterRequest(req), null);
     });
@@ -160,7 +160,7 @@ void main() {
         gender: '',
         birthDate: DateTime.now(),
         password: '',
-        confirmPassword: '',
+        // confirmPassword: '',
       );
       expect(AuthValidator.validateRegisterRequest(req), isNotNull);
     });
