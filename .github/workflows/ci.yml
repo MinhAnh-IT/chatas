@@ -1,0 +1,176 @@
+name: CI
+
+# Triggers cho workflow
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+# Định nghĩa jobs
+jobs:
+  # Job 1: Test và Analysis
+  test:
+    name: Test & Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout source code
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    # Setup Java (cần cho Android build)
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        
+    # Setup Flutter
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.0'
+        channel: 'stable'
+        cache: true
+        
+    # Get dependencies
+    - name: Get dependencies
+      run: flutter pub get
+      
+    # Verify formatting
+    - name: Check formatting
+      run: dart format --output=none --set-exit-if-changed .
+      
+    # Analyze code
+    - name: Analyze code
+      run: flutter analyze
+      
+    # Run tests với coverage
+    - name: Run tests
+      run: flutter test --coverage
+      
+    # Upload coverage to Codecov (optional)
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage/lcov.info
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Job 2: Build Android
+  build-android:
+    name: Build Android
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    # Build APK
+    - name: Build APK
+      run: flutter build apk --release
+      
+    # Upload APK artifact
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
+        retention-days: 30
+
+  # Job 3: Build iOS (chỉ chạy trên macOS)
+  build-ios:
+    name: Build iOS
+    needs: test
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    # Build iOS (không sign)
+    - name: Build iOS
+      run: flutter build ios --release --no-codesign
+      
+  # Job 4: Build Web
+  build-web:
+    name: Build Web
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    # Build Web
+    - name: Build Web
+      run: flutter build web --release
+      
+    # Upload Web artifact
+    - name: Upload Web Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-build
+        path: build/web/
+        retention-days: 30
+
+  # Job 5: Security Scan (optional)
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
