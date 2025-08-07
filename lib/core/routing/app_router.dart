@@ -27,14 +27,19 @@ class AppRouter {
                          state.matchedLocation == '/register' || 
                          state.matchedLocation == '/forgot-password';
 
+      print('Redirect check - Location: ${state.matchedLocation}, User: ${user?.uid}, IsLoggedIn: $isLoggedIn');
+
       if (!isLoggedIn && !isAuthRoute) {
+        print('Redirecting to login because user not logged in');
         return '/login';
       }
 
       if (isLoggedIn && isAuthRoute) {
+        print('Redirecting to home because user already logged in');
         return '/';
       }
 
+      print('No redirect needed');
       return null;
     },
     routes: [
@@ -64,11 +69,13 @@ class AppRouter {
         builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
-        path: AppRouteConstants.friendsPath,
-        name: AppRouteConstants.friendsPathName,
+        path: '/friends',
+        name: 'friends',
         builder: (context, state) {
+          print('Simple friends route matched!');
           // Lấy currentUserId từ Firebase Auth
-          final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
+          print('Current user ID: $currentUserId');
           
           return BlocProvider(
             create: (context) => FriendsDependencyInjection.createFriendsListCubit(),
