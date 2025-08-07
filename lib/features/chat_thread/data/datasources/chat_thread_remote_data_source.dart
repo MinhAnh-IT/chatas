@@ -12,13 +12,11 @@ class ChatThreadRemoteDataSource {
     final snapshot = await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .get();
-    return snapshot.docs
-        .map((doc) {
-          final data = doc.data();
-          data['id'] = doc.id; // Set document ID from Firestore
-          return ChatThreadModel.fromJson(data);
-        })
-        .toList();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id; // Set document ID from Firestore
+      return ChatThreadModel.fromJson(data);
+    }).toList();
   }
 
   Future<void> addChatThread(ChatThreadModel model) async {
@@ -50,13 +48,11 @@ class ChatThreadRemoteDataSource {
         .collection(ChatThreadRemoteConstants.collectionName)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
-              .map((doc) {
-                final data = doc.data();
-                data['id'] = doc.id; // Set document ID from Firestore
-                return ChatThreadModel.fromJson(data);
-              })
-              .toList();
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id; // Set document ID from Firestore
+            return ChatThreadModel.fromJson(data);
+          }).toList();
         });
   }
 }

@@ -6,7 +6,7 @@ import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
 // Fake repository for testing
 class FakeChatThreadRepository implements ChatThreadRepository {
   final List<ChatThread> _threads;
-  
+
   FakeChatThreadRepository(this._threads);
 
   @override
@@ -100,22 +100,28 @@ void main() {
       expect(result.first.name, 'John Doe');
     });
 
-    test('should return threads matching last message (case insensitive)', () async {
-      // act
-      final result = await useCase('meeting');
+    test(
+      'should return threads matching last message (case insensitive)',
+      () async {
+        // act
+        final result = await useCase('meeting');
 
-      // assert
-      expect(result, hasLength(1));
-      expect(result.first.name, 'Jane Smith');
-    });
+        // assert
+        expect(result, hasLength(1));
+        expect(result.first.name, 'Jane Smith');
+      },
+    );
 
-    test('should return multiple threads when query matches multiple items', () async {
-      // act - 'a' will match Jane (name) and Thanks (message)  
-      final result = await useCase('a');
+    test(
+      'should return multiple threads when query matches multiple items',
+      () async {
+        // act - 'a' will match Jane (name) and Thanks (message)
+        final result = await useCase('a');
 
-      // assert
-      expect(result.length, greaterThan(0));
-    });
+        // assert
+        expect(result.length, greaterThan(0));
+      },
+    );
 
     test('should return empty list when no threads match query', () async {
       // act
@@ -151,7 +157,7 @@ void main() {
       // assert
       expect(nameResult, hasLength(1));
       expect(nameResult.first.name, 'Bob Wilson');
-      
+
       expect(messageResult, hasLength(1));
       expect(messageResult.first.name, 'John Doe');
     });
@@ -163,8 +169,12 @@ void main() {
       // assert
       expect(result.length, greaterThan(0));
       // Check that John Doe appears before Bob Wilson if both match
-      final johnIndex = result.indexWhere((thread) => thread.name == 'John Doe');
-      final bobIndex = result.indexWhere((thread) => thread.name == 'Bob Wilson');
+      final johnIndex = result.indexWhere(
+        (thread) => thread.name == 'John Doe',
+      );
+      final bobIndex = result.indexWhere(
+        (thread) => thread.name == 'Bob Wilson',
+      );
       if (johnIndex != -1 && bobIndex != -1) {
         expect(johnIndex, lessThan(bobIndex));
       }

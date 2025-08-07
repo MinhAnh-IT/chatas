@@ -219,10 +219,7 @@ void main() {
         ).thenThrow(Exception('Deletion failed'));
 
         // Act & Assert
-        expect(
-          () => repository.deleteChatThread(threadId),
-          throwsException,
-        );
+        expect(() => repository.deleteChatThread(threadId), throwsException);
       });
     });
 

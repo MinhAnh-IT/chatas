@@ -68,7 +68,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     }
 
     emit(ChatThreadDeleting(threadId));
-    
+
     try {
       await deleteChatThreadUseCase(threadId);
       // Refresh the list after successful deletion

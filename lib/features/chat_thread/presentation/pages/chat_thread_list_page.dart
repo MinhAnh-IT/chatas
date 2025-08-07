@@ -53,7 +53,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       context.go('/profile');
     }
   }
-    
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -114,21 +114,24 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       _isSearching = true;
     });
 
-    _cubit.searchChatThreads(query).then((results) {
-      if (mounted) {
-        setState(() {
-          _searchResults = results;
-          _isSearching = false;
+    _cubit
+        .searchChatThreads(query)
+        .then((results) {
+          if (mounted) {
+            setState(() {
+              _searchResults = results;
+              _isSearching = false;
+            });
+          }
+        })
+        .catchError((error) {
+          if (mounted) {
+            setState(() {
+              _searchResults = [];
+              _isSearching = false;
+            });
+          }
         });
-      }
-    }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _searchResults = [];
-          _isSearching = false;
-        });
-      }
-    });
   }
 
   Widget _buildContent() {
@@ -145,8 +148,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
             items: const [],
             onRefresh: _handleRefresh,
             isLoading: true,
-            itemBuilder: (context, thread, index) =>
-                const SizedBox.shrink(),
+            itemBuilder: (context, thread, index) => const SizedBox.shrink(),
           );
         }
 
@@ -156,8 +158,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
             onRefresh: _handleRefresh,
             errorMessage: state.message,
             onRetry: () => _cubit.fetchChatThreads(),
-            itemBuilder: (context, thread, index) =>
-                const SizedBox.shrink(),
+            itemBuilder: (context, thread, index) => const SizedBox.shrink(),
           );
         }
 
@@ -191,28 +192,20 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       return const Center(
         child: Text(
           ChatThreadListPageConstants.searchEmptyHint,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Colors.grey, fontSize: 16),
         ),
       );
     }
 
     if (_isSearching) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_searchResults.isEmpty) {
       return const Center(
         child: Text(
           ChatThreadListPageConstants.noSearchResults,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Colors.grey, fontSize: 16),
         ),
       );
     }
@@ -292,9 +285,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                 ),
               ),
             // Content
-            Expanded(
-              child: _buildContent(),
-            ),
+            Expanded(child: _buildContent()),
           ],
         ),
         bottomNavigationBar: CommonBottomNavigation(

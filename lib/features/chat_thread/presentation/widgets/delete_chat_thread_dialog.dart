@@ -45,9 +45,7 @@ class DeleteChatThreadDialog extends StatelessWidget {
             Navigator.of(context).pop();
             onConfirmDelete();
           },
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.red,
-          ),
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
           child: const Text(ChatThreadListPageConstants.deleteConfirm),
         ),
       ],
