@@ -196,6 +196,36 @@ void main() {
       });
     });
 
+    group('deleteChatThread', () {
+      test('should call remote data source with correct thread ID', () async {
+        // Arrange
+        const threadId = 'thread_123';
+        when(
+          mockRemoteDataSource.deleteChatThread(threadId),
+        ).thenAnswer((_) async => {});
+
+        // Act
+        await repository.deleteChatThread(threadId);
+
+        // Assert
+        verify(mockRemoteDataSource.deleteChatThread(threadId));
+      });
+
+      test('should propagate exceptions from remote data source', () async {
+        // Arrange
+        const threadId = 'thread_123';
+        when(
+          mockRemoteDataSource.deleteChatThread(threadId),
+        ).thenThrow(Exception('Deletion failed'));
+
+        // Act & Assert
+        expect(
+          () => repository.deleteChatThread(threadId),
+          throwsException,
+        );
+      });
+    });
+
     group('entity to model conversion', () {
       test('should convert entity to model preserving all fields', () async {
         // Arrange
