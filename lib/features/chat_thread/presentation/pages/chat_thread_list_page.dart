@@ -35,13 +35,19 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     );
     _cubit.fetchChatThreads();
   }
+  void _onTabTapped(int index) {
+    if (index == 3) { // Tab "Cá nhân"
+      context.go('/profile');
+    }
+    // Các tab khác có thể thêm logic sau
+  }
 
   /// Navigates to chat message page when a thread is tapped.
   void _navigateToChatMessage(
-    BuildContext context,
-    String threadId,
-    String threadName,
-  ) {
+      BuildContext context,
+      String threadId,
+      String threadName,
+      ) {
     final route = AppRouteConstants.chatMessageRoute(
       threadId,
       currentUserId: ChatThreadListPageConstants.temporaryUserId,
@@ -113,7 +119,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
         ),
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
-          onTap: (index) {},
+          onTap: _onTabTapped,
         ),
       ),
     );
