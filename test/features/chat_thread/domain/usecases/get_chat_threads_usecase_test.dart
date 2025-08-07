@@ -47,69 +47,77 @@ void main() {
         ),
       ];
 
-      test('should return list of chat threads when repository call is successful', () async {
-        // Arrange
-        when(mockRepository.getChatThreads())
-            .thenAnswer((_) async => tChatThreads);
+      test(
+        'should return list of chat threads when repository call is successful',
+        () async {
+          // Arrange
+          when(
+            mockRepository.getChatThreads(),
+          ).thenAnswer((_) async => tChatThreads);
 
-        // Act
-        final result = await useCase();
+          // Act
+          final result = await useCase();
 
-        // Assert
-        expect(result, equals(tChatThreads));
-        expect(result, isA<List<ChatThread>>());
-        expect(result.length, 2);
-        verify(mockRepository.getChatThreads()).called(1);
-        verifyNoMoreInteractions(mockRepository);
-      });
+          // Assert
+          expect(result, equals(tChatThreads));
+          expect(result, isA<List<ChatThread>>());
+          expect(result.length, 2);
+          verify(mockRepository.getChatThreads()).called(1);
+          verifyNoMoreInteractions(mockRepository);
+        },
+      );
 
-      test('should return empty list when repository returns empty list', () async {
-        // Arrange
-        when(mockRepository.getChatThreads())
-            .thenAnswer((_) async => <ChatThread>[]);
+      test(
+        'should return empty list when repository returns empty list',
+        () async {
+          // Arrange
+          when(
+            mockRepository.getChatThreads(),
+          ).thenAnswer((_) async => <ChatThread>[]);
 
-        // Act
-        final result = await useCase();
+          // Act
+          final result = await useCase();
 
-        // Assert
-        expect(result, equals(<ChatThread>[]));
-        expect(result, isEmpty);
-        verify(mockRepository.getChatThreads()).called(1);
-        verifyNoMoreInteractions(mockRepository);
-      });
+          // Assert
+          expect(result, equals(<ChatThread>[]));
+          expect(result, isEmpty);
+          verify(mockRepository.getChatThreads()).called(1);
+          verifyNoMoreInteractions(mockRepository);
+        },
+      );
 
       test('should throw exception when repository throws exception', () async {
         // Arrange
         const errorMessage = 'Network connection failed';
-        when(mockRepository.getChatThreads())
-            .thenThrow(Exception(errorMessage));
+        when(
+          mockRepository.getChatThreads(),
+        ).thenThrow(Exception(errorMessage));
 
         // Act & Assert
-        expect(
-          () => useCase(),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => useCase(), throwsA(isA<Exception>()));
         verify(mockRepository.getChatThreads()).called(1);
         verifyNoMoreInteractions(mockRepository);
       });
 
-      test('should throw specific exception type when repository throws specific exception', () async {
-        // Arrange
-        when(mockRepository.getChatThreads())
-            .thenThrow(const FormatException('Invalid data format'));
+      test(
+        'should throw specific exception type when repository throws specific exception',
+        () async {
+          // Arrange
+          when(
+            mockRepository.getChatThreads(),
+          ).thenThrow(const FormatException('Invalid data format'));
 
-        // Act & Assert
-        expect(
-          () => useCase(),
-          throwsA(isA<FormatException>()),
-        );
-        verify(mockRepository.getChatThreads()).called(1);
-      });
+          // Act & Assert
+          expect(() => useCase(), throwsA(isA<FormatException>()));
+          verify(mockRepository.getChatThreads()).called(1);
+        },
+      );
 
       test('should call repository exactly once', () async {
         // Arrange
-        when(mockRepository.getChatThreads())
-            .thenAnswer((_) async => tChatThreads);
+        when(
+          mockRepository.getChatThreads(),
+        ).thenAnswer((_) async => tChatThreads);
 
         // Act
         await useCase();
@@ -147,8 +155,9 @@ void main() {
             updatedAt: DateTime(2024, 1, 1, 10, 0),
           ),
         ];
-        when(mockRepository.getChatThreads())
-            .thenAnswer((_) async => orderedThreads);
+        when(
+          mockRepository.getChatThreads(),
+        ).thenAnswer((_) async => orderedThreads);
 
         // Act
         final result = await useCase();

@@ -10,4 +10,4 @@ class LoginUseCase {
   Future<AuthResult> call(LoginRequest request) async {
     return await repository.login(request);
   }
-} 
+}

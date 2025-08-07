@@ -2,14 +2,14 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/entities/login_request.dart';
 import '../../domain/entities/register_request.dart';
-import '../../domain/entities/User.dart';
+import '../../domain/entities/user.dart';
 import '../datasources/auth_remote_data_source.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 
   AuthRepositoryImpl({AuthRemoteDataSource? remoteDataSource})
-      : _remoteDataSource = remoteDataSource ?? AuthRemoteDataSource();
+    : _remoteDataSource = remoteDataSource ?? AuthRemoteDataSource();
 
   @override
   Future<AuthResult> register(RegisterRequest request) async {
@@ -50,4 +50,4 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthResult> deleteAccount() async {
     return await _remoteDataSource.deleteAccount();
   }
-} 
+}
