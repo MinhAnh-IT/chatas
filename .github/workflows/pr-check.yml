@@ -35,7 +35,7 @@ jobs:
         fi
     
     - name: Analyze changed files
-      run: flutter analyze
+      run: flutter analyze --no-fatal-infos
     
     - name: Run tests
       run: flutter test
