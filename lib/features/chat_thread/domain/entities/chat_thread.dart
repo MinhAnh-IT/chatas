@@ -1,4 +1,6 @@
-class ChatThread {
+import 'package:equatable/equatable.dart';
+
+class ChatThread extends Equatable {
   final String id;
   final String name;
   final String lastMessage;
@@ -10,7 +12,7 @@ class ChatThread {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  ChatThread({
+  const ChatThread({
     required this.id,
     required this.name,
     required this.lastMessage,
@@ -23,4 +25,17 @@ class ChatThread {
     required this.updatedAt,
   });
 
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    lastMessage,
+    lastMessageTime,
+    avatarUrl,
+    members,
+    isGroup,
+    unreadCount,
+    createdAt,
+    updatedAt,
+  ];
 }
