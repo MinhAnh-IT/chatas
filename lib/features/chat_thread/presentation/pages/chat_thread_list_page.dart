@@ -3,10 +3,12 @@ import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_u
 import 'package:flutter/material.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
+import 'package:chatas/shared/widgets/refreshable_list_view.dart';
 import 'package:chatas/core/constants/app_route_constants.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/chat_thread_list_page_constants.dart';
 import '../../data/repositories/chat_thread_repository_impl.dart';
+import '../../domain/entities/chat_thread.dart';
 import '../cubit/chat_thread_list_cubit.dart';
 import '../cubit/chat_thread_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,27 +37,39 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     );
     _cubit.fetchChatThreads();
   }
-
   void _onTabTapped(int index) {
     if (index == 3) {
-      // Tab "Cá nhân"
       context.go('/profile');
     }
-    // Các tab khác có thể thêm logic sau
   }
+
 
   /// Navigates to chat message page when a thread is tapped.
   void _navigateToChatMessage(
-    BuildContext context,
-    String threadId,
-    String threadName,
-  ) {
+      BuildContext context,
+      String threadId,
+      String threadName,
+      ) {
     final route = AppRouteConstants.chatMessageRoute(
       threadId,
       currentUserId: ChatThreadListPageConstants.temporaryUserId,
       otherUserName: threadName,
     );
     context.go(route);
+  }
+
+  /// Handles refresh action when user pulls down to refresh.
+  Future<void> _handleRefresh() async {
+    await _cubit.fetchChatThreads();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(ChatThreadListPageConstants.refreshedMessage),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   @override
@@ -76,26 +90,33 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
         body: BlocBuilder<ChatThreadListCubit, ChatThreadListState>(
           builder: (context, state) {
             if (state is ChatThreadListLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state is ChatThreadListError) {
-              return Center(
-                child: Text(
-                  '${ChatThreadListPageConstants.errorPrefix}${state.message}',
-                ),
+              return RefreshableListView<ChatThread>(
+                items: const [],
+                onRefresh: _handleRefresh,
+                isLoading: true,
+                itemBuilder: (context, thread, index) =>
+                const SizedBox.shrink(),
               );
             }
+
+            if (state is ChatThreadListError) {
+              return RefreshableListView<ChatThread>(
+                items: const [],
+                onRefresh: _handleRefresh,
+                errorMessage: state.message,
+                onRetry: () => _cubit.fetchChatThreads(),
+                itemBuilder: (context, thread, index) =>
+                const SizedBox.shrink(),
+              );
+            }
+
             if (state is ChatThreadListLoaded) {
               final threads = state.threads;
-              if (threads.isEmpty) {
-                return const Center(
-                  child: Text(ChatThreadListPageConstants.noChats),
-                );
-              }
-              return ListView.builder(
-                itemCount: threads.length,
-                itemBuilder: (context, index) {
-                  final thread = threads[index];
+              return RefreshableListView<ChatThread>(
+                items: threads,
+                onRefresh: _handleRefresh,
+                showRefreshMessage: false, // We handle the message manually
+                itemBuilder: (context, thread, index) {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundImage: NetworkImage(thread.avatarUrl),
@@ -114,14 +135,18 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                     },
                   );
                 },
+                emptyWidget: const Center(
+                  child: Text(ChatThreadListPageConstants.noChats),
+                ),
               );
             }
+
             return const SizedBox.shrink();
           },
         ),
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
-          onTap: _onTabTapped,
+            onTap: _onTabTapped,
         ),
       ),
     );
