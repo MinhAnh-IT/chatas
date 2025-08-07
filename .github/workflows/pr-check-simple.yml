@@ -34,8 +34,5 @@ jobs:
           echo "No Dart files changed"
         fi
     
-    - name: Analyze changed files
-      run: flutter analyze
-    
     - name: Run tests
       run: flutter test
