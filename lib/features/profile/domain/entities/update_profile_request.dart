@@ -17,10 +17,10 @@ class UpdateProfileRequest extends Equatable {
 
   @override
   List<Object?> get props => [
-        fullName,
-        username,
-        gender,
-        birthDate,
-        profileImageUrl,
-      ];
-} 
+    fullName,
+    username,
+    gender,
+    birthDate,
+    profileImageUrl,
+  ];
+}

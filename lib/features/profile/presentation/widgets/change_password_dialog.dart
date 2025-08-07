@@ -88,10 +88,11 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                         _obscureConfirmPassword = !_obscureConfirmPassword;
                       });
                     },
-                    validator: (value) => ProfileValidator.validateConfirmPassword(
-                      value,
-                      _newPasswordController.text,
-                    ),
+                    validator: (value) =>
+                        ProfileValidator.validateConfirmPassword(
+                          value,
+                          _newPasswordController.text,
+                        ),
                   ),
                 ],
               ),
@@ -130,9 +131,18 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
-                        : const Text('Đổi mật khẩu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        : const Text(
+                            'Đổi mật khẩu',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -158,9 +168,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         labelText: label,
         border: const OutlineInputBorder(),
         suffixIcon: IconButton(
-          icon: Icon(
-            obscureText ? Icons.visibility : Icons.visibility_off,
-          ),
+          icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
           onPressed: onToggleVisibility,
         ),
       ),
@@ -175,13 +183,12 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         confirmNewPassword: _confirmPasswordController.text,
       );
 
-      final validationError = ProfileValidator.validateChangePasswordRequest(request);
+      final validationError = ProfileValidator.validateChangePasswordRequest(
+        request,
+      );
       if (validationError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(validationError),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(validationError), backgroundColor: Colors.red),
         );
         return;
       }
@@ -226,10 +233,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           message = 'Bạn thao tác quá nhiều lần. Vui lòng thử lại sau.';
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -245,4 +249,4 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       }
     }
   }
-} 
+}

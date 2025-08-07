@@ -30,9 +30,9 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> getUserProfile() async {
     emit(ProfileLoading());
-    
+
     final result = await _getUserProfileUseCase();
-    
+
     result.fold(
       (failure) => emit(ProfileFailure(failure.message)),
       (profile) => emit(ProfileLoaded(profile)),
@@ -41,9 +41,9 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> updateProfile(UpdateProfileRequest request) async {
     emit(ProfileUpdating());
-    
+
     final result = await _updateProfileUseCase(request);
-    
+
     result.fold(
       (failure) => emit(ProfileFailure(failure.message)),
       (profile) => emit(ProfileUpdated(profile)),
@@ -52,23 +52,18 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> changePassword(ChangePasswordRequest request) async {
     emit(PasswordChanging());
-    
+
     final result = await _changePasswordUseCase(request);
-    
+
     result.fold(
       (failure) => emit(ProfileFailure(failure.message)),
       (_) => emit(PasswordChanged()),
     );
   }
 
-
-
   Future<bool> checkUsernameAvailability(String username) async {
     final result = await _checkUsernameAvailabilityUseCase(username);
-    
-    return result.fold(
-      (failure) => false,
-      (isAvailable) => isAvailable,
-    );
+
+    return result.fold((failure) => false, (isAvailable) => isAvailable);
   }
-} 
+}

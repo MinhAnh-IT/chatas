@@ -31,21 +31,13 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 0.1,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 0.1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -99,15 +91,9 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF3498DB),
-                          Color(0xFF2980B9),
-                        ],
+                        colors: [Color(0xFF3498DB), Color(0xFF2980B9)],
                       ),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 4,
-                      ),
+                      border: Border.all(color: Colors.white, width: 4),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFF3498DB).withOpacity(0.3),
@@ -117,9 +103,7 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
                         ),
                       ],
                     ),
-                    child: ClipOval(
-                      child: _buildImage(),
-                    ),
+                    child: ClipOval(child: _buildImage()),
                   ),
                   Positioned(
                     bottom: 5,
@@ -131,10 +115,7 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFFE67E22),
-                            Color(0xFFD35400),
-                          ],
+                          colors: [Color(0xFFE67E22), Color(0xFFD35400)],
                         ),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 3),
@@ -175,10 +156,7 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF3498DB),
-                      Color(0xFF2980B9),
-                    ],
+                    colors: [Color(0xFF3498DB), Color(0xFF2980B9)],
                   ),
                 ),
                 child: const Center(
@@ -225,17 +203,10 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF3498DB),
-            Color(0xFF2980B9),
-          ],
+          colors: [Color(0xFF3498DB), Color(0xFF2980B9)],
         ),
       ),
-      child: const Icon(
-        Icons.person,
-        size: 70,
-        color: Colors.white,
-      ),
+      child: const Icon(Icons.person, size: 70, color: Colors.white),
     );
   }
 
@@ -243,9 +214,7 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             Container(
@@ -295,10 +264,7 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
               ),
               subtitle: const Text(
                 'Chụp ảnh mới',
-                style: TextStyle(
-                  color: Color(0xFF7F8C8D),
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -328,10 +294,7 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
               ),
               subtitle: const Text(
                 'Chọn ảnh có sẵn',
-                style: TextStyle(
-                  color: Color(0xFF7F8C8D),
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 12),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -368,4 +331,4 @@ class _ProfileImagePickerState extends State<ProfileImagePicker>
       }
     }
   }
-} 
+}

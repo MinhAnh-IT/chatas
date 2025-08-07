@@ -9,7 +9,9 @@ class UpdateProfileUseCase {
 
   UpdateProfileUseCase(this.repository);
 
-  Future<Either<ProfileException, UserProfile>> call(UpdateProfileRequest request) {
+  Future<Either<ProfileException, UserProfile>> call(
+    UpdateProfileRequest request,
+  ) {
     return repository.updateProfile(request);
   }
-} 
+}

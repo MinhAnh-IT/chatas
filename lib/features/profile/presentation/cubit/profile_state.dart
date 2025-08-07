@@ -54,4 +54,4 @@ class ProfileFailure extends ProfileState {
 
   @override
   List<Object?> get props => [message];
-} 
+}

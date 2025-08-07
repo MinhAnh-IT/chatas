@@ -18,14 +18,15 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with TickerProviderStateMixin {
   final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
   UserProfile? _profile;
   bool _isLoading = true;
   bool _isUpdating = false;
-  
+
   // Animation controllers
   late AnimationController _cardAnimationController;
   late AnimationController _fadeAnimationController;
@@ -44,27 +45,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _fadeAnimationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
-    _cardScaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _cardAnimationController,
-      curve: Curves.easeOutBack,
-    ));
+    _cardScaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _cardAnimationController,
+        curve: Curves.easeOutBack,
+      ),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _fadeAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     // Start animations
     _fadeAnimationController.forward();
@@ -89,7 +88,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
         if (userDoc.exists) {
           final data = userDoc.data()!;
-          
+
           DateTime birthDate;
           if (data['birthDate'] is Timestamp) {
             birthDate = (data['birthDate'] as Timestamp).toDate();
@@ -98,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           } else {
             birthDate = DateTime.now().subtract(const Duration(days: 6570));
           }
-          
+
           setState(() {
             _profile = UserProfile(
               id: user.uid,
@@ -144,10 +143,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .update({
+        await _firestore.collection('users').doc(user.uid).update({
           'fullName': updatedProfile.fullName,
           'username': updatedProfile.username,
           'gender': updatedProfile.gender,
@@ -198,11 +194,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       final appDir = await getApplicationDocumentsDirectory();
       final assetsDir = Directory('${appDir.path}/assets');
       final profileImagesDir = Directory('${assetsDir.path}/profile_images');
-      
+
       if (!await assetsDir.exists()) {
         await assetsDir.create(recursive: true);
       }
-      
+
       if (!await profileImagesDir.exists()) {
         await profileImagesDir.create(recursive: true);
       }
@@ -212,19 +208,16 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
       final sourceFile = File(imagePath);
       final targetFile = File(localImagePath);
-      
+
       if (await sourceFile.exists()) {
         if (await targetFile.exists()) {
           await targetFile.delete();
         }
-        
+
         await sourceFile.copy(localImagePath);
-        
+
         if (await targetFile.exists()) {
-          await _firestore
-              .collection('users')
-              .doc(user.uid)
-              .update({
+          await _firestore.collection('users').doc(user.uid).update({
             'avatarUrl': localImagePath,
             'updatedAt': FieldValue.serverTimestamp(),
           });
@@ -234,7 +227,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               _profile = _profile!.copyWith(profileImageUrl: localImagePath);
             });
           }
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -314,8 +307,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
             )
           : _profile == null
-              ? _buildErrorWidget()
-              : _buildProfileContent(context, _profile!),
+          ? _buildErrorWidget()
+          : _buildProfileContent(context, _profile!),
     );
   }
 
@@ -342,7 +335,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.error_outline, size: 64, color: Color(0xFFE74C3C)),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Color(0xFFE74C3C),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Có lỗi xảy ra',
@@ -363,7 +360,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3498DB),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -397,10 +397,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFFFFFFF),
-                        Color(0xFFF8F9FA),
-                      ],
+                      colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
@@ -419,10 +416,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         // Header with title
                         Text(
                           'Thông tin cá nhân',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF2C3E50),
-                          ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF2C3E50),
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -448,18 +446,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         // Profile Form
                         ProfileForm(
                           profile: profile,
-                          onProfileUpdated: (UpdateProfileRequest request) async {
-                            final updatedProfile = UserProfile(
-                              id: profile.id,
-                              fullName: request.fullName,
-                              email: profile.email,
-                              username: request.username,
-                              gender: request.gender,
-                              birthDate: request.birthDate,
-                              profileImageUrl: request.profileImageUrl ?? profile.profileImageUrl,
-                            );
-                            await _updateProfile(updatedProfile);
-                          },
+                          onProfileUpdated:
+                              (UpdateProfileRequest request) async {
+                                final updatedProfile = UserProfile(
+                                  id: profile.id,
+                                  fullName: request.fullName,
+                                  email: profile.email,
+                                  username: request.username,
+                                  gender: request.gender,
+                                  birthDate: request.birthDate,
+                                  profileImageUrl:
+                                      request.profileImageUrl ??
+                                      profile.profileImageUrl,
+                                );
+                                await _updateProfile(updatedProfile);
+                              },
                         ),
                       ],
                     ),
@@ -467,7 +468,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
 
             // Actions Card with Animation
@@ -481,10 +482,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFFFFFFF),
-                        Color(0xFFF8F9FA),
-                      ],
+                      colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [

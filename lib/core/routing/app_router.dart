@@ -21,9 +21,10 @@ class AppRouter {
     redirect: (context, state) {
       final user = FirebaseAuth.instance.currentUser;
       final isLoggedIn = user != null;
-      final isAuthRoute = state.matchedLocation == '/login' || 
-                         state.matchedLocation == '/register' || 
-                         state.matchedLocation == '/forgot-password';
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password';
 
       if (!isLoggedIn && !isAuthRoute) {
         return '/login';

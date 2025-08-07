@@ -29,4 +29,4 @@ export '../../shared/utils/profile_validator.dart';
 export 'constants/profile_constants.dart';
 
 // DI
-export 'di/profile_dependency_injection.dart'; 
+export 'di/profile_dependency_injection.dart';
