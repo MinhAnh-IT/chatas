@@ -18,9 +18,11 @@ class ProfileConstants {
   static const String usernameRequired = 'Vui lòng nhập tên người dùng';
   static const String genderRequired = 'Vui lòng chọn giới tính';
   static const String birthDateRequired = 'Vui lòng chọn ngày sinh';
-  static const String currentPasswordRequired = 'Vui lòng nhập mật khẩu hiện tại';
+  static const String currentPasswordRequired =
+      'Vui lòng nhập mật khẩu hiện tại';
   static const String newPasswordRequired = 'Vui lòng nhập mật khẩu mới';
-  static const String confirmPasswordRequired = 'Vui lòng xác nhận mật khẩu mới';
+  static const String confirmPasswordRequired =
+      'Vui lòng xác nhận mật khẩu mới';
 
   // Gender options
   static const List<String> genderOptions = ['Nam', 'Nữ', 'Khác'];
@@ -28,4 +30,4 @@ class ProfileConstants {
   // Minimum lengths
   static const int minUsernameLength = 3;
   static const int minPasswordLength = 8;
-} 
+}

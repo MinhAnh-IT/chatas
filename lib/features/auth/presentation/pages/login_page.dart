@@ -3,10 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
-import '../../domain/entities/login_request.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
-import '../../data/models/user_model.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
@@ -22,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  
+
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _rememberMe = false;
@@ -42,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
 
       try {
         String userEmail = _emailOrUsernameController.text.trim();
-        
+
         if (!userEmail.contains('@')) {
           final userQuery = await _firestore
               .collection(AuthConstants.usersCollection)
@@ -101,13 +99,10 @@ class _LoginPageState extends State<LoginPage> {
             message = 'Thử quá nhiều lần. Vui lòng thử lại sau';
             break;
         }
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(message), backgroundColor: Colors.red),
           );
         }
       } catch (e) {
@@ -137,8 +132,12 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context, constraints) {
             return Center(
               child: SingleChildScrollView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Card(
@@ -147,7 +146,10 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 32,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -179,7 +181,8 @@ class _LoginPageState extends State<LoginPage> {
                               label: 'Email hoặc tên đăng nhập',
                               hint: 'example@email.com',
                               icon: Icons.email_outlined,
-                              validator: (value) => AuthValidator.validateEmailOrUsername(value),
+                              validator: (value) =>
+                                  AuthValidator.validateEmailOrUsername(value),
                             ),
                             const SizedBox(height: 16),
                             AuthTextField(
@@ -194,7 +197,8 @@ class _LoginPageState extends State<LoginPage> {
                                   _obscurePassword = !_obscurePassword;
                                 });
                               },
-                              validator: (value) => AuthValidator.validatePassword(value),
+                              validator: (value) =>
+                                  AuthValidator.validatePassword(value),
                             ),
                             const SizedBox(height: 8),
                             const SizedBox(height: 5),
@@ -211,7 +215,8 @@ class _LoginPageState extends State<LoginPage> {
                                         });
                                       },
                                       activeColor: Colors.blue,
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                       visualDensity: VisualDensity.compact,
                                     ),
                                     const SizedBox(width: 4),
@@ -230,7 +235,10 @@ class _LoginPageState extends State<LoginPage> {
                                   },
                                   child: const Text(
                                     'Quên mật khẩu?',
-                                    style: TextStyle(fontSize: 14, color: Colors.blue),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blue,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -245,7 +253,10 @@ class _LoginPageState extends State<LoginPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('Chưa có tài khoản? ', style: TextStyle(fontSize: 14)),
+                                const Text(
+                                  'Chưa có tài khoản? ',
+                                  style: TextStyle(fontSize: 14),
+                                ),
                                 TextButton(
                                   onPressed: () {
                                     context.push('/register');
@@ -274,4 +285,4 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-} 
+}

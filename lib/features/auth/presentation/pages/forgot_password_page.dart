@@ -31,8 +31,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       });
 
       try {
-        await _firebaseAuth.sendPasswordResetEmail(email: _emailController.text.trim());
-        
+        await _firebaseAuth.sendPasswordResetEmail(
+          email: _emailController.text.trim(),
+        );
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -57,13 +59,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             message = 'Thử quá nhiều lần. Vui lòng thử lại sau';
             break;
         }
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(message), backgroundColor: Colors.red),
           );
         }
       } catch (e) {
@@ -93,8 +92,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           builder: (context, constraints) {
             return Center(
               child: SingleChildScrollView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Card(
@@ -103,7 +106,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 32,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -135,7 +141,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               label: 'Email',
                               hint: 'example@email.com',
                               icon: Icons.email_outlined,
-                              validator: (value) => AuthValidator.validateEmail(value),
+                              validator: (value) =>
+                                  AuthValidator.validateEmail(value),
                             ),
                             const SizedBox(height: 24),
                             AuthButton(
@@ -161,4 +168,4 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ),
     );
   }
-} 
+}

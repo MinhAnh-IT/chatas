@@ -27,4 +27,4 @@ void setupProfileDependencies() {
   getIt.registerLazySingleton(() => ChangePasswordUseCase(getIt()));
 
   getIt.registerLazySingleton(() => CheckUsernameAvailabilityUseCase(getIt()));
-} 
+}

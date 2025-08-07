@@ -12,9 +12,5 @@ class ChangePasswordRequest extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-        currentPassword,
-        newPassword,
-        confirmNewPassword,
-      ];
-} 
+  List<Object?> get props => [currentPassword, newPassword, confirmNewPassword];
+}

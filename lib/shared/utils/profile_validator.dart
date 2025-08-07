@@ -72,7 +72,10 @@ class ProfileValidator {
     return null;
   }
 
-  static String? validateConfirmPassword(String? confirmPassword, String newPassword) {
+  static String? validateConfirmPassword(
+    String? confirmPassword,
+    String newPassword,
+  ) {
     if (confirmPassword == null || confirmPassword.isEmpty) {
       return ProfileConstants.confirmPasswordRequired;
     }
@@ -101,15 +104,20 @@ class ProfileValidator {
   }
 
   static String? validateChangePasswordRequest(ChangePasswordRequest request) {
-    final currentPasswordError = validateCurrentPassword(request.currentPassword);
+    final currentPasswordError = validateCurrentPassword(
+      request.currentPassword,
+    );
     if (currentPasswordError != null) return currentPasswordError;
 
     final newPasswordError = validateNewPassword(request.newPassword);
     if (newPasswordError != null) return newPasswordError;
 
-    final confirmPasswordError = validateConfirmPassword(request.confirmNewPassword, request.newPassword);
+    final confirmPasswordError = validateConfirmPassword(
+      request.confirmNewPassword,
+      request.newPassword,
+    );
     if (confirmPasswordError != null) return confirmPasswordError;
 
     return null;
   }
-} 
+}

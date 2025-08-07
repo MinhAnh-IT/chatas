@@ -33,10 +33,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         throw const UserNotFoundException();
       }
 
-      final doc = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      final doc = await _firestore.collection('users').doc(user.uid).get();
 
       if (!doc.exists) {
         throw const UserNotFoundException();
@@ -46,7 +43,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       return UserProfileModel.fromJson(data);
     } catch (e) {
       if (e is ProfileException) rethrow;
-      throw ProfileUpdateException('Không thể lấy thông tin profile: ${e.toString()}');
+      throw ProfileUpdateException(
+        'Không thể lấy thông tin profile: ${e.toString()}',
+      );
     }
   }
 
@@ -79,16 +78,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         updateData['avatarUrl'] = request.profileImageUrl;
       }
 
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .update(updateData);
+      await _firestore.collection('users').doc(user.uid).update(updateData);
 
       // Get updated profile
       return await getUserProfile();
     } catch (e) {
       if (e is ProfileException) rethrow;
-      throw ProfileUpdateException('Không thể cập nhật profile: ${e.toString()}');
+      throw ProfileUpdateException(
+        'Không thể cập nhật profile: ${e.toString()}',
+      );
     }
   }
 
@@ -113,11 +111,11 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (e.toString().contains('wrong-password')) {
         throw const CurrentPasswordIncorrectException();
       }
-      throw PasswordChangeException('Không thể thay đổi mật khẩu: ${e.toString()}');
+      throw PasswordChangeException(
+        'Không thể thay đổi mật khẩu: ${e.toString()}',
+      );
     }
   }
-
-
 
   @override
   Future<bool> checkUsernameAvailability(String username) async {
@@ -137,7 +135,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           querySnapshot.docs.first.id == user.uid;
     } catch (e) {
       if (e is ProfileException) rethrow;
-      throw ProfileUpdateException('Không thể kiểm tra username: ${e.toString()}');
+      throw ProfileUpdateException(
+        'Không thể kiểm tra username: ${e.toString()}',
+      );
     }
   }
-} 
+}

@@ -162,10 +162,7 @@ class _ProfileFormState extends State<ProfileForm> {
               Expanded(
                 child: Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade700,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
               ),
             ],
@@ -214,7 +211,10 @@ class _ProfileFormState extends State<ProfileForm> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Colors.red),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
       ],
@@ -250,13 +250,13 @@ class _ProfileFormState extends State<ProfileForm> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Theme.of(context).primaryColor),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
           items: ProfileConstants.genderOptions.map((gender) {
-            return DropdownMenuItem(
-              value: gender,
-              child: Text(gender),
-            );
+            return DropdownMenuItem(value: gender, child: Text(gender));
           }).toList(),
           onChanged: (value) {
             setState(() {
@@ -292,7 +292,11 @@ class _ProfileFormState extends State<ProfileForm> {
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today_outlined, color: Colors.grey.shade600, size: 20),
+                Icon(
+                  Icons.calendar_today_outlined,
+                  color: Colors.grey.shade600,
+                  size: 20,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -333,13 +337,12 @@ class _ProfileFormState extends State<ProfileForm> {
         profileImageUrl: widget.profile.profileImageUrl,
       );
 
-      final validationError = ProfileValidator.validateUpdateProfileRequest(request);
+      final validationError = ProfileValidator.validateUpdateProfileRequest(
+        request,
+      );
       if (validationError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(validationError),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(validationError), backgroundColor: Colors.red),
         );
         return;
       }
@@ -347,4 +350,4 @@ class _ProfileFormState extends State<ProfileForm> {
       widget.onProfileUpdated(request);
     }
   }
-} 
+}
