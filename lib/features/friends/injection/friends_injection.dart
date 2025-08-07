@@ -3,7 +3,10 @@ import '../data/datasources/friendDataSource.dart';
 import '../data/repositories/friend_repository_impl.dart';
 import '../domain/usecases/get_friends_usecase.dart';
 import '../domain/usecases/block_friend_usecase.dart';
+import '../domain/usecases/search_users_usecase.dart';
+import '../domain/usecases/send_friend_request_usecase.dart';
 import '../presentation/cubit/friends_list_cubit.dart';
+import '../presentation/cubit/friend_search_cubit.dart';
 
 class FriendsDependencyInjection {
   static late FriendRemoteDataSource _dataSource;
@@ -11,6 +14,8 @@ class FriendsDependencyInjection {
 
   static late GetFriendsUseCase _getFriendsUseCase;
   static late BlockFriendUseCase _blockFriendUseCase;
+  static late SearchUsersUseCase _searchUsersUseCase;
+  static late SendFriendRequestUseCase _sendFriendRequestUseCase;
 
   static void init() {
     // Data layer
@@ -20,18 +25,30 @@ class FriendsDependencyInjection {
     // Use cases
     _getFriendsUseCase = GetFriendsUseCase(_repository);
     _blockFriendUseCase = BlockFriendUseCase(_repository);
+    _searchUsersUseCase = SearchUsersUseCase(_repository);
+    _sendFriendRequestUseCase = SendFriendRequestUseCase(_repository);
   }
 
   // Getters
   static FriendRepositoryImpl get repository => _repository;
   static GetFriendsUseCase get getFriendsUseCase => _getFriendsUseCase;
   static BlockFriendUseCase get blockFriendUseCase => _blockFriendUseCase;
+  static SearchUsersUseCase get searchUsersUseCase => _searchUsersUseCase;
+  static SendFriendRequestUseCase get sendFriendRequestUseCase =>
+      _sendFriendRequestUseCase;
 
   // Cubit factory
   static FriendsListCubit createFriendsListCubit() {
     return FriendsListCubit(
       getFriendsUseCase: _getFriendsUseCase,
       blockFriendUseCase: _blockFriendUseCase,
+    );
+  }
+
+  static FriendSearchCubit createFriendSearchCubit() {
+    return FriendSearchCubit(
+      searchUsersUseCase: _searchUsersUseCase,
+      sendFriendRequestUseCase: _sendFriendRequestUseCase,
     );
   }
 }

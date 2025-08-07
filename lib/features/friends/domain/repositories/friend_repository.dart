@@ -29,4 +29,9 @@ abstract class FriendRepository {
 
   // Status check
   Future<String?> getFriendshipStatus(String userId, String otherUserId);
+  //Search Users
+  Future<List<Map<String, dynamic>>> searchUsers(
+    String query,
+    String currentUserId,
+  );
 }
