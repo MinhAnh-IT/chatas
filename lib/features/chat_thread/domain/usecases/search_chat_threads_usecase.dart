@@ -11,12 +11,12 @@ class SearchChatThreadsUseCase {
   ///
   /// Returns a filtered list of [ChatThread] objects that match the search query.
   /// The search is case-insensitive and matches both thread names and last messages.
-  Future<List<ChatThread>> call(String query) async {
+  Future<List<ChatThread>> call(String query, String currentUserId) async {
     if (query.trim().isEmpty) {
       return [];
     }
 
-    final allThreads = await repository.getChatThreads();
+    final allThreads = await repository.getChatThreads(currentUserId);
     final lowercaseQuery = query.toLowerCase().trim();
 
     return allThreads.where((thread) {
