@@ -34,7 +34,10 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   }
 
   /// Searches for chat threads based on the given query.
-  Future<List<ChatThread>> searchChatThreads(String query, String currentUserId) async {
+  Future<List<ChatThread>> searchChatThreads(
+    String query,
+    String currentUserId,
+  ) async {
     try {
       return await searchChatThreadsUseCase(query, currentUserId);
     } catch (e) {

@@ -57,13 +57,27 @@ void main() {
       );
 
       // assert
-      expect(find.text(ChatMessagePageConstants.replyMenuOption), findsOneWidget);
-      expect(find.text(ChatMessagePageConstants.editMenuOption), findsOneWidget);
-      expect(find.text(ChatMessagePageConstants.deleteMenuOption), findsOneWidget);
-      expect(find.text(ChatMessagePageConstants.copyMenuOption), findsOneWidget);
+      expect(
+        find.text(ChatMessagePageConstants.replyMenuOption),
+        findsOneWidget,
+      );
+      expect(
+        find.text(ChatMessagePageConstants.editMenuOption),
+        findsOneWidget,
+      );
+      expect(
+        find.text(ChatMessagePageConstants.deleteMenuOption),
+        findsOneWidget,
+      );
+      expect(
+        find.text(ChatMessagePageConstants.copyMenuOption),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('hides edit and delete options for other user message', (tester) async {
+    testWidgets('hides edit and delete options for other user message', (
+      tester,
+    ) async {
       // arrange
       final otherUserMessage = ChatMessage(
         id: 'other_message',
@@ -86,16 +100,25 @@ void main() {
       );
 
       // assert
-      expect(find.text(ChatMessagePageConstants.replyMenuOption), findsOneWidget);
+      expect(
+        find.text(ChatMessagePageConstants.replyMenuOption),
+        findsOneWidget,
+      );
       expect(find.text(ChatMessagePageConstants.editMenuOption), findsNothing);
-      expect(find.text(ChatMessagePageConstants.deleteMenuOption), findsNothing);
-      expect(find.text(ChatMessagePageConstants.copyMenuOption), findsOneWidget);
+      expect(
+        find.text(ChatMessagePageConstants.deleteMenuOption),
+        findsNothing,
+      );
+      expect(
+        find.text(ChatMessagePageConstants.copyMenuOption),
+        findsOneWidget,
+      );
     });
 
     testWidgets('calls onReply when reply option is tapped', (tester) async {
       // arrange
       bool replyTapped = false;
-      
+
       await tester.pumpWidget(
         createWidgetUnderTest(
           message: testMessage,
@@ -115,7 +138,7 @@ void main() {
     testWidgets('calls onEdit when edit option is tapped', (tester) async {
       // arrange
       bool editTapped = false;
-      
+
       await tester.pumpWidget(
         createWidgetUnderTest(
           message: testMessage,
@@ -135,7 +158,7 @@ void main() {
     testWidgets('calls onDelete when delete option is tapped', (tester) async {
       // arrange
       bool deleteTapped = false;
-      
+
       await tester.pumpWidget(
         createWidgetUnderTest(
           message: testMessage,
@@ -152,7 +175,9 @@ void main() {
       expect(deleteTapped, isTrue);
     });
 
-    testWidgets('copies text to clipboard when copy option is tapped', (tester) async {
+    testWidgets('copies text to clipboard when copy option is tapped', (
+      tester,
+    ) async {
       // arrange
       const testClipboard = [];
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -177,7 +202,10 @@ void main() {
       await tester.pump();
 
       // assert - no exception should be thrown
-      expect(find.text(ChatMessagePageConstants.copyMenuOption), findsOneWidget);
+      expect(
+        find.text(ChatMessagePageConstants.copyMenuOption),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows proper icons for each menu option', (tester) async {
@@ -206,9 +234,11 @@ void main() {
       );
 
       // assert
-      final deleteMenuFinder = find.text(ChatMessagePageConstants.deleteMenuOption);
+      final deleteMenuFinder = find.text(
+        ChatMessagePageConstants.deleteMenuOption,
+      );
       expect(deleteMenuFinder, findsOneWidget);
-      
+
       final deleteTextWidget = tester.widget<Text>(deleteMenuFinder);
       expect(deleteTextWidget.style?.color, isNotNull);
     });

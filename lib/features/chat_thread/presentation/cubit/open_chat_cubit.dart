@@ -6,9 +6,8 @@ import 'open_chat_state.dart';
 class OpenChatCubit extends Cubit<OpenChatState> {
   final FindOrCreateChatThreadUseCase findOrCreateChatThreadUseCase;
 
-  OpenChatCubit({
-    required this.findOrCreateChatThreadUseCase,
-  }) : super(OpenChatInitial());
+  OpenChatCubit({required this.findOrCreateChatThreadUseCase})
+    : super(OpenChatInitial());
 
   /// Opens chat with a friend - finds existing thread or creates temporary one
   /// This method only prepares the chat thread for navigation

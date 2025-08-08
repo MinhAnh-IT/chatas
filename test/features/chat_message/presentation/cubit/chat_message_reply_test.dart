@@ -83,31 +83,34 @@ void main() {
         expect(cubit.replyToMessageId, isNull);
       });
 
-      test('should emit current state when setting reply message in loaded state', () {
-        // arrange - manually set a loaded state
-        final testMessages = [
-          ChatMessage(
-            id: 'msg1',
-            chatThreadId: 'thread1',
-            senderId: 'user1',
-            senderName: 'User 1',
-            senderAvatarUrl: '',
-            content: 'Test message',
-            sentAt: DateTime.now(),
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
-        ];
-        
-        cubit.emit(ChatMessageLoaded(messages: testMessages));
-        
-        // act
-        cubit.setReplyToMessage('message_123');
-        
-        // assert
-        expect(cubit.state, isA<ChatMessageLoaded>());
-        expect(cubit.replyToMessageId, equals('message_123'));
-      });
+      test(
+        'should emit current state when setting reply message in loaded state',
+        () {
+          // arrange - manually set a loaded state
+          final testMessages = [
+            ChatMessage(
+              id: 'msg1',
+              chatThreadId: 'thread1',
+              senderId: 'user1',
+              senderName: 'User 1',
+              senderAvatarUrl: '',
+              content: 'Test message',
+              sentAt: DateTime.now(),
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          ];
+
+          cubit.emit(ChatMessageLoaded(messages: testMessages));
+
+          // act
+          cubit.setReplyToMessage('message_123');
+
+          // assert
+          expect(cubit.state, isA<ChatMessageLoaded>());
+          expect(cubit.replyToMessageId, equals('message_123'));
+        },
+      );
     });
 
     group('clearReply', () {
@@ -137,13 +140,13 @@ void main() {
             updatedAt: DateTime.now(),
           ),
         ];
-        
+
         cubit.emit(ChatMessageLoaded(messages: testMessages));
         cubit.setReplyToMessage('message_123');
-        
+
         // act
         cubit.clearReply();
-        
+
         // assert
         expect(cubit.state, isA<ChatMessageLoaded>());
         expect(cubit.replyToMessageId, isNull);
@@ -154,16 +157,16 @@ void main() {
       test('should maintain reply ID across different operations', () {
         // arrange
         const replyId = 'reply_123';
-        
+
         // act
         cubit.setReplyToMessage(replyId);
-        
+
         // assert - verify state persists
         expect(cubit.replyToMessageId, equals(replyId));
-        
+
         // act - clear reply
         cubit.clearReply();
-        
+
         // assert - verify state is cleared
         expect(cubit.replyToMessageId, isNull);
       });
@@ -172,10 +175,10 @@ void main() {
         // arrange & act
         cubit.setReplyToMessage('first_reply');
         expect(cubit.replyToMessageId, equals('first_reply'));
-        
+
         cubit.setReplyToMessage('second_reply');
         expect(cubit.replyToMessageId, equals('second_reply'));
-        
+
         cubit.setReplyToMessage(null);
         expect(cubit.replyToMessageId, isNull);
       });

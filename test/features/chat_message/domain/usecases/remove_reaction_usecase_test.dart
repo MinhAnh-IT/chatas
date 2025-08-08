@@ -32,37 +32,28 @@ void main() {
 
         // Assert
         verify(
-          () => mockRepository.removeReaction(
-            messageId,
-            providedUserId,
-          ),
+          () => mockRepository.removeReaction(messageId, providedUserId),
         ).called(1);
       });
 
-      test(
-        'uses provided userId regardless of value',
-        () async {
-          // Arrange
-          const messageId = 'test_message_id';
-          const providedUserId = 'different_user_id';
+      test('uses provided userId regardless of value', () async {
+        // Arrange
+        const messageId = 'test_message_id';
+        const providedUserId = 'different_user_id';
 
-          when(
-            () => mockRepository.removeReaction(any(), any()),
-          ).thenAnswer((_) async {});
+        when(
+          () => mockRepository.removeReaction(any(), any()),
+        ).thenAnswer((_) async {});
 
-          // Act
-          await useCase.call(messageId: messageId, userId: providedUserId);
+        // Act
+        await useCase.call(messageId: messageId, userId: providedUserId);
 
-          // Assert
-          // Should use provided userId
-          verify(
-            () => mockRepository.removeReaction(
-              messageId,
-              providedUserId,
-            ),
-          ).called(1);
-        },
-      );
+        // Assert
+        // Should use provided userId
+        verify(
+          () => mockRepository.removeReaction(messageId, providedUserId),
+        ).called(1);
+      });
 
       test('propagates repository exceptions', () async {
         // Arrange
@@ -95,10 +86,7 @@ void main() {
 
         // Assert
         verify(
-          () => mockRepository.removeReaction(
-            messageId,
-            userId,
-          ),
+          () => mockRepository.removeReaction(messageId, userId),
         ).called(1);
       });
 
@@ -117,10 +105,7 @@ void main() {
         // Assert
         // Should use the provided empty userId
         verify(
-          () => mockRepository.removeReaction(
-            messageId,
-            userId,
-          ),
+          () => mockRepository.removeReaction(messageId, userId),
         ).called(1);
       });
     });

@@ -21,10 +21,7 @@ class CreateChatThreadUseCase {
       lastMessage: initialMessage ?? 'Đoạn chat mới được tạo',
       lastMessageTime: now,
       avatarUrl: friendAvatarUrl,
-      members: [
-        currentUserId,
-        friendId,
-      ],
+      members: [currentUserId, friendId],
       isGroup: false,
       unreadCount: 0,
       createdAt: now,

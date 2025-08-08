@@ -14,8 +14,10 @@ class ChatMessageRemoteDataSource {
   /// Fetches all messages for a specific chat thread from Firestore.
   /// Returns messages sorted by creation time in ascending order.
   Future<List<ChatMessageModel>> fetchMessages(String chatThreadId) async {
-    print('ChatMessageRemoteDataSource: Fetching messages for thread: $chatThreadId');
-    
+    print(
+      'ChatMessageRemoteDataSource: Fetching messages for thread: $chatThreadId',
+    );
+
     final snapshot = await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .where(
@@ -26,8 +28,10 @@ class ChatMessageRemoteDataSource {
         .limit(ChatMessageRemoteConstants.defaultMessageLimit)
         .get();
 
-    print('ChatMessageRemoteDataSource: Fetched ${snapshot.docs.length} documents');
-    
+    print(
+      'ChatMessageRemoteDataSource: Fetched ${snapshot.docs.length} documents',
+    );
+
     // Debug: print all thread IDs in the collection
     final allDocsSnapshot = await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
@@ -36,7 +40,9 @@ class ChatMessageRemoteDataSource {
     print('ChatMessageRemoteDataSource: All thread IDs in collection:');
     for (final doc in allDocsSnapshot.docs) {
       final data = doc.data();
-      print('  - Thread ID: ${data['chatThreadId']}, Message: ${data['content']?.toString().substring(0, math.min(20, data['content']?.toString().length ?? 0))}...');
+      print(
+        '  - Thread ID: ${data['chatThreadId']}, Message: ${data['content']?.toString().substring(0, math.min(20, data['content']?.toString().length ?? 0))}...',
+      );
     }
 
     // Filter out deleted messages in code instead of query
@@ -49,7 +55,9 @@ class ChatMessageRemoteDataSource {
   /// Provides a real-time stream of messages for a specific chat thread.
   /// Automatically updates when new messages are added or existing ones are modified.
   Stream<List<ChatMessageModel>> messagesStream(String chatThreadId) {
-    print('ChatMessageRemoteDataSource: Setting up messages stream for thread: $chatThreadId');
+    print(
+      'ChatMessageRemoteDataSource: Setting up messages stream for thread: $chatThreadId',
+    );
     return firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .where(
@@ -59,32 +67,36 @@ class ChatMessageRemoteDataSource {
         .orderBy(ChatMessageRemoteConstants.createdAtField, descending: false)
         .limit(ChatMessageRemoteConstants.defaultMessageLimit)
         .snapshots()
-        .map(
-          (snapshot) {
-            print('ChatMessageRemoteDataSource: Stream received ${snapshot.docs.length} documents for thread $chatThreadId');
-            final messages = snapshot.docs
-                .map((doc) => ChatMessageModel.fromJson(doc.data()))
-                .where((message) => !message.isDeleted)
-                .toList();
-            print('ChatMessageRemoteDataSource: After filtering, ${messages.length} messages for thread $chatThreadId');
-            return messages;
-          },
-        );
+        .map((snapshot) {
+          print(
+            'ChatMessageRemoteDataSource: Stream received ${snapshot.docs.length} documents for thread $chatThreadId',
+          );
+          final messages = snapshot.docs
+              .map((doc) => ChatMessageModel.fromJson(doc.data()))
+              .where((message) => !message.isDeleted)
+              .toList();
+          print(
+            'ChatMessageRemoteDataSource: After filtering, ${messages.length} messages for thread $chatThreadId',
+          );
+          return messages;
+        });
   }
 
   /// Adds a new message to Firestore.
   /// Creates a new document in the messages collection.
   /// Also updates the lastMessage and lastMessageTime in the chat thread.
   Future<void> addMessage(ChatMessageModel model) async {
-    print('ChatMessageRemoteDataSource: Adding message to Firestore - ID: ${model.id}, ThreadID: ${model.chatThreadId}');
-    
+    print(
+      'ChatMessageRemoteDataSource: Adding message to Firestore - ID: ${model.id}, ThreadID: ${model.chatThreadId}',
+    );
+
     // Add the message
     await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(model.id)
         .set(model.toJson());
     print('ChatMessageRemoteDataSource: Message added successfully');
-    
+
     // Update the chat thread's lastMessage and lastMessageTime
     try {
       await firestore
@@ -95,9 +107,13 @@ class ChatMessageRemoteDataSource {
             'lastMessageTime': model.sentAt.toIso8601String(),
             'updatedAt': DateTime.now().toIso8601String(),
           });
-      print('ChatMessageRemoteDataSource: Updated chat thread lastMessage for thread: ${model.chatThreadId}');
+      print(
+        'ChatMessageRemoteDataSource: Updated chat thread lastMessage for thread: ${model.chatThreadId}',
+      );
     } catch (e) {
-      print('ChatMessageRemoteDataSource: Error updating chat thread lastMessage: $e');
+      print(
+        'ChatMessageRemoteDataSource: Error updating chat thread lastMessage: $e',
+      );
       // Don't throw error, message was already sent successfully
     }
   }
@@ -186,7 +202,8 @@ class ChatMessageRemoteDataSource {
     }
 
     final messageData = messageDoc.data()!;
-    final messageSenderId = messageData[ChatMessageRemoteConstants.senderIdField];
+    final messageSenderId =
+        messageData[ChatMessageRemoteConstants.senderIdField];
 
     if (messageSenderId != userId) {
       throw Exception('You can only edit your own messages');
@@ -198,8 +215,10 @@ class ChatMessageRemoteDataSource {
         .doc(messageId)
         .update({
           ChatMessageRemoteConstants.contentField: newContent,
-          ChatMessageRemoteConstants.editedAtField: FieldValue.serverTimestamp(),
-          ChatMessageRemoteConstants.updatedAtField: FieldValue.serverTimestamp(),
+          ChatMessageRemoteConstants.editedAtField:
+              FieldValue.serverTimestamp(),
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
         });
   }
 
@@ -220,7 +239,8 @@ class ChatMessageRemoteDataSource {
     }
 
     final messageData = messageDoc.data()!;
-    final messageSenderId = messageData[ChatMessageRemoteConstants.senderIdField];
+    final messageSenderId =
+        messageData[ChatMessageRemoteConstants.senderIdField];
 
     if (messageSenderId != userId) {
       throw Exception('You can only delete your own messages');
@@ -232,7 +252,8 @@ class ChatMessageRemoteDataSource {
         .doc(messageId)
         .update({
           ChatMessageRemoteConstants.isDeletedField: true,
-          ChatMessageRemoteConstants.updatedAtField: FieldValue.serverTimestamp(),
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
         });
   }
 

@@ -13,9 +13,6 @@ class RemoveReactionUseCase {
   /// [messageId] The ID of the message to remove reaction from
   /// [userId] The ID of the user whose reaction should be removed
   Future<void> call({required String messageId, required String userId}) async {
-    await _repository.removeReaction(
-      messageId,
-      userId,
-    );
+    await _repository.removeReaction(messageId, userId);
   }
 }

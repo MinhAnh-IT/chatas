@@ -13,7 +13,7 @@ class EditMessageUseCase {
   /// [messageId] The ID of the message to edit
   /// [newContent] The new content for the message
   /// [userId] The ID of the user attempting to edit (for ownership validation)
-  /// 
+  ///
   /// Throws [Exception] if user doesn't own the message or edit fails
   Future<void> call({
     required String messageId,

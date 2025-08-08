@@ -130,7 +130,7 @@ class MessageContextMenu extends StatelessWidget {
               label: ChatMessagePageConstants.replyMenuOption,
               onTap: onReply,
             ),
-            
+
             // Edit option (only for own messages)
             if (isOwnMessage)
               _buildMenuItem(
@@ -139,7 +139,7 @@ class MessageContextMenu extends StatelessWidget {
                 label: ChatMessagePageConstants.editMenuOption,
                 onTap: onEdit,
               ),
-            
+
             // Delete option (only for own messages)
             if (isOwnMessage)
               _buildMenuItem(
@@ -149,7 +149,7 @@ class MessageContextMenu extends StatelessWidget {
                 onTap: onDelete,
                 isDestructive: true,
               ),
-            
+
             // Copy option (available for all text messages)
             if (message.type == MessageType.text)
               _buildMenuItem(
@@ -176,8 +176,8 @@ class MessageContextMenu extends StatelessWidget {
     bool isDestructive = false,
   }) {
     final theme = Theme.of(context);
-    final textColor = isDestructive 
-        ? theme.colorScheme.error 
+    final textColor = isDestructive
+        ? theme.colorScheme.error
         : theme.colorScheme.onSurface;
 
     return InkWell(
@@ -187,18 +187,12 @@ class MessageContextMenu extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: textColor,
-            ),
+            Icon(icon, size: 20, color: textColor),
             const SizedBox(width: 12),
             Flexible(
               child: Text(
                 label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: textColor,
-                ),
+                style: theme.textTheme.bodyMedium?.copyWith(color: textColor),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

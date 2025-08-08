@@ -23,10 +23,7 @@ class ReplyPreview extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
         border: Border(
-          left: BorderSide(
-            color: theme.colorScheme.primary,
-            width: 4,
-          ),
+          left: BorderSide(color: theme.colorScheme.primary, width: 4),
         ),
       ),
       child: Row(

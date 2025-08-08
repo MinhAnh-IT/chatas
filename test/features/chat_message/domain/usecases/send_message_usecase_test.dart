@@ -43,7 +43,12 @@ void main() {
         when(() => mockRepository.sendMessage(any())).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(chatThreadId: chatThreadId, content: content, senderId: 'test_user', senderName: 'Test User');
+        await useCase.call(
+          chatThreadId: chatThreadId,
+          content: content,
+          senderId: 'test_user',
+          senderName: 'Test User',
+        );
 
         // Assert
         final captured = verify(
@@ -53,14 +58,8 @@ void main() {
 
         expect(sentMessage.chatThreadId, equals(chatThreadId));
         expect(sentMessage.content, equals(content));
-        expect(
-          sentMessage.senderId,
-          equals('test_user'),
-        );
-        expect(
-          sentMessage.senderName,
-          equals('Test User'),
-        );
+        expect(sentMessage.senderId, equals('test_user'));
+        expect(sentMessage.senderName, equals('Test User'));
         expect(
           sentMessage.senderAvatarUrl,
           equals(ChatMessagePageConstants.temporaryAvatarUrl),
@@ -78,13 +77,23 @@ void main() {
         when(() => mockRepository.sendMessage(any())).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(chatThreadId: chatThreadId, content: content, senderId: 'test_user', senderName: 'Test User');
+        await useCase.call(
+          chatThreadId: chatThreadId,
+          content: content,
+          senderId: 'test_user',
+          senderName: 'Test User',
+        );
 
         await Future.delayed(
           const Duration(milliseconds: 1),
         ); // Ensure different timestamp
 
-        await useCase.call(chatThreadId: chatThreadId, content: content, senderId: 'test_user', senderName: 'Test User');
+        await useCase.call(
+          chatThreadId: chatThreadId,
+          content: content,
+          senderId: 'test_user',
+          senderName: 'Test User',
+        );
 
         // Assert
         final captured = verify(
@@ -159,7 +168,12 @@ void main() {
         when(() => mockRepository.sendMessage(any())).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(chatThreadId: chatThreadId, content: content, senderId: 'test_user', senderName: 'Test User');
+        await useCase.call(
+          chatThreadId: chatThreadId,
+          content: content,
+          senderId: 'test_user',
+          senderName: 'Test User',
+        );
 
         final afterTime = DateTime.now();
 
@@ -193,7 +207,12 @@ void main() {
 
         // Act & Assert
         expect(
-          () => useCase.call(chatThreadId: chatThreadId, content: content, senderId: 'test_user', senderName: 'Test User'),
+          () => useCase.call(
+            chatThreadId: chatThreadId,
+            content: content,
+            senderId: 'test_user',
+            senderName: 'Test User',
+          ),
           throwsA(exception),
         );
       });
@@ -206,7 +225,12 @@ void main() {
         when(() => mockRepository.sendMessage(any())).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(chatThreadId: chatThreadId, content: content, senderId: 'test_user', senderName: 'Test User');
+        await useCase.call(
+          chatThreadId: chatThreadId,
+          content: content,
+          senderId: 'test_user',
+          senderName: 'Test User',
+        );
 
         // Assert
         final captured = verify(

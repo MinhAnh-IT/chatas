@@ -115,7 +115,8 @@ class FakeDeleteChatThreadUseCase implements DeleteChatThreadUseCase {
   }
 }
 
-class FakeFindOrCreateChatThreadUseCase implements FindOrCreateChatThreadUseCase {
+class FakeFindOrCreateChatThreadUseCase
+    implements FindOrCreateChatThreadUseCase {
   bool shouldThrowError;
 
   FakeFindOrCreateChatThreadUseCase({this.shouldThrowError = false});
