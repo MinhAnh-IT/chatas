@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +11,7 @@ import '../../constants/profile_constants.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/update_profile_request.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -197,7 +199,6 @@ class _ProfilePageState extends State<ProfilePage>
       if (!await assetsDir.exists()) {
         await assetsDir.create(recursive: true);
       }
-
       if (!await profileImagesDir.exists()) {
         await profileImagesDir.create(recursive: true);
       }
@@ -208,44 +209,60 @@ class _ProfilePageState extends State<ProfilePage>
       final sourceFile = File(imagePath);
       final targetFile = File(localImagePath);
 
-      if (await sourceFile.exists()) {
-        if (await targetFile.exists()) {
-          await targetFile.delete();
-        }
-
-        await sourceFile.copy(localImagePath);
-
-        if (await targetFile.exists()) {
-          await _firestore.collection('users').doc(user.uid).update({
-            'avatarUrl': localImagePath,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-
-          if (_profile != null) {
-            setState(() {
-              _profile = _profile!.copyWith(profileImageUrl: localImagePath);
-            });
-          }
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật ảnh đại diện thành công!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        } else {
-          throw Exception('Không thể tạo file tại: $localImagePath');
-        }
-      } else {
+      if (!await sourceFile.exists()) {
         throw Exception('File nguồn không tồn tại: $imagePath');
+      }
+
+      // Ghi ảnh vào local
+      if (await targetFile.exists()) {
+        await targetFile.delete();
+      }
+      await sourceFile.copy(localImagePath);
+
+      // Upload lên Cloudinary
+      final cloudinaryUrl = Uri.parse(
+        'https://api.cloudinary.com/v1_1/dzbo8ubol/image/upload',
+      );
+
+      final request = http.MultipartRequest('POST', cloudinaryUrl)
+        ..fields['upload_preset'] = 'profile_upload'
+        ..files.add(await http.MultipartFile.fromPath('file', localImagePath));
+
+      final response = await request.send();
+
+      if (response.statusCode != 200) {
+        throw Exception('Không thể upload ảnh lên Cloudinary');
+      }
+
+      final resBody = await response.stream.bytesToString();
+      final data = json.decode(resBody);
+      final cloudImageUrl = data['secure_url'];
+
+      // Cập nhật Firestore: Lưu URL public
+      await _firestore.collection('users').doc(user.uid).update({
+        'avatarUrl': cloudImageUrl, // 👈 Lưu URL, không phải path local nữa
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      if (_profile != null) {
+        setState(() {
+          _profile = _profile!.copyWith(profileImageUrl: cloudImageUrl);
+        });
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cập nhật ảnh đại diện thành công!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi lưu ảnh: ${e.toString()}'),
+            content: Text('Lỗi: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -301,10 +318,10 @@ class _ProfilePageState extends State<ProfilePage>
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3498DB)),
-              ),
-            )
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3498DB)),
+        ),
+      )
           : _profile == null
           ? _buildErrorWidget()
           : _buildProfileContent(context, _profile!),
@@ -417,9 +434,9 @@ class _ProfilePageState extends State<ProfilePage>
                           'Thông tin cá nhân',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF2C3E50),
-                              ),
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF2C3E50),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -447,19 +464,19 @@ class _ProfilePageState extends State<ProfilePage>
                           profile: profile,
                           onProfileUpdated:
                               (UpdateProfileRequest request) async {
-                                final updatedProfile = UserProfile(
-                                  id: profile.id,
-                                  fullName: request.fullName,
-                                  email: profile.email,
-                                  username: request.username,
-                                  gender: request.gender,
-                                  birthDate: request.birthDate,
-                                  profileImageUrl:
-                                      request.profileImageUrl ??
-                                      profile.profileImageUrl,
-                                );
-                                await _updateProfile(updatedProfile);
-                              },
+                            final updatedProfile = UserProfile(
+                              id: profile.id,
+                              fullName: request.fullName,
+                              email: profile.email,
+                              username: request.username,
+                              gender: request.gender,
+                              birthDate: request.birthDate,
+                              profileImageUrl:
+                              request.profileImageUrl ??
+                                  profile.profileImageUrl,
+                            );
+                            await _updateProfile(updatedProfile);
+                          },
                         ),
                       ],
                     ),
