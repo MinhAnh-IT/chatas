@@ -99,10 +99,7 @@ class _ProfileFormState extends State<ProfileForm> {
               ),
               child: const Text(
                 'Lưu thay đổi',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
