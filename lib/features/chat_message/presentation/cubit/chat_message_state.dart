@@ -103,3 +103,13 @@ class ChatMessageReactionAdded extends ChatMessageState {
   @override
   List<Object?> get props => [messages];
 }
+
+/// State for temporary chat thread (no messages yet, waiting for first message)
+class ChatMessageTemporary extends ChatMessageState {
+  final String tempThreadId;
+
+  const ChatMessageTemporary({required this.tempThreadId});
+
+  @override
+  List<Object?> get props => [tempThreadId];
+}

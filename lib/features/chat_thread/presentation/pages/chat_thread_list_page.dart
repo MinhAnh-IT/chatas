@@ -2,6 +2,7 @@ import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_use
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
@@ -38,12 +39,14 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
     final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
     final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
+    final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(repository);
 
     _cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
       createChatThreadUseCase: createChatThreadUseCase,
       searchChatThreadsUseCase: searchChatThreadsUseCase,
       deleteChatThreadUseCase: deleteChatThreadUseCase,
+      findOrCreateChatThreadUseCase: findOrCreateChatThreadUseCase,
     );
     _cubit.fetchChatThreads();
   }

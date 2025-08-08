@@ -5,6 +5,8 @@ import '../../domain/usecases/get_messages_stream_usecase.dart';
 import '../../domain/usecases/send_message_usecase.dart';
 import '../../domain/usecases/add_reaction_usecase.dart';
 import '../../domain/usecases/remove_reaction_usecase.dart';
+import '../../../chat_thread/domain/entities/chat_thread.dart';
+import '../../../chat_thread/domain/usecases/send_first_message_usecase.dart';
 import '../../constants/chat_message_page_constants.dart';
 import 'chat_message_state.dart';
 
@@ -15,27 +17,35 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   final SendMessageUseCase _sendMessageUseCase;
   final AddReactionUseCase _addReactionUseCase;
   final RemoveReactionUseCase _removeReactionUseCase;
+  final SendFirstMessageUseCase _sendFirstMessageUseCase;
 
   StreamSubscription<List<ChatMessage>>? _messagesSubscription;
   String? _currentChatThreadId;
+  ChatThread? _currentThread;
+  bool _isTemporaryThread = false;
 
   ChatMessageCubit({
     required GetMessagesStreamUseCase getMessagesStreamUseCase,
     required SendMessageUseCase sendMessageUseCase,
     required AddReactionUseCase addReactionUseCase,
     required RemoveReactionUseCase removeReactionUseCase,
+    required SendFirstMessageUseCase sendFirstMessageUseCase,
   }) : _getMessagesStreamUseCase = getMessagesStreamUseCase,
        _sendMessageUseCase = sendMessageUseCase,
        _addReactionUseCase = addReactionUseCase,
        _removeReactionUseCase = removeReactionUseCase,
+       _sendFirstMessageUseCase = sendFirstMessageUseCase,
        super(const ChatMessageInitial());
 
   /// Loads messages for a specific chat thread and sets up real-time updates.
   /// Subscribes to the message stream for automatic updates.
   Future<void> loadMessages(String chatThreadId) async {
     try {
+      print('ChatMessageCubit: Loading messages for thread: $chatThreadId');
       emit(const ChatMessageLoading());
       _currentChatThreadId = chatThreadId;
+      _currentThread = null; // Clear any temporary thread
+      _isTemporaryThread = false;
 
       // Cancel any existing subscription
       await _messagesSubscription?.cancel();
@@ -43,18 +53,41 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       // Subscribe to real-time message updates
       _messagesSubscription = _getMessagesStreamUseCase(chatThreadId).listen(
         (messages) {
+          print('ChatMessageCubit: Received ${messages.length} messages for thread $chatThreadId');
           emit(ChatMessageLoaded(messages: messages));
         },
         onError: (error) {
+          print('ChatMessageCubit: Error loading messages for thread $chatThreadId: $error');
           emit(ChatMessageError(message: error.toString()));
         },
       );
+    } catch (e) {
+      print('ChatMessageCubit: Exception loading messages for thread $chatThreadId: $e');
+      emit(ChatMessageError(message: e.toString()));
+    }
+  }
+
+  /// Loads a temporary thread (not yet saved to database).
+  /// Shows empty chat interface ready for first message.
+  Future<void> loadTemporaryThread(ChatThread temporaryThread) async {
+    try {
+      emit(const ChatMessageLoading());
+      _currentThread = temporaryThread;
+      _currentChatThreadId = temporaryThread.id;
+      _isTemporaryThread = true;
+
+      // Cancel any existing subscription since temporary threads have no messages
+      await _messagesSubscription?.cancel();
+
+      // Show empty state for temporary thread
+      emit(ChatMessageTemporary(tempThreadId: temporaryThread.id));
     } catch (e) {
       emit(ChatMessageError(message: e.toString()));
     }
   }
 
   /// Sends a new text message to the current chat thread.
+  /// For temporary threads, creates the real thread first, then sends the message.
   /// Temporarily shows the message as sending before actual confirmation.
   Future<void> sendMessage(String content) async {
     if (_currentChatThreadId == null || content.trim().isEmpty) {
@@ -63,6 +96,48 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
 
     try {
       final currentState = state;
+      
+      // Handle temporary thread - create real thread first
+      if (_isTemporaryThread && _currentThread != null) {
+        // Create the first message
+        final now = DateTime.now();
+        final firstMessage = ChatMessage(
+          id: 'msg_${now.millisecondsSinceEpoch}',
+          chatThreadId: _currentThread!.id,
+          senderId: ChatMessagePageConstants.temporaryUserId,
+          senderName: ChatMessagePageConstants.temporaryUserName,
+          senderAvatarUrl: ChatMessagePageConstants.temporaryAvatarUrl,
+          content: content.trim(),
+          type: MessageType.text,
+          status: MessageStatus.sent,
+          sentAt: now,
+          createdAt: now,
+          updatedAt: now,
+        );
+        
+        final realThreadId = await _sendFirstMessageUseCase(
+          chatThread: _currentThread!,
+          message: firstMessage,
+        );
+        
+        print('ChatMessageCubit: Created real thread with ID: $realThreadId');
+        
+        // Update to real thread
+        _currentChatThreadId = realThreadId;
+        _isTemporaryThread = false;
+        _currentThread = null;
+        
+        // Wait a bit to ensure message is saved before subscribing to stream
+        await Future.delayed(const Duration(milliseconds: 200));
+        
+        print('ChatMessageCubit: Loading messages for real thread: $realThreadId');
+        
+        // Start listening to the real thread's messages
+        await loadMessages(realThreadId);
+        return;
+      }
+      
+      // Handle normal message sending for existing threads
       if (currentState is ChatMessageLoaded) {
         // Create a pending message
         final now = DateTime.now();
