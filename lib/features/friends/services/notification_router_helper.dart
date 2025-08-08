@@ -8,7 +8,8 @@ class NotificationRouterHelper {
   /// Tạo route cho notifications page
   static Widget buildNotificationsPage(BuildContext context) {
     return BlocProvider(
-      create: (context) => notification_di.sl<NotificationCubit>()..initialize(),
+      create: (context) =>
+          notification_di.sl<NotificationCubit>()..initialize(),
       child: const NotificationsPage(),
     );
   }
@@ -58,22 +59,19 @@ class NotificationRouterHelper {
     final friendId = data['friendId'] ?? data['accepterId'];
     // TODO: Navigate to friend profile
     // Navigator.pushNamed(context, '/profile/$friendId');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navigating to profile: $friendId')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Navigating to profile: $friendId')));
   }
 
-  static void _navigateToChat(
-    BuildContext context,
-    Map<String, dynamic> data,
-  ) {
+  static void _navigateToChat(BuildContext context, Map<String, dynamic> data) {
     final senderId = data['senderId'];
     // TODO: Navigate to chat
     // final chatId = data['chatId'];
     // Navigator.pushNamed(context, '/chat/$chatId');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Opening chat with: $senderId')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Opening chat with: $senderId')));
   }
 
   static void _navigateToFriendSearch(BuildContext context) {

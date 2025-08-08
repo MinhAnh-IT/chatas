@@ -8,6 +8,7 @@ import 'package:chatas/shared/widgets/bottom_navigation.dart';
 import 'package:chatas/shared/widgets/refreshable_list_view.dart';
 import 'package:chatas/core/constants/app_route_constants.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import '../../constants/chat_thread_list_page_constants.dart';
 import '../../data/repositories/chat_thread_repository_impl.dart';
 import '../../domain/entities/chat_thread.dart';
@@ -15,6 +16,10 @@ import '../cubit/chat_thread_list_cubit.dart';
 import '../cubit/chat_thread_list_state.dart';
 import '../widgets/chat_thread_list_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
+import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
+import 'package:chatas/features/notifications/presentation/cubit/notification_state.dart';
+import 'package:chatas/features/notifications/notification_injection.dart';
 
 class ChatThreadListPage extends StatefulWidget {
   const ChatThreadListPage({super.key});
@@ -25,6 +30,7 @@ class ChatThreadListPage extends StatefulWidget {
 
 class _ChatThreadListPageState extends State<ChatThreadListPage> {
   late ChatThreadListCubit _cubit;
+  late NotificationCubit _notificationCubit;
   bool _isSearchVisible = false;
   final TextEditingController _searchController = TextEditingController();
   List<ChatThread> _searchResults = [];
@@ -45,7 +51,26 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       searchChatThreadsUseCase: searchChatThreadsUseCase,
       deleteChatThreadUseCase: deleteChatThreadUseCase,
     );
+    
+    // Khởi tạo notification cubit
+    _notificationCubit = NotificationCubit(
+      initializeNotifications: sl(),
+      getNotifications: sl(),
+      markAsRead: sl(),
+      getUnreadCount: sl(),
+      sendFriendRequestNotification: sl(),
+      sendFriendAcceptedNotification: sl(),
+    );
+    
     _cubit.fetchChatThreads();
+    _notificationCubit.getUnreadCount();
+    
+    // Refresh notification count mỗi 30 giây
+    Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        _notificationCubit.getUnreadCount();
+      }
+    });
   }
 
   @override
@@ -224,12 +249,55 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _notificationCubit),
+      ],
       child: Scaffold(
         appBar: CommonAppBar(
           title: ChatThreadListPageConstants.title,
           actions: [
+            BlocBuilder<NotificationCubit, NotificationState>(
+              builder: (context, state) {
+                return Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications),
+                      tooltip: 'Thông báo',
+                      onPressed: () {
+                        context.go(AppRouteConstants.notificationsPath);
+                      },
+                    ),
+                    if (state is NotificationLoaded && state.unreadCount > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            '${state.unreadCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: ChatThreadListPageConstants.searchTooltip,
@@ -294,7 +362,8 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
                 context.go(AppRouteConstants.friendsPath);
                 break;
               case 2:
-                // Trang Thông báo (chưa implement)
+                // Chuyển đến trang Thông báo
+                context.go(AppRouteConstants.notificationsPath);
                 break;
               case 3:
                 // Chuyển đến trang Profile

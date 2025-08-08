@@ -150,8 +150,8 @@ class _FriendRequestsPageState extends State<FriendRequestsPage>
                                       request.id,
                                       request.senderId,
                                       request.receiverId,
-                                      request.senderName.isNotEmpty 
-                                          ? request.senderName 
+                                      request.senderName.isNotEmpty
+                                          ? request.senderName
                                           : 'Người dùng',
                                     );
                               },
@@ -165,8 +165,9 @@ class _FriendRequestsPageState extends State<FriendRequestsPage>
                                     .read<FriendRequestCubit>()
                                     .rejectRequest(
                                       request.id,
-                                      request.senderName.isNotEmpty 
-                                          ? request.senderName 
+                                      request.senderId,
+                                      request.senderName.isNotEmpty
+                                          ? request.senderName
                                           : 'Người dùng',
                                     );
                               },

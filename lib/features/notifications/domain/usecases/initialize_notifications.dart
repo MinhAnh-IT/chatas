@@ -7,7 +7,7 @@ class InitializeNotifications {
 
   Future<void> call() async {
     await repository.initialize();
-    
+
     // Lấy và cập nhật FCM token
     final token = await repository.getFCMToken();
     if (token != null) {

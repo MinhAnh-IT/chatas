@@ -24,7 +24,9 @@ class NotificationItem extends StatelessWidget {
         title: Text(
           notification.title,
           style: TextStyle(
-            fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+            fontWeight: notification.isRead
+                ? FontWeight.normal
+                : FontWeight.bold,
             fontSize: 16,
           ),
         ),
@@ -35,7 +37,9 @@ class NotificationItem extends StatelessWidget {
             Text(
               notification.body,
               style: TextStyle(
-                color: notification.isRead ? Colors.grey[600] : Colors.grey[800],
+                color: notification.isRead
+                    ? Colors.grey[600]
+                    : Colors.grey[800],
                 fontSize: 14,
               ),
               maxLines: 2,
@@ -44,18 +48,11 @@ class NotificationItem extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(
-                  Icons.access_time,
-                  size: 12,
-                  color: Colors.grey[500],
-                ),
+                Icon(Icons.access_time, size: 12, color: Colors.grey[500]),
                 const SizedBox(width: 4),
                 Text(
                   _formatDateTime(notification.createdAt),
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
                 const Spacer(),
                 if (!notification.isRead)
@@ -112,11 +109,7 @@ class NotificationItem extends StatelessWidget {
 
     return CircleAvatar(
       backgroundColor: iconColor.withOpacity(0.1),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 24,
-      ),
+      child: Icon(iconData, color: iconColor, size: 24),
     );
   }
 

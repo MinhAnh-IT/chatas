@@ -15,12 +15,17 @@ import 'package:chatas/features/friends/presentation/pages/friends_list_page.dar
 import 'package:chatas/features/friends/presentation/pages/friend_search_page.dart';
 import 'package:chatas/features/friends/presentation/pages/friend_requests_page.dart';
 import 'package:chatas/features/friends/injection/friends_injection.dart';
+import 'package:chatas/features/friends/services/notification_navigation_service.dart';
+import 'package:chatas/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
+import 'package:chatas/features/notifications/notification_injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
+    navigatorKey: NotificationNavigationService.navigatorKey,
     initialLocation: '/',
     redirect: (context, state) {
       final user = FirebaseAuth.instance.currentUser;
@@ -107,6 +112,23 @@ class AppRouter {
             create: (context) =>
                 FriendsDependencyInjection.createFriendSearchCubit(),
             child: FriendSearchPage(currentUserId: currentUserId),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRouteConstants.notificationsPath,
+        name: AppRouteConstants.notificationsPathName,
+        builder: (context, state) {
+          return BlocProvider(
+            create: (context) => NotificationCubit(
+              initializeNotifications: sl(),
+              getNotifications: sl(),
+              markAsRead: sl(),
+              getUnreadCount: sl(),
+              sendFriendRequestNotification: sl(),
+              sendFriendAcceptedNotification: sl(),
+            ),
+            child: const NotificationsPage(),
           );
         },
       ),

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'features/friends/injection/friends_injection.dart';
+import 'features/friends/services/fcm_push_service.dart';
 import 'features/notifications/notification_injection.dart';
 import 'features/notifications/background_message_handler.dart';
 
@@ -17,6 +18,9 @@ void main() async {
   // Initialize dependencies - notifications TRƯỚC friends
   setupNotificationDependencies();
   FriendsDependencyInjection.init();
+
+  // Khởi tạo FCM Push Service
+  await FCMPushService.initializeFCM();
 
   runApp(MyApp());
 }

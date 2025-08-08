@@ -51,22 +51,13 @@ class NotificationIcon extends StatelessWidget {
   final double size;
   final Color? color;
 
-  const NotificationIcon({
-    super.key,
-    this.onTap,
-    this.size = 24,
-    this.color,
-  });
+  const NotificationIcon({super.key, this.onTap, this.size = 24, this.color});
 
   @override
   Widget build(BuildContext context) {
     return NotificationBadge(
       child: IconButton(
-        icon: Icon(
-          Icons.notifications,
-          size: size,
-          color: color,
-        ),
+        icon: Icon(Icons.notifications, size: size, color: color),
         onPressed: onTap,
       ),
     );

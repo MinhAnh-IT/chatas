@@ -6,19 +6,19 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Khởi tạo Firebase ở đây nếu cần thiết
   // await Firebase.initializeApp();
-  
+
   print('Handling a background message: ${message.messageId}');
-  
+
   // Xử lý thông báo background ở đây
   // Có thể lưu vào local database hoặc hiển thị local notification
-  
+
   // Ví dụ: Lưu thông báo vào local storage
   // final localDataSource = NotificationLocalDataSource();
   // final notificationModel = NotificationModel.fromFirebaseMessage({
   //   'notification': {
   //     'title': message.notification?.title,
   //     'body': message.notification?.body,
-  //     'imageUrl': message.notification?.android?.imageUrl ?? 
+  //     'imageUrl': message.notification?.android?.imageUrl ??
   //                message.notification?.apple?.imageUrl,
   //   },
   //   'data': message.data,

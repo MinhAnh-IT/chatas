@@ -18,12 +18,8 @@ class NotificationLocalDataSource {
   Future<Database> _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'notifications.db');
-    
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -94,20 +90,13 @@ class NotificationLocalDataSource {
   /// Đánh dấu tất cả thông báo đã đọc
   Future<void> markAllAsRead() async {
     final db = await database;
-    await db.update(
-      _tableName,
-      {'isRead': 1},
-    );
+    await db.update(_tableName, {'isRead': 1});
   }
 
   /// Xóa thông báo
   Future<void> deleteNotification(String id) async {
     final db = await database;
-    await db.delete(
-      _tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete(_tableName, where: 'id = ?', whereArgs: [id]);
   }
 
   /// Xóa tất cả thông báo
@@ -158,22 +147,28 @@ class NotificationLocalDataSource {
   /// Xóa thông báo cũ (giữ lại chỉ N thông báo mới nhất)
   Future<void> cleanOldNotifications({int keepCount = 100}) async {
     final db = await database;
-    
+
     // Lấy ID của thông báo thứ keepCount
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
       SELECT id FROM $_tableName 
       ORDER BY createdAt DESC 
       LIMIT 1 OFFSET ?
-    ''', [keepCount]);
-    
+    ''',
+      [keepCount],
+    );
+
     if (result.isNotEmpty) {
       final oldestKeptId = result.first['id'];
-      await db.rawDelete('''
+      await db.rawDelete(
+        '''
         DELETE FROM $_tableName 
         WHERE createdAt < (
           SELECT createdAt FROM $_tableName WHERE id = ?
         )
-      ''', [oldestKeptId]);
+      ''',
+        [oldestKeptId],
+      );
     }
   }
 
