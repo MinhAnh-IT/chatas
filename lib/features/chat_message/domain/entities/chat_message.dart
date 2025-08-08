@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../../constants/chat_message_page_constants.dart';
 
 /// Enum representing different types of messages.
 enum MessageType { text, image, file, system }
@@ -47,9 +46,8 @@ class ChatMessage extends Equatable {
     required this.updatedAt,
   });
 
-  /// Checks if this message is from the current user.
-  bool get isFromCurrentUser =>
-      senderId == ChatMessagePageConstants.temporaryUserId;
+  /// Checks if this message is from the specified user.
+  bool isFromUser(String userId) => senderId == userId;
 
   /// Checks if this message has any reactions.
   bool get hasReactions => reactions.isNotEmpty;
@@ -59,8 +57,7 @@ class ChatMessage extends Equatable {
     return reactions.values.where((reaction) => reaction == type).length;
   }
 
-  /// Checks if the current user has reacted to this message.
-  /// TODO: Replace with actual current user ID from auth service.
+  /// Checks if the specified user has reacted to this message.
   bool hasUserReacted(String userId) {
     return reactions.containsKey(userId);
   }

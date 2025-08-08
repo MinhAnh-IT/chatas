@@ -8,6 +8,8 @@ import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cub
 import 'package:chatas/features/chat_message/domain/usecases/send_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/add_reaction_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart';
 import 'package:chatas/features/chat_message/data/repositories/chat_message_repository_impl.dart';
 import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_page.dart';
@@ -133,6 +135,8 @@ class AppRouter {
           final removeReactionUseCase = RemoveReactionUseCase(
             repository: repository,
           );
+          final editMessageUseCase = EditMessageUseCase(repository: repository);
+          final deleteMessageUseCase = DeleteMessageUseCase(repository: repository);
           final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
           
           // Setup ChatThread repository and use cases for first message creation
@@ -148,6 +152,8 @@ class AppRouter {
               sendMessageUseCase: sendMessageUseCase,
               addReactionUseCase: addReactionUseCase,
               removeReactionUseCase: removeReactionUseCase,
+              editMessageUseCase: editMessageUseCase,
+              deleteMessageUseCase: deleteMessageUseCase,
               sendFirstMessageUseCase: sendFirstMessageUseCase,
             ),
             child: ChatMessagePage(

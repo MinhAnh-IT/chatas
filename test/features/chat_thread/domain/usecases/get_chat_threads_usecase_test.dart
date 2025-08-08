@@ -52,17 +52,17 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRepository.getChatThreads(),
+            mockRepository.getChatThreads('current_user'),
           ).thenAnswer((_) async => tChatThreads);
 
           // Act
-          final result = await useCase();
+          final result = await useCase('current_user');
 
           // Assert
           expect(result, equals(tChatThreads));
           expect(result, isA<List<ChatThread>>());
           expect(result.length, 2);
-          verify(mockRepository.getChatThreads()).called(1);
+          verify(mockRepository.getChatThreads('current_user')).called(1);
           verifyNoMoreInteractions(mockRepository);
         },
       );
@@ -72,16 +72,16 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRepository.getChatThreads(),
+            mockRepository.getChatThreads('current_user'),
           ).thenAnswer((_) async => <ChatThread>[]);
 
           // Act
-          final result = await useCase();
+          final result = await useCase('current_user');
 
           // Assert
           expect(result, equals(<ChatThread>[]));
           expect(result, isEmpty);
-          verify(mockRepository.getChatThreads()).called(1);
+          verify(mockRepository.getChatThreads('current_user')).called(1);
           verifyNoMoreInteractions(mockRepository);
         },
       );
@@ -90,12 +90,12 @@ void main() {
         // Arrange
         const errorMessage = 'Network connection failed';
         when(
-          mockRepository.getChatThreads(),
+          mockRepository.getChatThreads('current_user'),
         ).thenThrow(Exception(errorMessage));
 
         // Act & Assert
-        expect(() => useCase(), throwsA(isA<Exception>()));
-        verify(mockRepository.getChatThreads()).called(1);
+        expect(() => useCase('current_user'), throwsA(isA<Exception>()));
+        verify(mockRepository.getChatThreads('current_user')).called(1);
         verifyNoMoreInteractions(mockRepository);
       });
 
@@ -104,26 +104,26 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRepository.getChatThreads(),
+            mockRepository.getChatThreads('current_user'),
           ).thenThrow(const FormatException('Invalid data format'));
 
           // Act & Assert
-          expect(() => useCase(), throwsA(isA<FormatException>()));
-          verify(mockRepository.getChatThreads()).called(1);
+          expect(() => useCase('current_user'), throwsA(isA<FormatException>()));
+          verify(mockRepository.getChatThreads('current_user')).called(1);
         },
       );
 
       test('should call repository exactly once', () async {
         // Arrange
         when(
-          mockRepository.getChatThreads(),
+          mockRepository.getChatThreads('current_user'),
         ).thenAnswer((_) async => tChatThreads);
 
         // Act
-        await useCase();
+        await useCase('current_user');
 
         // Assert
-        verify(mockRepository.getChatThreads()).called(1);
+        verify(mockRepository.getChatThreads('current_user')).called(1);
         verifyNoMoreInteractions(mockRepository);
       });
 
@@ -156,11 +156,11 @@ void main() {
           ),
         ];
         when(
-          mockRepository.getChatThreads(),
+          mockRepository.getChatThreads('current_user'),
         ).thenAnswer((_) async => orderedThreads);
 
         // Act
-        final result = await useCase();
+        final result = await useCase('current_user');
 
         // Assert
         expect(result.first.id, 'first');

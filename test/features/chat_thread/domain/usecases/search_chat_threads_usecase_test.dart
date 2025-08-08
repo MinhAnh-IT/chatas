@@ -10,7 +10,7 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   FakeChatThreadRepository(this._threads);
 
   @override
-  Future<List<ChatThread>> getChatThreads() async {
+  Future<List<ChatThread>> getChatThreads(String currentUserId) async {
     return _threads;
   }
 
@@ -77,7 +77,7 @@ void main() {
 
     test('should return empty list when query is empty', () async {
       // act
-      final result = await useCase('');
+      final result = await useCase('', 'current_user');
 
       // assert
       expect(result, isEmpty);
@@ -85,7 +85,7 @@ void main() {
 
     test('should return empty list when query is only whitespace', () async {
       // act
-      final result = await useCase('   ');
+      final result = await useCase('   ', 'current_user');
 
       // assert
       expect(result, isEmpty);
@@ -93,7 +93,7 @@ void main() {
 
     test('should return threads matching name (case insensitive)', () async {
       // act
-      final result = await useCase('john');
+      final result = await useCase('john', 'current_user');
 
       // assert
       expect(result, hasLength(1));
@@ -104,7 +104,7 @@ void main() {
       'should return threads matching last message (case insensitive)',
       () async {
         // act
-        final result = await useCase('meeting');
+        final result = await useCase('meeting', 'current_user');
 
         // assert
         expect(result, hasLength(1));
@@ -116,7 +116,7 @@ void main() {
       'should return multiple threads when query matches multiple items',
       () async {
         // act - 'a' will match Jane (name) and Thanks (message)
-        final result = await useCase('a');
+        final result = await useCase('a', 'current_user');
 
         // assert
         expect(result.length, greaterThan(0));
@@ -125,7 +125,7 @@ void main() {
 
     test('should return empty list when no threads match query', () async {
       // act
-      final result = await useCase('xyz');
+      final result = await useCase('xyz', 'current_user');
 
       // assert
       expect(result, isEmpty);
@@ -133,7 +133,7 @@ void main() {
 
     test('should handle partial matches correctly', () async {
       // act
-      final result = await useCase('doe');
+      final result = await useCase('doe', 'current_user');
 
       // assert
       expect(result, hasLength(1));
@@ -142,7 +142,7 @@ void main() {
 
     test('should trim query and search correctly', () async {
       // act
-      final result = await useCase('  john  ');
+      final result = await useCase('  john  ', 'current_user');
 
       // assert
       expect(result, hasLength(1));
@@ -151,8 +151,8 @@ void main() {
 
     test('should search in both name and message', () async {
       // act
-      final nameResult = await useCase('Bob');
-      final messageResult = await useCase('Hello');
+      final nameResult = await useCase('Bob', 'current_user');
+      final messageResult = await useCase('Hello', 'current_user');
 
       // assert
       expect(nameResult, hasLength(1));
@@ -164,7 +164,7 @@ void main() {
 
     test('should return results in original order', () async {
       // act
-      final result = await useCase('a'); // matches John (Jane), Bob (Thanks)
+      final result = await useCase('a', 'current_user'); // matches John (Jane), Bob (Thanks)
 
       // assert
       expect(result.length, greaterThan(0));

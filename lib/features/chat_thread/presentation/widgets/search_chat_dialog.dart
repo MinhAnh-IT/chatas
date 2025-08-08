@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/chat_thread.dart';
 import '../cubit/chat_thread_list_cubit.dart';
 import '../../constants/chat_thread_list_page_constants.dart';
@@ -43,8 +44,10 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
       _isSearching = true;
     });
 
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    
     widget.cubit
-        .searchChatThreads(query)
+        .searchChatThreads(query, currentUserId)
         .then((results) {
           if (mounted) {
             setState(() {

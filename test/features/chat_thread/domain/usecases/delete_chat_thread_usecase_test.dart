@@ -16,7 +16,7 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   }
 
   @override
-  Future<List<ChatThread>> getChatThreads() {
+  Future<List<ChatThread>> getChatThreads(String currentUserId) {
     throw UnimplementedError();
   }
 

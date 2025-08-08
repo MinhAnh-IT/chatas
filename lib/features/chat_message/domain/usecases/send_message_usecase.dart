@@ -11,21 +11,24 @@ class SendMessageUseCase {
 
   /// Executes the use case to send a new message.
   /// Creates a [ChatMessage] entity with the provided parameters and sends it.
+  /// Supports reply functionality through [replyToMessageId].
   Future<void> call({
     required String chatThreadId,
     required String content,
+    required String senderId,
+    required String senderName,
+    String? senderAvatarUrl,
     MessageType type = MessageType.text,
     String? replyToMessageId,
   }) async {
     final now = DateTime.now();
 
-    // TODO: Get actual user information from auth service
     final message = ChatMessage(
       id: 'msg_${now.millisecondsSinceEpoch}',
       chatThreadId: chatThreadId,
-      senderId: ChatMessagePageConstants.temporaryUserId,
-      senderName: ChatMessagePageConstants.temporaryUserName,
-      senderAvatarUrl: ChatMessagePageConstants.temporaryAvatarUrl,
+      senderId: senderId,
+      senderName: senderName,
+      senderAvatarUrl: senderAvatarUrl ?? ChatMessagePageConstants.temporaryAvatarUrl,
       content: content,
       type: type,
       status: MessageStatus.sending,

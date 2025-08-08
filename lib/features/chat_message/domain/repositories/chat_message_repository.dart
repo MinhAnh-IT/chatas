@@ -23,6 +23,21 @@ abstract class ChatMessageRepository {
   /// Takes the message ID to identify which message to delete.
   Future<void> deleteMessage(String messageId);
 
+  /// Edits the content of an existing message with ownership validation.
+  /// Takes message ID, new content, and user ID for ownership check.
+  Future<void> editMessage({
+    required String messageId,
+    required String newContent,
+    required String userId,
+  });
+
+  /// Deletes a message with ownership validation.
+  /// Takes message ID and user ID for ownership check.
+  Future<void> deleteMessageWithValidation({
+    required String messageId,
+    required String userId,
+  });
+
   /// Adds a reaction to a specific message from a user.
   /// Takes message ID, user ID, and the reaction type to add.
   Future<void> addReaction(

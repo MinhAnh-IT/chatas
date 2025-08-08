@@ -59,14 +59,14 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRemoteDataSource.fetchChatThreads(),
+            mockRemoteDataSource.fetchChatThreads('test_user'),
           ).thenAnswer((_) async => tChatThreadModelList);
 
           // Act
-          final result = await repository.getChatThreads();
+          final result = await repository.getChatThreads('test_user');
 
           // Assert
-          verify(mockRemoteDataSource.fetchChatThreads());
+          verify(mockRemoteDataSource.fetchChatThreads('test_user'));
           expect(result, equals(tChatThreadEntityList));
         },
       );
@@ -76,14 +76,14 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRemoteDataSource.fetchChatThreads(),
+            mockRemoteDataSource.fetchChatThreads('test_user'),
           ).thenAnswer((_) async => []);
 
           // Act
-          final result = await repository.getChatThreads();
+          final result = await repository.getChatThreads('test_user');
 
           // Assert
-          verify(mockRemoteDataSource.fetchChatThreads());
+          verify(mockRemoteDataSource.fetchChatThreads('test_user'));
           expect(result, equals([]));
         },
       );
@@ -105,14 +105,14 @@ void main() {
 
         final multipleModels = [tChatThreadModel, secondModel];
         when(
-          mockRemoteDataSource.fetchChatThreads(),
+          mockRemoteDataSource.fetchChatThreads('test_user'),
         ).thenAnswer((_) async => multipleModels);
 
         // Act
-        final result = await repository.getChatThreads();
+        final result = await repository.getChatThreads('test_user');
 
         // Assert
-        verify(mockRemoteDataSource.fetchChatThreads());
+        verify(mockRemoteDataSource.fetchChatThreads('test_user'));
         expect(result.length, 2);
         expect(result[0].id, '1');
         expect(result[1].id, '2');
@@ -121,11 +121,11 @@ void main() {
       test('should propagate exceptions from remote data source', () async {
         // Arrange
         when(
-          mockRemoteDataSource.fetchChatThreads(),
+          mockRemoteDataSource.fetchChatThreads('test_user'),
         ).thenThrow(Exception('Server error'));
 
         // Act & Assert
-        expect(() => repository.getChatThreads(), throwsException);
+        expect(() => repository.getChatThreads('test_user'), throwsException);
       });
     });
 
@@ -259,11 +259,11 @@ void main() {
       test('should convert model to entity preserving all fields', () async {
         // Arrange
         when(
-          mockRemoteDataSource.fetchChatThreads(),
+          mockRemoteDataSource.fetchChatThreads('test_user'),
         ).thenAnswer((_) async => [tChatThreadModel]);
 
         // Act
-        final result = await repository.getChatThreads();
+        final result = await repository.getChatThreads('test_user');
 
         // Assert
         final entity = result.first;

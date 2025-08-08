@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
 import 'package:chatas/features/chat_thread/constants/chat_thread_list_page_constants.dart';
 import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_cubit.dart';
@@ -27,7 +28,8 @@ class ChatThreadListTile extends StatelessWidget {
   /// Deletes the chat thread and shows appropriate feedback.
   void _deleteChatThread(BuildContext context) {
     final cubit = context.read<ChatThreadListCubit>();
-    cubit.deleteChatThread(thread.id);
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    cubit.deleteChatThread(thread.id, currentUserId);
 
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(

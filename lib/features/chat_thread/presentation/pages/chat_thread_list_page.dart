@@ -4,6 +4,7 @@ import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
 import 'package:chatas/shared/widgets/refreshable_list_view.dart';
@@ -24,7 +25,7 @@ class ChatThreadListPage extends StatefulWidget {
   State<ChatThreadListPage> createState() => _ChatThreadListPageState();
 }
 
-class _ChatThreadListPageState extends State<ChatThreadListPage> {
+class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBindingObserver {
   late ChatThreadListCubit _cubit;
   bool _isSearchVisible = false;
   final TextEditingController _searchController = TextEditingController();
@@ -34,6 +35,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final repository = ChatThreadRepositoryImpl();
     final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
@@ -48,13 +50,34 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       deleteChatThreadUseCase: deleteChatThreadUseCase,
       findOrCreateChatThreadUseCase: findOrCreateChatThreadUseCase,
     );
-    _cubit.fetchChatThreads();
+    // Get current user ID and fetch threads
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    print('ChatThreadListPage: initState - Current user ID: $currentUserId');
+    print('ChatThreadListPage: initState - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}');
+    if (currentUserId.isNotEmpty) {
+      _cubit.fetchChatThreads(currentUserId);
+    } else {
+      print('ChatThreadListPage: initState - No current user found!');
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh chat threads when app comes back to foreground
+      print('ChatThreadListPage: App resumed, refreshing chat threads');
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      if (currentUserId.isNotEmpty) {
+        _cubit.fetchChatThreads(currentUserId);
+      }
+    }
   }
 
   /// Navigates to chat message page when a thread is tapped.
@@ -63,9 +86,14 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     String threadId,
     String threadName,
   ) {
+    // Get current user ID from Firebase Auth  
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    
+    print('ChatThreadListPage: Navigating with currentUserId: $currentUserId');
+    
     final route = AppRouteConstants.chatMessageRoute(
       threadId,
-      currentUserId: ChatThreadListPageConstants.temporaryUserId,
+      currentUserId: currentUserId,
       otherUserName: threadName,
     );
     context.go(route);
@@ -73,7 +101,10 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
 
   /// Handles refresh action when user pulls down to refresh.
   Future<void> _handleRefresh() async {
-    await _cubit.fetchChatThreads();
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (currentUserId.isNotEmpty) {
+      await _cubit.fetchChatThreads(currentUserId);
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -111,8 +142,10 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       _isSearching = true;
     });
 
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    
     _cubit
-        .searchChatThreads(query)
+        .searchChatThreads(query, currentUserId)
         .then((results) {
           if (mounted) {
             setState(() {
@@ -154,7 +187,12 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
             items: const [],
             onRefresh: _handleRefresh,
             errorMessage: state.message,
-            onRetry: () => _cubit.fetchChatThreads(),
+            onRetry: () {
+              final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+              if (currentUserId.isNotEmpty) {
+                _cubit.fetchChatThreads(currentUserId);
+              }
+            },
             itemBuilder: (context, thread, index) => const SizedBox.shrink(),
           );
         }
@@ -227,6 +265,20 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Always refresh when this page is built (e.g., when returning from another page)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        print('ChatThreadListPage: Building page, refreshing chat threads');
+        final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+        print('ChatThreadListPage: build - Current user ID: $currentUserId');
+        print('ChatThreadListPage: build - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}');
+        if (currentUserId.isNotEmpty) {
+          _cubit.fetchChatThreads(currentUserId);
+        } else {
+          print('ChatThreadListPage: build - No current user found!');
+        }
+      }
+    });
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
