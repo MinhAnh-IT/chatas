@@ -258,10 +258,7 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         title: const Text(
           'Hồ sơ cá nhân',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
         ),
         leading: IconButton(
           onPressed: () => context.go('/'),
@@ -332,10 +329,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const Text(
                 'Không thể tải thông tin người dùng',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF7F8C8D),
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Color(0xFF7F8C8D), fontSize: 16),
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
@@ -374,10 +368,7 @@ class _ProfilePageState extends State<ProfilePage> {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF667EEA),
-                  Color(0xFF764BA2),
-                ],
+                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
               ),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
@@ -397,10 +388,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 4,
-                      ),
+                      border: Border.all(color: Colors.white, width: 4),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
@@ -418,10 +406,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // User Info
                   Text(
-                    profile.fullName.isNotEmpty ? profile.fullName : 'Chưa cập nhật',
+                    profile.fullName.isNotEmpty
+                        ? profile.fullName
+                        : 'Chưa cập nhật',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -505,10 +495,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           children: [
                             Text(
                               'Chỉnh sửa thông tin',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF2C3E50),
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF2C3E50),
+                                  ),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -536,7 +527,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         username: request.username,
                         gender: request.gender,
                         birthDate: request.birthDate,
-                        profileImageUrl: request.profileImageUrl ?? profile.profileImageUrl,
+                        profileImageUrl:
+                            request.profileImageUrl ?? profile.profileImageUrl,
                       );
                       await _updateProfile(updatedProfile);
                     },
@@ -590,10 +582,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           children: [
                             Text(
                               'Tùy chọn khác',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF2C3E50),
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF2C3E50),
+                                  ),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -679,10 +672,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -693,11 +683,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 20,
-              ),
+              child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -715,10 +701,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
               ),
