@@ -21,4 +21,9 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
     final model = ChatThreadModel.fromEntity(chatThread);
     return await _remoteDataSource.addChatThread(model);
   }
+
+  @override
+  Future<void> deleteChatThread(String threadId) async {
+    return await _remoteDataSource.deleteChatThread(threadId);
+  }
 }
