@@ -7,7 +7,7 @@ class GetChatThreadsUseCase {
 
   GetChatThreadsUseCase(this.repository);
 
-  Future<List<ChatThread>> call() async {
-    return await repository.getChatThreads();
+  Future<List<ChatThread>> call(String currentUserId) async {
+    return await repository.getChatThreads(currentUserId);
   }
 }

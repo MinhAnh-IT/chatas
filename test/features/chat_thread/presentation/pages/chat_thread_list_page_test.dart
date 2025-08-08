@@ -11,7 +11,7 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   FakeChatThreadRepository(this._threads);
 
   @override
-  Future<List<ChatThread>> getChatThreads() async => _threads;
+  Future<List<ChatThread>> getChatThreads(String currentUserId) async => _threads;
 
   @override
   Future<void> addChatThread(ChatThread chatThread) async {

@@ -10,9 +10,9 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
     : _remoteDataSource = remoteDataSource ?? ChatThreadRemoteDataSource();
 
   @override
-  Future<List<ChatThread>> getChatThreads() async {
+  Future<List<ChatThread>> getChatThreads(String currentUserId) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    final models = await _remoteDataSource.fetchChatThreads();
+    final models = await _remoteDataSource.fetchChatThreads(currentUserId);
     return models.map((model) => model.toEntity()).toList();
   }
 

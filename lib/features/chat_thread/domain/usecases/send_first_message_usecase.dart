@@ -23,10 +23,12 @@ class SendFirstMessageUseCase {
     required ChatThread chatThread,
     required ChatMessage message,
   }) async {
+    print('SendFirstMessageUseCase: Starting with thread ID: ${chatThread.id}');
     String actualThreadId = chatThread.id;
 
     // Check if this is a temporary thread (starts with 'temp_')
     if (chatThread.id.startsWith('temp_')) {
+      print('SendFirstMessageUseCase: Creating real thread from temporary thread');
       // Create the actual thread in database
       final now = DateTime.now();
       final realChatThread = ChatThread(
@@ -42,15 +44,19 @@ class SendFirstMessageUseCase {
         updatedAt: now,
       );
 
+      print('SendFirstMessageUseCase: Real thread ID will be: ${realChatThread.id}');
+      print('SendFirstMessageUseCase: Thread members: ${realChatThread.members}');
       // First, add the thread to database
       await chatThreadRepository.addChatThread(realChatThread);
       actualThreadId = realChatThread.id;
+      print('SendFirstMessageUseCase: Thread created successfully and added to database');
       
       // Wait a bit to ensure thread is created before sending message
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
     // Send the message with the actual thread ID
+    print('SendFirstMessageUseCase: Sending message with thread ID: $actualThreadId');
     final messageWithRealId = ChatMessage(
       id: message.id,
       chatThreadId: actualThreadId,
@@ -70,6 +76,7 @@ class SendFirstMessageUseCase {
     );
 
     await chatMessageRepository.sendMessage(messageWithRealId);
+    print('SendFirstMessageUseCase: Message sent successfully, returning thread ID: $actualThreadId');
     
     return actualThreadId;
   }

@@ -22,11 +22,11 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     required this.findOrCreateChatThreadUseCase,
   }) : super(ChatThreadListInitial());
 
-  /// Fetches all chat threads from the repository.
-  Future<void> fetchChatThreads() async {
+  /// Fetches all chat threads from the repository for a specific user.
+  Future<void> fetchChatThreads(String currentUserId) async {
     emit(ChatThreadListLoading());
     try {
-      final threads = await getChatThreadsUseCase();
+      final threads = await getChatThreadsUseCase(currentUserId);
       emit(ChatThreadListLoaded(threads));
     } catch (e) {
       emit(ChatThreadListError(e.toString()));
@@ -34,9 +34,9 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   }
 
   /// Searches for chat threads based on the given query.
-  Future<List<ChatThread>> searchChatThreads(String query) async {
+  Future<List<ChatThread>> searchChatThreads(String query, String currentUserId) async {
     try {
-      return await searchChatThreadsUseCase(query);
+      return await searchChatThreadsUseCase(query, currentUserId);
     } catch (e) {
       return [];
     }
@@ -44,6 +44,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
 
   /// Creates a new chat thread with the specified friend.
   Future<void> createNewChatThread({
+    required String currentUserId,
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
@@ -51,20 +52,21 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   }) async {
     try {
       await createChatThreadUseCase(
+        currentUserId: currentUserId,
         friendId: friendId,
         friendName: friendName,
         friendAvatarUrl: friendAvatarUrl,
         initialMessage: initialMessage,
       );
       // Refresh danh sách sau khi tạo thành công
-      await fetchChatThreads();
+      await fetchChatThreads(currentUserId);
     } catch (e) {
       emit(ChatThreadListError('Failed to create chat: $e'));
     }
   }
 
   /// Deletes a chat thread by its ID.
-  Future<void> deleteChatThread(String threadId) async {
+  Future<void> deleteChatThread(String threadId, String currentUserId) async {
     if (threadId.isEmpty) {
       emit(const ChatThreadListError('Invalid thread ID'));
       return;
@@ -75,7 +77,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     try {
       await deleteChatThreadUseCase(threadId);
       // Refresh the list after successful deletion
-      await fetchChatThreads();
+      await fetchChatThreads(currentUserId);
     } catch (e) {
       emit(ChatThreadListError('Failed to delete chat: ${e.toString()}'));
     }

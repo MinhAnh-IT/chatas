@@ -60,9 +60,33 @@ class ChatMessagePageConstants {
   static const String refreshTooltip = 'Kéo xuống để làm mới';
   static const String refreshedMessage = 'Đã làm mới tin nhắn';
 
+  /// Message context menu
+  static const String replyMenuOption = 'Trả lời';
+  static const String editMenuOption = 'Chỉnh sửa';
+  static const String deleteMenuOption = 'Xóa';
+  static const String copyMenuOption = 'Sao chép';
+  
+  /// Message actions confirmations
+  static const String deleteConfirmTitle = 'Xóa tin nhắn';
+  static const String deleteConfirmMessage = 'Bạn có chắc chắn muốn xóa tin nhắn này không?';
+  static const String deleteConfirmButton = 'Xóa';
+  static const String cancelButton = 'Hủy';
+  
+  /// Edit message
+  static const String editMessageTitle = 'Chỉnh sửa tin nhắn';
+  static const String editMessageSaveButton = 'Lưu';
+  static const String editMessageHint = 'Nhập tin nhắn mới...';
+  
+  /// Reply message
+  static const String replyingToPrefix = 'Đang trả lời';
+  static const String cancelReplyButton = 'Hủy trả lời';
+  
+  /// Status messages
+  static const String messageEditedSuccessfully = 'Tin nhắn đã được chỉnh sửa';
+  static const String messageDeletedSuccessfully = 'Tin nhắn đã được xóa';
+  static const String editedIndicator = 'đã chỉnh sửa';
+
   /// Temporary constants for development
-  static const String temporaryUserId = 'current_user';
-  static const String temporaryUserName = 'Current User';
   static const String temporaryAvatarUrl = 'https://via.placeholder.com/150';
 
   /// UI dimensions.

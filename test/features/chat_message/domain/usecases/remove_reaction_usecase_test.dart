@@ -18,7 +18,7 @@ void main() {
     });
 
     group('call method', () {
-      test('calls repository removeReaction with temporaryUserId', () async {
+      test('calls repository removeReaction with provided userId', () async {
         // Arrange
         const messageId = 'test_message_id';
         const providedUserId = 'provided_user_id';
@@ -34,13 +34,13 @@ void main() {
         verify(
           () => mockRepository.removeReaction(
             messageId,
-            ChatMessagePageConstants.temporaryUserId,
+            providedUserId,
           ),
         ).called(1);
       });
 
       test(
-        'ignores provided userId and uses temporaryUserId for consistency',
+        'uses provided userId regardless of value',
         () async {
           // Arrange
           const messageId = 'test_message_id';
@@ -54,18 +54,13 @@ void main() {
           await useCase.call(messageId: messageId, userId: providedUserId);
 
           // Assert
-          // Should use temporaryUserId, not the provided userId
+          // Should use provided userId
           verify(
             () => mockRepository.removeReaction(
               messageId,
-              ChatMessagePageConstants.temporaryUserId,
+              providedUserId,
             ),
           ).called(1);
-
-          // Verify it does NOT use the provided userId
-          verifyNever(
-            () => mockRepository.removeReaction(messageId, providedUserId),
-          );
         },
       );
 
@@ -102,7 +97,7 @@ void main() {
         verify(
           () => mockRepository.removeReaction(
             messageId,
-            ChatMessagePageConstants.temporaryUserId,
+            userId,
           ),
         ).called(1);
       });
@@ -120,11 +115,11 @@ void main() {
         await useCase.call(messageId: messageId, userId: userId);
 
         // Assert
-        // Should still use temporaryUserId regardless of empty provided userId
+        // Should use the provided empty userId
         verify(
           () => mockRepository.removeReaction(
             messageId,
-            ChatMessagePageConstants.temporaryUserId,
+            userId,
           ),
         ).called(1);
       });

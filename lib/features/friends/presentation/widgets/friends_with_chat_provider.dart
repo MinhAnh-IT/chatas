@@ -80,10 +80,20 @@ mixin ChatOpeningMixin {
       return;
     }
 
+    // Extract actual friend user ID from composite friendId (format: currentUserId_actualFriendId)
+    String actualFriendId = friend.friendId;
+    final parts = friend.friendId.split('_');
+    if (parts.length == 2) {
+      actualFriendId = parts[1]; // Extract the actual friend's user ID
+      print('ChatOpeningMixin: Extracted actualFriendId: $actualFriendId from composite: ${friend.friendId}');
+    } else {
+      print('ChatOpeningMixin: WARNING - friendId format unexpected: ${friend.friendId}');
+    }
+
     // Use OpenChatCubit to handle the chat opening
     context.read<OpenChatCubit>().openChatWithFriend(
       currentUserId: currentUserId,
-      friendId: friend.friendId,
+      friendId: actualFriendId,
       friendName: friend.nickName.isNotEmpty ? friend.nickName : 'Người dùng',
       friendAvatarUrl: '', // Avatar will be handled by SmartAvatar widget
     );

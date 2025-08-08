@@ -61,10 +61,10 @@ void main() {
     group('isFromCurrentUser getter', () {
       test('returns true when senderId matches temporaryUserId', () {
         final currentUserMessage = testMessage.copyWith(
-          senderId: ChatMessagePageConstants.temporaryUserId,
+          senderId: 'test_user',
         );
 
-        expect(currentUserMessage.isFromCurrentUser, isTrue);
+        expect(currentUserMessage.isFromUser('test_user'), isTrue);
       });
 
       test('returns false when senderId does not match temporaryUserId', () {
@@ -72,7 +72,7 @@ void main() {
           senderId: 'other_user_id',
         );
 
-        expect(otherUserMessage.isFromCurrentUser, isFalse);
+        expect(otherUserMessage.isFromUser('test_user'), isFalse);
       });
     });
 
