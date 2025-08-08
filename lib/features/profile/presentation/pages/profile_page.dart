@@ -318,10 +318,10 @@ class _ProfilePageState extends State<ProfilePage>
       ),
       body: _isLoading
           ? const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3498DB)),
-        ),
-      )
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3498DB)),
+              ),
+            )
           : _profile == null
           ? _buildErrorWidget()
           : _buildProfileContent(context, _profile!),
@@ -434,9 +434,9 @@ class _ProfilePageState extends State<ProfilePage>
                           'Thông tin cá nhân',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF2C3E50),
-                          ),
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF2C3E50),
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -464,19 +464,19 @@ class _ProfilePageState extends State<ProfilePage>
                           profile: profile,
                           onProfileUpdated:
                               (UpdateProfileRequest request) async {
-                            final updatedProfile = UserProfile(
-                              id: profile.id,
-                              fullName: request.fullName,
-                              email: profile.email,
-                              username: request.username,
-                              gender: request.gender,
-                              birthDate: request.birthDate,
-                              profileImageUrl:
-                              request.profileImageUrl ??
-                                  profile.profileImageUrl,
-                            );
-                            await _updateProfile(updatedProfile);
-                          },
+                                final updatedProfile = UserProfile(
+                                  id: profile.id,
+                                  fullName: request.fullName,
+                                  email: profile.email,
+                                  username: request.username,
+                                  gender: request.gender,
+                                  birthDate: request.birthDate,
+                                  profileImageUrl:
+                                      request.profileImageUrl ??
+                                      profile.profileImageUrl,
+                                );
+                                await _updateProfile(updatedProfile);
+                              },
                         ),
                       ],
                     ),
@@ -526,4 +526,3 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 }
-
