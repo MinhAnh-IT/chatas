@@ -2,8 +2,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/notification_model.dart';
 
 class NotificationLocalNotificationDataSource {
-  static final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin
+  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   /// Khởi tạo local notifications
   static Future<void> initialize() async {
@@ -12,16 +12,16 @@ class NotificationLocalNotificationDataSource {
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
 
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
@@ -31,13 +31,15 @@ class NotificationLocalNotificationDataSource {
     // Yêu cầu quyền trên Android 13+
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
   }
 
   /// Xử lý khi user tap vào notification
   static void _onDidReceiveNotificationResponse(
-      NotificationResponse notificationResponse) {
+    NotificationResponse notificationResponse,
+  ) {
     final String? payload = notificationResponse.payload;
     if (payload != null) {
       print('Notification payload: $payload');
@@ -56,21 +58,21 @@ class NotificationLocalNotificationDataSource {
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'chatas_channel',
-      'ChatAs Notifications',
-      channelDescription: 'Notifications for ChatAs app',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-      icon: '@mipmap/ic_launcher',
-    );
+          'chatas_channel',
+          'ChatAs Notifications',
+          channelDescription: 'Notifications for ChatAs app',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+          icon: '@mipmap/ic_launcher',
+        );
 
     const DarwinNotificationDetails iOSPlatformChannelSpecifics =
         DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
@@ -96,31 +98,31 @@ class NotificationLocalNotificationDataSource {
   }) async {
     final BigPictureStyleInformation bigPictureStyleInformation =
         BigPictureStyleInformation(
-      DrawableResourceAndroidBitmap('@mipmap/ic_launcher'), // Fallback image
-      contentTitle: title,
-      summaryText: body,
-    );
+          DrawableResourceAndroidBitmap(
+            '@mipmap/ic_launcher',
+          ), // Fallback image
+          contentTitle: title,
+          summaryText: body,
+        );
 
     final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'chatas_channel',
-      'ChatAs Notifications',
-      channelDescription: 'Notifications for ChatAs app',
-      importance: Importance.max,
-      priority: Priority.high,
-      styleInformation: bigPictureStyleInformation,
-      icon: '@mipmap/ic_launcher',
-    );
+          'chatas_channel',
+          'ChatAs Notifications',
+          channelDescription: 'Notifications for ChatAs app',
+          importance: Importance.max,
+          priority: Priority.high,
+          styleInformation: bigPictureStyleInformation,
+          icon: '@mipmap/ic_launcher',
+        );
 
     final DarwinNotificationDetails iOSPlatformChannelSpecifics =
         DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      attachments: [
-        DarwinNotificationAttachment(imageUrl),
-      ],
-    );
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          attachments: [DarwinNotificationAttachment(imageUrl)],
+        );
 
     final NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
@@ -138,7 +140,8 @@ class NotificationLocalNotificationDataSource {
 
   /// Hiển thị notification từ NotificationModel
   static Future<void> showNotificationFromModel(
-      NotificationModel notification) async {
+    NotificationModel notification,
+  ) async {
     final id = notification.id.hashCode;
     final payload = notification.data.toString();
 
@@ -171,15 +174,18 @@ class NotificationLocalNotificationDataSource {
   }
 
   /// Lấy pending notifications
-  static Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+  static Future<List<PendingNotificationRequest>>
+  getPendingNotifications() async {
     return await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
   }
 
   /// Lấy active notifications (Android only)
   static Future<List<ActiveNotification>> getActiveNotifications() async {
     final androidImplementation = _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
     if (androidImplementation != null) {
       return await androidImplementation.getActiveNotifications();
     }

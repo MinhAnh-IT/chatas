@@ -10,7 +10,7 @@ import 'notification_router_helper.dart';
 /// Widget demo để show cách tích hợp notification vào Friends feature
 class FriendsWithNotificationsWidget extends StatelessWidget {
   final String currentUserId;
-  
+
   const FriendsWithNotificationsWidget({
     super.key,
     required this.currentUserId,
@@ -22,14 +22,19 @@ class FriendsWithNotificationsWidget extends StatelessWidget {
       providers: [
         // Notification Cubit
         BlocProvider(
-          create: (context) => notification_di.sl<NotificationCubit>()..initialize(),
+          create: (context) =>
+              notification_di.sl<NotificationCubit>()..initialize(),
         ),
         // Friends Cubits
         BlocProvider(
-          create: (context) => FriendsDependencyInjection.createFriendSearchCubit(),
+          create: (context) =>
+              FriendsDependencyInjection.createFriendSearchCubit(),
         ),
         BlocProvider(
-          create: (context) => FriendsDependencyInjection.createFriendRequestCubit(currentUserId),
+          create: (context) =>
+              FriendsDependencyInjection.createFriendRequestCubit(
+                currentUserId,
+              ),
         ),
       ],
       child: Scaffold(
@@ -42,7 +47,10 @@ class FriendsWithNotificationsWidget extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => NotificationRouterHelper.buildNotificationsPage(context),
+                    builder: (context) =>
+                        NotificationRouterHelper.buildNotificationsPage(
+                          context,
+                        ),
                   ),
                 );
               },
@@ -54,11 +62,7 @@ class FriendsWithNotificationsWidget extends StatelessWidget {
             // Notification listener
             _NotificationListener(),
             // Friends content
-            Expanded(
-              child: Center(
-                child: Text('Friends Content Here'),
-              ),
-            ),
+            Expanded(child: Center(child: Text('Friends Content Here'))),
           ],
         ),
       ),
@@ -96,7 +100,9 @@ class _NotificationListenerState extends State<_NotificationListener> {
           // Hiển thị snackbar khi có notification mới
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${state.notification.title}: ${state.notification.body}'),
+              content: Text(
+                '${state.notification.title}: ${state.notification.body}',
+              ),
               action: SnackBarAction(
                 label: 'Xem',
                 onPressed: () {
@@ -122,7 +128,8 @@ extension FriendsNotificationExtension on BuildContext {
     required String fromUserName,
     required String fromUserId,
   }) async {
-    final notificationService = FriendsDependencyInjection.friendNotificationService;
+    final notificationService =
+        FriendsDependencyInjection.friendNotificationService;
     await notificationService.sendFriendRequestNotification(
       fromUserName: fromUserName,
       fromUserId: fromUserId,
@@ -134,7 +141,8 @@ extension FriendsNotificationExtension on BuildContext {
     required String accepterName,
     required String accepterId,
   }) async {
-    final notificationService = FriendsDependencyInjection.friendNotificationService;
+    final notificationService =
+        FriendsDependencyInjection.friendNotificationService;
     await notificationService.sendFriendAcceptedNotification(
       accepterName: accepterName,
       accepterId: accepterId,
@@ -146,7 +154,8 @@ extension FriendsNotificationExtension on BuildContext {
     Navigator.push(
       this,
       MaterialPageRoute(
-        builder: (context) => NotificationRouterHelper.buildNotificationsPage(context),
+        builder: (context) =>
+            NotificationRouterHelper.buildNotificationsPage(context),
       ),
     );
   }

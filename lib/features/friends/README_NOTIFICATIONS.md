@@ -5,7 +5,7 @@
 Hệ thống notifications đã được tích hợp hoàn toàn vào Friends feature với các chức năng:
 
 - ✅ Thông báo lời mời kết bạn mới
-- ✅ Thông báo lời mời được chấp nhận 
+- ✅ Thông báo lời mời được chấp nhận
 - ✅ Thông báo lời mời bị từ chối
 - ✅ Thông báo tin nhắn mới (sẵn sàng)
 - ✅ Hiển thị badge số lượng thông báo chưa đọc
@@ -58,6 +58,7 @@ FriendsWithNotificationsWidget(
 ### 3. Gửi thông báo trong Friends Logic
 
 **Trong FriendSearchCubit** (gửi lời mời):
+
 ```dart
 // ✅ Đã được tích hợp
 await friendNotificationService.sendFriendRequestNotification(
@@ -67,6 +68,7 @@ await friendNotificationService.sendFriendRequestNotification(
 ```
 
 **Trong FriendRequestCubit** (chấp nhận/từ chối):
+
 ```dart
 // ✅ Đã được tích hợp
 await friendNotificationService.sendFriendAcceptedNotification(
@@ -85,7 +87,7 @@ context.sendFriendRequestNotification(
 );
 
 context.sendFriendAcceptedNotification(
-  accepterName: 'Jane Smith', 
+  accepterName: 'Jane Smith',
   accepterId: 'user456',
 );
 
@@ -95,6 +97,7 @@ context.navigateToNotifications();
 ## 📁 Cấu trúc Files đã được cập nhật
 
 ### Friends Feature:
+
 ```
 features/friends/
 ├── services/
@@ -112,12 +115,13 @@ features/friends/
 ```
 
 ### Notifications Feature:
+
 ```
 features/notifications/
 ├── data/
 │   ├── datasources/
 │   │   ├── notification_remote_datasource.dart      ✅ Firebase Messaging
-│   │   ├── notification_local_datasource.dart       ✅ SQLite storage  
+│   │   ├── notification_local_datasource.dart       ✅ SQLite storage
 │   │   └── notification_local_notification_datasource.dart ✅ Local notifications
 │   ├── models/
 │   │   └── notification_model.dart                  ✅ Data models
@@ -149,6 +153,7 @@ features/notifications/
 ## 🔧 Configuration Files
 
 ### Android Manifest (đã cập nhật):
+
 ```xml
 <!-- Permissions for notifications -->
 <uses-permission android:name="android.permission.INTERNET" />
@@ -164,6 +169,7 @@ features/notifications/
 ```
 
 ### Dependencies (đã thêm):
+
 ```yaml
 dependencies:
   firebase_messaging: ^15.2.10
@@ -174,11 +180,13 @@ dependencies:
 ## 🎯 Luồng hoạt động
 
 1. **Gửi lời mời kết bạn**:
+
    - User A gửi lời mời → `FriendSearchCubit.sendFriendRequest()`
    - Cubit gọi `FriendNotificationService.sendFriendRequestNotification()`
    - Hiển thị local notification: "John đã gửi lời mời kết bạn cho bạn"
 
 2. **Chấp nhận lời mời**:
+
    - User B chấp nhận → `FriendRequestCubit.acceptRequest()`
    - Cubit gọi `FriendNotificationService.sendFriendAcceptedNotification()`
    - Hiển thị local notification cho User A: "Jane đã chấp nhận lời mời kết bạn của bạn"

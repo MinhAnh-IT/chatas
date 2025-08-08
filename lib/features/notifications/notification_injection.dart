@@ -19,7 +19,7 @@ void setupNotificationDependencies() {
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSource(),
   );
-  
+
   sl.registerLazySingleton<NotificationLocalDataSource>(
     () => NotificationLocalDataSource(),
   );

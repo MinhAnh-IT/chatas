@@ -72,10 +72,12 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
       await acceptFriendRequest(requestId, senderId, receiverId);
 
       // Gửi thông báo cho người gửi lời mời rằng lời mời đã được chấp nhận
-      final notificationService = FriendsDependencyInjection.friendNotificationService;
+      final notificationService =
+          FriendsDependencyInjection.friendNotificationService;
       await notificationService['sendFriendAcceptedNotification']({
         'accepterName': 'Bạn', // TODO: Lấy tên người chấp nhận thực tế
         'accepterId': receiverId,
+        'toUserId': senderId, // Gửi thông báo cho người gửi lời mời
       });
 
       // Cập nhật danh sách sau khi chấp nhận
@@ -94,17 +96,19 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
   }
 
   /// Từ chối lời mời kết bạn
-  Future<void> rejectRequest(String requestId, String senderName) async {
+  Future<void> rejectRequest(String requestId, String senderId, String senderName) async {
     emit(state.copyWith(isRejecting: true, clearActionError: true));
 
     try {
       await rejectFriendRequest(requestId);
 
       // Gửi thông báo cho người gửi lời mời rằng lời mời đã bị từ chối
-      final notificationService = FriendsDependencyInjection.friendNotificationService;
+      final notificationService =
+          FriendsDependencyInjection.friendNotificationService;
       await notificationService['sendFriendRejectedNotification']({
         'rejecterName': 'Người dùng', // TODO: Lấy tên người từ chối thực tế
         'rejecterId': currentUserId,
+        'toUserId': senderId, // Gửi thông báo cho người gửi lời mời
       });
 
       // Cập nhật danh sách sau khi từ chối

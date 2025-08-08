@@ -32,14 +32,17 @@ class NotificationCubit extends Cubit<NotificationState> {
   Future<void> initialize() async {
     try {
       emit(NotificationLoading());
-      
+
       await initializeNotifications();
       await loadNotifications();
-      
+
       // Listen for real-time notifications here if needed
-      
     } catch (e) {
-      emit(NotificationError('Failed to initialize notifications: ${e.toString()}'));
+      emit(
+        NotificationError(
+          'Failed to initialize notifications: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -47,11 +50,13 @@ class NotificationCubit extends Cubit<NotificationState> {
     try {
       final notifications = await getNotifications();
       final unreadCount = await getUnreadCount();
-      
-      emit(NotificationLoaded(
-        notifications: notifications,
-        unreadCount: unreadCount,
-      ));
+
+      emit(
+        NotificationLoaded(
+          notifications: notifications,
+          unreadCount: unreadCount,
+        ),
+      );
     } catch (e) {
       emit(NotificationError('Failed to load notifications: ${e.toString()}'));
     }
@@ -62,7 +67,11 @@ class NotificationCubit extends Cubit<NotificationState> {
       await markAsRead(notificationId);
       await loadNotifications(); // Refresh the list
     } catch (e) {
-      emit(NotificationError('Failed to mark notification as read: ${e.toString()}'));
+      emit(
+        NotificationError(
+          'Failed to mark notification as read: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -76,7 +85,11 @@ class NotificationCubit extends Cubit<NotificationState> {
         friendId: friendId,
       );
     } catch (e) {
-      emit(NotificationError('Failed to send friend request notification: ${e.toString()}'));
+      emit(
+        NotificationError(
+          'Failed to send friend request notification: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -90,7 +103,11 @@ class NotificationCubit extends Cubit<NotificationState> {
         friendId: friendId,
       );
     } catch (e) {
-      emit(NotificationError('Failed to send friend accepted notification: ${e.toString()}'));
+      emit(
+        NotificationError(
+          'Failed to send friend accepted notification: ${e.toString()}',
+        ),
+      );
     }
   }
 

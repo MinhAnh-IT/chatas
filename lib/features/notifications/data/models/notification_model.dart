@@ -42,7 +42,7 @@ class NotificationModel {
   factory NotificationModel.fromFirebaseMessage(Map<String, dynamic> message) {
     final notification = message['notification'] ?? {};
     final data = Map<String, dynamic>.from(message['data'] ?? {});
-    
+
     return NotificationModel(
       id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       title: notification['title'] ?? data['title'] ?? '',

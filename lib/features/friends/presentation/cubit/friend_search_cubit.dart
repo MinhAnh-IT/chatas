@@ -28,7 +28,11 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
     }
   }
 
-  Future<void> sendFriendRequest(String currentUserId, String toUserId, String toUserName) async {
+  Future<void> sendFriendRequest(
+    String currentUserId,
+    String toUserId,
+    String toUserName,
+  ) async {
     try {
       final friendRequest = FriendRequest(
         id: '${currentUserId}_$toUserId',
@@ -38,14 +42,16 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
         status: 'pending',
       );
       await sendFriendRequestUseCase.call(friendRequest);
-      
+
       // Gửi thông báo cho người nhận lời mời
-      final notificationService = FriendsDependencyInjection.friendNotificationService;
+      final notificationService =
+          FriendsDependencyInjection.friendNotificationService;
       await notificationService['sendFriendRequestNotification']({
         'fromUserName': 'Người dùng', // TODO: Lấy tên người gửi thực tế
         'fromUserId': currentUserId,
+        'toUserId': toUserId, // Thêm ID người nhận để gửi thông báo cho đúng người
       });
-      
+
       if (state is FriendSearchLoaded) {
         final currentUsers = (state as FriendSearchLoaded).users;
         final updatedUsers = currentUsers

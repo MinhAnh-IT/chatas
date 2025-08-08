@@ -4,7 +4,7 @@ import '../models/notification_model.dart';
 
 class NotificationRemoteDataSource {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  
+
   // Stream controllers để xử lý thông báo
   final StreamController<NotificationModel> _foregroundMessageController =
       StreamController<NotificationModel>.broadcast();
@@ -31,7 +31,8 @@ class NotificationRemoteDataSource {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print('User granted permission');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
       print('User granted provisional permission');
     } else {
       print('User declined or has not accepted permission');
@@ -44,17 +45,18 @@ class NotificationRemoteDataSource {
 
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
-        
+
         final notificationModel = NotificationModel.fromFirebaseMessage({
           'notification': {
             'title': message.notification?.title,
             'body': message.notification?.body,
-            'imageUrl': message.notification?.android?.imageUrl ?? 
-                       message.notification?.apple?.imageUrl,
+            'imageUrl':
+                message.notification?.android?.imageUrl ??
+                message.notification?.apple?.imageUrl,
           },
           'data': message.data,
         });
-        
+
         _foregroundMessageController.add(notificationModel);
       }
     });
@@ -63,17 +65,18 @@ class NotificationRemoteDataSource {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('A new onMessageOpenedApp event was published!');
       print('Message data: ${message.data}');
-      
+
       final notificationModel = NotificationModel.fromFirebaseMessage({
         'notification': {
           'title': message.notification?.title,
           'body': message.notification?.body,
-          'imageUrl': message.notification?.android?.imageUrl ?? 
-                     message.notification?.apple?.imageUrl,
+          'imageUrl':
+              message.notification?.android?.imageUrl ??
+              message.notification?.apple?.imageUrl,
         },
         'data': message.data,
       });
-      
+
       _backgroundMessageController.add(notificationModel);
     });
   }
@@ -93,18 +96,20 @@ class NotificationRemoteDataSource {
   /// Lấy thông báo ban đầu (khi app được mở từ terminated state)
   Future<NotificationModel?> getInitialMessage() async {
     try {
-      RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
-      
+      RemoteMessage? initialMessage = await _firebaseMessaging
+          .getInitialMessage();
+
       if (initialMessage != null) {
         print('App was opened from a terminated state via notification');
         print('Initial message data: ${initialMessage.data}');
-        
+
         return NotificationModel.fromFirebaseMessage({
           'notification': {
             'title': initialMessage.notification?.title,
             'body': initialMessage.notification?.body,
-            'imageUrl': initialMessage.notification?.android?.imageUrl ?? 
-                       initialMessage.notification?.apple?.imageUrl,
+            'imageUrl':
+                initialMessage.notification?.android?.imageUrl ??
+                initialMessage.notification?.apple?.imageUrl,
           },
           'data': initialMessage.data,
         });

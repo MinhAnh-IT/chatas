@@ -13,6 +13,9 @@ import '../domain/usecases/cancelFriendRequest.dart';
 import '../presentation/cubit/friends_list_cubit.dart';
 import '../presentation/cubit/friend_search_cubit.dart';
 import '../presentation/cubit/friend_request_cubit.dart';
+import '../services/fcm_push_service.dart';
+import '../../notifications/domain/repositories/notification_repository.dart';
+import '../../notifications/notification_injection.dart' as notification_di;
 
 class FriendsDependencyInjection {
   static late FriendRemoteDataSource _dataSource;
@@ -34,14 +37,107 @@ class FriendsDependencyInjection {
     try {
       return {
         'sendFriendRequestNotification': (Map<String, dynamic> params) async {
-          // TODO: Implement actual notification logic here
-          print('Gửi friend request notification: ${params['fromUserName']}');
+          final String fromUserName = params['fromUserName'] ?? 'Người dùng';
+          final String fromUserId = params['fromUserId'] ?? '';
+          final String toUserId = params['toUserId'] ?? '';
+
+          print('📤 [FCM Real] Gửi friend request notification:');
+          print('   From: $fromUserName ($fromUserId)');
+          print('   To: $toUserId');
+
+          try {
+            // Gửi FCM push notification đến người nhận (User B)
+            final success = await FCMPushService.sendNotificationToUser(
+              toUserId: toUserId,
+              title: 'Lời mời kết bạn mới',
+              body: '$fromUserName đã gửi lời mời kết bạn cho bạn',
+              data: {
+                'fromUserId': fromUserId,
+                'fromUserName': fromUserName,
+                'action': 'friend_request',
+                'type': 'friend_notification',
+              },
+            );
+
+            if (success) {
+              print('✅ Đã gửi FCM notification cho user $toUserId');
+            } else {
+              print('❌ Thất bại gửi FCM notification cho user $toUserId');
+
+              // Fallback: Log chi tiết để debug
+              print('🔍 Debug: Kiểm tra FCM token của user $toUserId');
+            }
+          } catch (e) {
+            print('❌ Exception khi gửi friend request notification: $e');
+          }
         },
         'sendFriendAcceptedNotification': (Map<String, dynamic> params) async {
-          print('Gửi friend accepted notification: ${params['accepterName']}');
+          final String accepterName = params['accepterName'] ?? 'Người dùng';
+          final String accepterId = params['accepterId'] ?? '';
+          final String toUserId = params['toUserId'] ?? '';
+
+          print('📤 [FCM Real] Gửi friend accepted notification:');
+          print('   Accepter: $accepterName ($accepterId)');
+          print('   To: $toUserId');
+
+          try {
+            // Gửi FCM push notification đến người gửi lời mời ban đầu
+            final success = await FCMPushService.sendNotificationToUser(
+              toUserId: toUserId,
+              title: 'Lời mời kết bạn đã được chấp nhận',
+              body: '$accepterName đã chấp nhận lời mời kết bạn của bạn',
+              data: {
+                'fromUserId': accepterId,
+                'accepterName': accepterName,
+                'action': 'friend_accepted',
+                'type': 'friend_notification',
+              },
+            );
+
+            if (success) {
+              print('✅ Đã gửi FCM accepted notification cho user $toUserId');
+            } else {
+              print(
+                '❌ Thất bại gửi FCM accepted notification cho user $toUserId',
+              );
+            }
+          } catch (e) {
+            print('❌ Exception khi gửi friend accepted notification: $e');
+          }
         },
         'sendFriendRejectedNotification': (Map<String, dynamic> params) async {
-          print('Gửi friend rejected notification: ${params['rejecterName']}');
+          final String rejecterName = params['rejecterName'] ?? 'Người dùng';
+          final String rejecterId = params['rejecterId'] ?? '';
+          final String toUserId = params['toUserId'] ?? '';
+
+          print('📤 [FCM Real] Gửi friend rejected notification:');
+          print('   Rejecter: $rejecterName ($rejecterId)');
+          print('   To: $toUserId');
+
+          try {
+            // Gửi FCM push notification đến người gửi lời mời ban đầu
+            final success = await FCMPushService.sendNotificationToUser(
+              toUserId: toUserId,
+              title: 'Lời mời kết bạn đã bị từ chối',
+              body: '$rejecterName đã từ chối lời mời kết bạn của bạn',
+              data: {
+                'fromUserId': rejecterId,
+                'rejecterName': rejecterName,
+                'action': 'friend_rejected',
+                'type': 'friend_notification',
+              },
+            );
+
+            if (success) {
+              print('✅ Đã gửi FCM rejected notification cho user $toUserId');
+            } else {
+              print(
+                '❌ Thất bại gửi FCM rejected notification cho user $toUserId',
+              );
+            }
+          } catch (e) {
+            print('❌ Exception khi gửi friend rejected notification: $e');
+          }
         },
       };
     } catch (e) {

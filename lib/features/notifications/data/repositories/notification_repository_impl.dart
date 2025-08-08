@@ -19,7 +19,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
   Future<void> initialize() async {
     // Khởi tạo local notifications
     await NotificationLocalNotificationDataSource.initialize();
-    
+
     // Khởi tạo Firebase Messaging
     await remoteDataSource.initialize();
 
@@ -28,7 +28,8 @@ class NotificationRepositoryImpl implements NotificationRepository {
       await localDataSource.insertNotification(notificationModel);
       // Hiển thị local notification
       await NotificationLocalNotificationDataSource.showNotificationFromModel(
-          notificationModel);
+        notificationModel,
+      );
     });
 
     // Lắng nghe thông báo background và lưu vào database
@@ -44,14 +45,16 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
   @override
   Stream<NotificationEntity> onForegroundMessage() {
-    return remoteDataSource.onForegroundMessage
-        .map((model) => model.toEntity());
+    return remoteDataSource.onForegroundMessage.map(
+      (model) => model.toEntity(),
+    );
   }
 
   @override
   Stream<NotificationEntity> onBackgroundMessage() {
-    return remoteDataSource.onBackgroundMessage
-        .map((model) => model.toEntity());
+    return remoteDataSource.onBackgroundMessage.map(
+      (model) => model.toEntity(),
+    );
   }
 
   @override
@@ -87,7 +90,8 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
     // Hiển thị local notification
     await NotificationLocalNotificationDataSource.showNotificationFromModel(
-        notification);
+      notification,
+    );
   }
 
   @override
@@ -112,7 +116,8 @@ class NotificationRepositoryImpl implements NotificationRepository {
     await localDataSource.deleteNotification(notificationId);
     // Hủy local notification nếu có
     await NotificationLocalNotificationDataSource.cancelNotification(
-        notificationId.hashCode);
+      notificationId.hashCode,
+    );
   }
 
   @override

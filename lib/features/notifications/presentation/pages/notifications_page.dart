@@ -60,9 +60,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       body: BlocBuilder<NotificationCubit, NotificationState>(
         builder: (context, state) {
           if (state is NotificationLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is NotificationError) {
@@ -112,18 +110,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     SizedBox(height: 16),
                     Text(
                       'Chưa có thông báo nào',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
                       'Các thông báo sẽ xuất hiện ở đây',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -195,9 +187,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void _navigateToChat(NotificationEntity notification) {
     // TODO: Navigate to chat
     final chatId = notification.data['chatId'];
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navigating to chat: $chatId')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Navigating to chat: $chatId')));
   }
 
   void _showNotificationDetails(NotificationEntity notification) {
@@ -221,7 +213,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Đánh dấu tất cả đã đọc'),
-        content: const Text('Bạn có chắc chắn muốn đánh dấu tất cả thông báo là đã đọc?'),
+        content: const Text(
+          'Bạn có chắc chắn muốn đánh dấu tất cả thông báo là đã đọc?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -232,7 +226,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               Navigator.of(context).pop();
               // TODO: Implement mark all as read
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã đánh dấu tất cả thông báo là đã đọc')),
+                const SnackBar(
+                  content: Text('Đã đánh dấu tất cả thông báo là đã đọc'),
+                ),
               );
             },
             child: const Text('Xác nhận'),
