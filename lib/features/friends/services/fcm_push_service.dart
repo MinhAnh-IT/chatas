@@ -18,14 +18,17 @@ class FCMPushService {
     "type": "service_account",
     "project_id": "chatas-9469d",
     "private_key_id": "8df8e4c4ee414681b21f05465e0eb79e28a9d3b5",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCnIJiQOG3cUsZj\nIhcF54b1pLe74QevnAauejqZR1rQ0SbSzYlDF+8EoJDXTYRLnHi6Bq0X95rf+LYF\nn8CATfAVoC8Y2kK7V42l65ueXO0klHd4UgQjc/rxlwBr8KlHjTDW4i8+HK7IruQD\nk+SWhTyT3RTy1Cl/b8MJVkUfIoC+/JmKHAA9UgNoWt9RGJ2L0wphYXia2mAo9LpC\n6fdCT8oiiW2+4NGxkcZ7ywvGvtEvF0KxQ2CVxoLNioALFOs3DZ7M1habYaS55bD5\n8IM+wHXBtfL/ur2F6lxUrEv3NPnKa1WaxYEH5CkjXSPZSjyOC2naCH0s3cPwGrWn\neKYYXxHzAgMBAAECggEADzuv3DlgfhwHXCLP0Wh0izBL1PKiZjXFACNA8xanZvAh\nZ0Z3s+dbEGNoQE+e9ttYv6/7F/uoILEFOkcA31D7SKVUlaHTQkstLInoocsbjGGB\n8DQdj3OzVFDsp2oEq/JpGLT+FF296qnSO6c/xx520o1squN+stBniRLVcwyMipvK\npDGgJT4YzFcoWeQcAv9l1vVayolc3Pxfoz21jVM4Osi8Rrp5ivTGxM36gwxFn3Xc\nWq2SEkRZe3xzKkQzTa49IVN4tir3SxyunkZp7zmaVVfBJowq4k+m/CqGB1ZZCf/n\ndlvkn+G+n3kCJOq1+j7bRAShF3g4M4bqAZhKagLPQQKBgQDlY0Cq1P2E/bCd8lmJ\nVZlBo4/2W7pyG8sotTzVTO5qRUQ7dD0dYOcbV1pUPLaYB6mhZ/UhHXkA40UbGFFa\n1MmpJvQooss2WhJWUE1azcvtLEtBCMJtxKw1ucihoJxhhpkyX6Dt6Tfi3GJrFva2\nUJVJImslJPfaVDI+aXxAVSpjwQKBgQC6hDp7D+hozGvezKF4O6afsQ93wGSh3Cr6\nPt7rL+jyaPtwU7xQP9p8coNjeeJ7NN1Bm9l0bOgOiFOjL/JRHLVdUFD3vHl7zmqa\ntnMr+IzBXsAQg3ApP+xj8I7YWZ9qB6dOAuwMY+8LO9/Co/2PU9FjmW1XK2QSt/7F\nWMIXc6fSswKBgCWj7b6aiKdEAbFJTUvt0eIldsAUOTn0OZgKdVsC7rRdfV7MKiMh\n/YpNATOFaujziPBFYMH4VhzBLlvN17ux4w1wqOvqGrJmgU/MiYT29BmNBSQ8zbq5\nZRDD1ZpAAqk2LvlHG98uP89oHnY4JG+yNWz0yuQjdtBKtJvtL0hXMUeBAoGAcPfR\nq+OwsnjOBP4P9pC6lRJa+f8PdHGznioiPnSgNOKdGCW/cyOZo7KAHeoe4Nzd/fT1\nOm0UCGlNrxNFQxeOSdxxjfsb4X7eVqKXE1TRe/V1gwr5DiLnfIihHCz8Pu4vyTI/\n4ilNCZLULkHBO+RaeGbfMOLZE/VZXBIsTKQCS70CgYEAu92jfOfDc1Lxfw1nA3Hd\nz7EPux+hmjKF2kPtsu3iUjtHWFPPKtiUg799/lipxgq3hOJbsc35zhs+xKRPCULh\nvirdo/9T5HkG2rXmBrPtGACMke3cjz2m6YB8GL99VB0h6xD5lnIU/11K9SwkHeXM\nsbKme2D95KvgkY/bNXXqknA=\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-fbsvc@chatas-9469d.iam.gserviceaccount.com",
+    "private_key":
+        "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCnIJiQOG3cUsZj\nIhcF54b1pLe74QevnAauejqZR1rQ0SbSzYlDF+8EoJDXTYRLnHi6Bq0X95rf+LYF\nn8CATfAVoC8Y2kK7V42l65ueXO0klHd4UgQjc/rxlwBr8KlHjTDW4i8+HK7IruQD\nk+SWhTyT3RTy1Cl/b8MJVkUfIoC+/JmKHAA9UgNoWt9RGJ2L0wphYXia2mAo9LpC\n6fdCT8oiiW2+4NGxkcZ7ywvGvtEvF0KxQ2CVxoLNioALFOs3DZ7M1habYaS55bD5\n8IM+wHXBtfL/ur2F6lxUrEv3NPnKa1WaxYEH5CkjXSPZSjyOC2naCH0s3cPwGrWn\neKYYXxHzAgMBAAECggEADzuv3DlgfhwHXCLP0Wh0izBL1PKiZjXFACNA8xanZvAh\nZ0Z3s+dbEGNoQE+e9ttYv6/7F/uoILEFOkcA31D7SKVUlaHTQkstLInoocsbjGGB\n8DQdj3OzVFDsp2oEq/JpGLT+FF296qnSO6c/xx520o1squN+stBniRLVcwyMipvK\npDGgJT4YzFcoWeQcAv9l1vVayolc3Pxfoz21jVM4Osi8Rrp5ivTGxM36gwxFn3Xc\nWq2SEkRZe3xzKkQzTa49IVN4tir3SxyunkZp7zmaVVfBJowq4k+m/CqGB1ZZCf/n\ndlvkn+G+n3kCJOq1+j7bRAShF3g4M4bqAZhKagLPQQKBgQDlY0Cq1P2E/bCd8lmJ\nVZlBo4/2W7pyG8sotTzVTO5qRUQ7dD0dYOcbV1pUPLaYB6mhZ/UhHXkA40UbGFFa\n1MmpJvQooss2WhJWUE1azcvtLEtBCMJtxKw1ucihoJxhhpkyX6Dt6Tfi3GJrFva2\nUJVJImslJPfaVDI+aXxAVSpjwQKBgQC6hDp7D+hozGvezKF4O6afsQ93wGSh3Cr6\nPt7rL+jyaPtwU7xQP9p8coNjeeJ7NN1Bm9l0bOgOiFOjL/JRHLVdUFD3vHl7zmqa\ntnMr+IzBXsAQg3ApP+xj8I7YWZ9qB6dOAuwMY+8LO9/Co/2PU9FjmW1XK2QSt/7F\nWMIXc6fSswKBgCWj7b6aiKdEAbFJTUvt0eIldsAUOTn0OZgKdVsC7rRdfV7MKiMh\n/YpNATOFaujziPBFYMH4VhzBLlvN17ux4w1wqOvqGrJmgU/MiYT29BmNBSQ8zbq5\nZRDD1ZpAAqk2LvlHG98uP89oHnY4JG+yNWz0yuQjdtBKtJvtL0hXMUeBAoGAcPfR\nq+OwsnjOBP4P9pC6lRJa+f8PdHGznioiPnSgNOKdGCW/cyOZo7KAHeoe4Nzd/fT1\nOm0UCGlNrxNFQxeOSdxxjfsb4X7eVqKXE1TRe/V1gwr5DiLnfIihHCz8Pu4vyTI/\n4ilNCZLULkHBO+RaeGbfMOLZE/VZXBIsTKQCS70CgYEAu92jfOfDc1Lxfw1nA3Hd\nz7EPux+hmjKF2kPtsu3iUjtHWFPPKtiUg799/lipxgq3hOJbsc35zhs+xKRPCULh\nvirdo/9T5HkG2rXmBrPtGACMke3cjz2m6YB8GL99VB0h6xD5lnIU/11K9SwkHeXM\nsbKme2D95KvgkY/bNXXqknA=\n-----END PRIVATE KEY-----\n",
+    "client_email":
+        "firebase-adminsdk-fbsvc@chatas-9469d.iam.gserviceaccount.com",
     "client_id": "107755447294071557970",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40chatas-9469d.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
+    "client_x509_cert_url":
+        "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40chatas-9469d.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com",
   };
 
   /// Lấy FCM token của thiết bị hiện tại
@@ -86,16 +89,21 @@ class FCMPushService {
   static Future<String?> getAccessToken() async {
     try {
       // Tạo service account credentials từ JSON
-      final accountCredentials = auth.ServiceAccountCredentials.fromJson(_serviceAccountCredentials);
-      
+      final accountCredentials = auth.ServiceAccountCredentials.fromJson(
+        _serviceAccountCredentials,
+      );
+
       // Tạo OAuth2 client với scope FCM
       final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-      final authClient = await auth.clientViaServiceAccount(accountCredentials, scopes);
-      
+      final authClient = await auth.clientViaServiceAccount(
+        accountCredentials,
+        scopes,
+      );
+
       // Lấy access token
       final accessToken = authClient.credentials.accessToken.data;
       authClient.close();
-      
+
       print('✅ Đã lấy access token thành công');
       return accessToken;
     } catch (e) {
@@ -132,10 +140,7 @@ class FCMPushService {
       final payload = {
         'message': {
           'token': recipientToken,
-          'notification': {
-            'title': title,
-            'body': body,
-          },
+          'notification': {'title': title, 'body': body},
           'data': {
             'type': 'friend_notification',
             'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -149,15 +154,10 @@ class FCMPushService {
             },
           },
           'apns': {
-            'headers': {
-              'apns-priority': '10',
-            },
+            'headers': {'apns-priority': '10'},
             'payload': {
               'aps': {
-                'alert': {
-                  'title': title,
-                  'body': body,
-                },
+                'alert': {'title': title, 'body': body},
                 'sound': 'default',
                 'badge': 1,
               },
@@ -188,7 +188,9 @@ class FCMPushService {
         print('✅ FCM Admin API notification sent successfully!');
         return true;
       } else {
-        print('❌ FCM Admin API Error: ${response.statusCode} - ${response.body}');
+        print(
+          '❌ FCM Admin API Error: ${response.statusCode} - ${response.body}',
+        );
         return false;
       }
     } catch (e) {
@@ -216,8 +218,9 @@ class FCMPushService {
 
       // 2. Server Key từ Firebase Console (Legacy Cloud Messaging API)
       // TODO: Lấy Server Key từ Firebase Console > Project Settings > Cloud Messaging
-      const serverKey = 'AAAA_YOUR_SERVER_KEY_HERE'; // Cần thay thế bằng key thực tế
-      
+      const serverKey =
+          'AAAA_YOUR_SERVER_KEY_HERE'; // Cần thay thế bằng key thực tế
+
       // 3. Tạo payload cho FCM legacy API
       final payload = {
         'to': recipientToken,
@@ -353,7 +356,8 @@ class FCMPushService {
       });
 
       // Xử lý khi app được mở từ notification (app đã đóng hoàn toàn)
-      final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+      final initialMessage = await FirebaseMessaging.instance
+          .getInitialMessage();
       if (initialMessage != null) {
         print('📱 App opened from notification:');
         print('   Data: ${initialMessage.data}');
@@ -370,10 +374,11 @@ class FCMPushService {
   static Future<void> _showForegroundNotification(RemoteMessage message) async {
     try {
       print('🔔 Hiển thị foreground notification...');
-      
+
       // Tạo ID 32-bit từ timestamp
-      final notificationId = (DateTime.now().millisecondsSinceEpoch % 2147483647).toInt();
-      
+      final notificationId =
+          (DateTime.now().millisecondsSinceEpoch % 2147483647).toInt();
+
       // Sử dụng NotificationLocalNotificationDataSource để hiển thị notification
       await NotificationLocalNotificationDataSource.showNotification(
         id: notificationId,
@@ -381,9 +386,10 @@ class FCMPushService {
         body: message.notification?.body ?? '',
         payload: message.data.isNotEmpty ? json.encode(message.data) : null,
       );
-      
-      print('✅ Foreground notification hiển thị thành công với ID: $notificationId');
-      
+
+      print(
+        '✅ Foreground notification hiển thị thành công với ID: $notificationId',
+      );
     } catch (e) {
       print('❌ Lỗi hiển thị foreground notification: $e');
     }
@@ -394,10 +400,9 @@ class FCMPushService {
     try {
       final data = message.data;
       print('👆 User tapped notification with action: ${data['action']}');
-      
+
       // Sử dụng NotificationNavigationService để navigate
       NotificationNavigationService.handleNotificationTap(data);
-      
     } catch (e) {
       print('❌ Lỗi xử lý notification tap: $e');
     }

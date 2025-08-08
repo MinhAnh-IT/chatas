@@ -51,7 +51,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       searchChatThreadsUseCase: searchChatThreadsUseCase,
       deleteChatThreadUseCase: deleteChatThreadUseCase,
     );
-    
+
     // Khởi tạo notification cubit
     _notificationCubit = NotificationCubit(
       initializeNotifications: sl(),
@@ -61,10 +61,10 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
       sendFriendRequestNotification: sl(),
       sendFriendAcceptedNotification: sl(),
     );
-    
+
     _cubit.fetchChatThreads();
     _notificationCubit.getUnreadCount();
-    
+
     // Refresh notification count mỗi 30 giây
     Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
