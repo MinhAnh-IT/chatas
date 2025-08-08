@@ -83,26 +83,76 @@ class FCMPushService {
         return null;
       }
 
-      // Tạo service account credentials từ JSON
+      // Debug: kiểm tra thông tin credentials
+      print('🔍 Debug credentials keys: ${_serviceAccountCredentials!.keys}');
+      print('🔍 Project ID: ${_serviceAccountCredentials!['project_id']}');
+      print('🔍 Client email: ${_serviceAccountCredentials!['client_email']}');
+      print(
+        '🔍 Private key ID: ${_serviceAccountCredentials!['private_key_id']}',
+      );
+
+      final privateKey =
+          _serviceAccountCredentials!['private_key']?.toString() ?? '';
+      print('🔍 Private key length: ${privateKey.length}');
+      print('🔍 Private key starts with: ${privateKey.substring(0, 50)}...');
+      print(
+        '🔍 Private key ends with: ...${privateKey.substring(privateKey.length - 50)}',
+      );
+
+      // Validate private key format
+      if (!privateKey.contains('-----BEGIN PRIVATE KEY-----') ||
+          !privateKey.contains('-----END PRIVATE KEY-----')) {
+        print('❌ Private key format invalid - missing BEGIN/END markers');
+        return null;
+      }
+
+      // Check for proper newlines
+      final lines = privateKey.split('\n');
+      print('🔍 Private key has ${lines.length} lines');
+      if (lines.length < 3) {
+        print('❌ Private key doesn\'t have proper line breaks');
+        return null;
+      }
+
+      // Tạo service account credentials từ JSON với explicit clock skew
       final accountCredentials = auth.ServiceAccountCredentials.fromJson(
         _serviceAccountCredentials!,
       );
 
-      // Tạo OAuth2 client với scope FCM
+      print('🔍 ServiceAccount created successfully');
+
+      // Tạo OAuth2 client với scope FCM và clock skew tolerance
       final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+      print('🔍 Creating OAuth2 client with scopes: $scopes');
+
       final authClient = await auth.clientViaServiceAccount(
         accountCredentials,
         scopes,
       );
 
+      print('🔍 OAuth2 client created successfully');
+
       // Lấy access token
       final accessToken = authClient.credentials.accessToken.data;
       authClient.close();
 
-      print('✅ Đã lấy access token thành công');
+      print(
+        '✅ Đã lấy access token thành công: ${accessToken.substring(0, 20)}...',
+      );
       return accessToken;
     } catch (e) {
-      print('❌ Lỗi lấy access token: $e');
+      print('❌ Chi tiết lỗi getAccessToken: $e');
+      print('❌ Error type: ${e.runtimeType}');
+
+      // Additional debug for JWT errors
+      if (e.toString().contains('Invalid JWT Signature')) {
+        print('🔍 JWT Signature error - có thể do:');
+        print('   - Private key format không đúng');
+        print('   - Clock skew (thời gian hệ thống không đồng bộ)');
+        print('   - Service account bị disabled');
+        print('🔧 Thử tạo lại service account key mới từ Firebase Console');
+      }
+
       return null;
     }
   }
