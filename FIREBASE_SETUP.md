@@ -1,66 +1,77 @@
-# Firebase Credentials Setup
+# Hướng dẫn Cài đặt Firebase Credentials
 
-## Overview
-This project uses Firebase Admin SDK for push notifications. For security reasons, the service account credentials are not included in the repository.
+## Tổng quan
 
-## Setup Instructions
+Dự án này sử dụng Firebase Admin SDK cho push notifications. Vì lý do bảo mật, các thông tin xác thực service account không được bao gồm trong repository.
 
-### 1. Get Firebase Service Account Credentials
+## Hướng dẫn Cài đặt
 
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Select your project (`chatas-9469d`)
-3. Go to **Project Settings** > **Service Accounts**
-4. Click **Generate new private key**
-5. Download the JSON file
+### 1. Lấy Firebase Service Account Credentials
 
-### 2. Add Credentials to Your Local Project
+1. Truy cập [Firebase Console](https://console.firebase.google.com)
+2. Chọn project của bạn (`chatas-9469d`)
+3. Vào **Project Settings** > **Service Accounts**
+4. Nhấp **Generate new private key**
+5. Tải file JSON về
 
-#### Method 1: Assets Folder (Recommended for Development)
-1. Create `assets` folder in project root if it doesn't exist
-2. Copy the downloaded JSON file to `assets/firebase_credentials.json`
-3. Add to `pubspec.yaml`:
+### 2. Thêm Credentials vào Project Local
+
+#### Phương pháp 1: Thư mục Assets (Khuyến nghị cho Development)
+
+1. Tạo thư mục `assets` ở thư mục gốc project nếu chưa có
+2. Copy file JSON đã tải về `assets/firebase_credentials.json`
+3. Thêm vào `pubspec.yaml`:
+
 ```yaml
 flutter:
   assets:
     - assets/firebase_credentials.json
 ```
 
-#### Method 2: Environment Variables (Recommended for Production)
-Set the following environment variables:
+#### Phương pháp 2: Environment Variables (Khuyến nghị cho Production)
+
+Thiết lập các environment variables sau:
+
 - `FIREBASE_PROJECT_ID`
 - `FIREBASE_PRIVATE_KEY`
 - `FIREBASE_CLIENT_EMAIL`
-- etc.
+- v.v.
 
-### 3. File Structure
+### 3. Cấu trúc File
+
 ```
 project_root/
 ├── assets/
-│   └── firebase_credentials.json  # ← Add this file (gitignored)
+│   └── firebase_credentials.json  # ← Thêm file này (đã gitignore)
 ├── lib/
 └── pubspec.yaml
 ```
 
-### 4. Security Notes
-- ✅ The credentials file is automatically gitignored
-- ✅ Never commit credentials to version control
-- ✅ Use environment variables in production
-- ✅ Rotate keys regularly
+### 4. Ghi chú Bảo mật
 
-### 5. Verification
-Run the app and check console logs:
+- ✅ File credentials được tự động gitignore
+- ✅ Không bao giờ commit credentials vào version control
+- ✅ Sử dụng environment variables trong production
+- ✅ Thay đổi keys định kỳ
+
+### 5. Kiểm tra
+
+Chạy app và kiểm tra console logs:
+
 - ✅ `Firebase credentials loaded successfully`
 - ❌ `Error loading Firebase credentials`
 
-## Troubleshooting
+## Khắc phục Sự cố
 
-### No Notifications Received
-1. Check credentials are loaded properly
-2. Verify FCM tokens are saved to Firestore
-3. Check notification permissions
-4. Check Firebase Console logs
+### Không nhận được Notifications
 
-### Error: "Service account credentials chưa được khởi tạo"
-- Ensure `firebase_credentials.json` exists in `assets/` folder
-- Check `pubspec.yaml` includes the assets path
-- Run `flutter clean && flutter pub get`
+1. Kiểm tra credentials đã được load đúng chưa
+2. Xác minh FCM tokens đã được lưu vào Firestore
+3. Kiểm tra quyền thông báo
+4. Kiểm tra Firebase Console logs
+
+### Lỗi: "Service account credentials chưa được khởi tạo"
+
+- Đảm bảo `firebase_credentials.json` có trong thư mục `assets/`
+- Kiểm tra `pubspec.yaml` đã include đường dẫn assets
+- Chạy `flutter clean && flutter pub get`
