@@ -28,6 +28,28 @@ class FriendsDependencyInjection {
   static late RejectFriendRequest _rejectFriendRequest;
   static late CancelFriendRequest _cancelFriendRequest;
 
+  // Notification service getter - tạo instance mới mỗi lần gọi
+  static dynamic get friendNotificationService {
+    // Lazy loading để tránh circular dependency
+    try {
+      return {
+        'sendFriendRequestNotification': (Map<String, dynamic> params) async {
+          // TODO: Implement actual notification logic here
+          print('Gửi friend request notification: ${params['fromUserName']}');
+        },
+        'sendFriendAcceptedNotification': (Map<String, dynamic> params) async {
+          print('Gửi friend accepted notification: ${params['accepterName']}');
+        },
+        'sendFriendRejectedNotification': (Map<String, dynamic> params) async {
+          print('Gửi friend rejected notification: ${params['rejecterName']}');
+        },
+      };
+    } catch (e) {
+      print('Lỗi tạo friend notification service: $e');
+      return null;
+    }
+  }
+
   static void init() {
     // Data layer
     _dataSource = FriendRemoteDataSource(firestore: FirebaseFirestore.instance);

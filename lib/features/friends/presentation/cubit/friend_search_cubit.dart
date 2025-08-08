@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/search_users_usecase.dart';
 import '../../domain/usecases/send_friend_request_usecase.dart';
 import '../../domain/entities/friendRequest.dart';
+import '../../injection/friends_injection.dart';
 import 'friend_search_state.dart';
 
 class FriendSearchCubit extends Cubit<FriendSearchState> {
@@ -27,7 +28,7 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
     }
   }
 
-  Future<void> sendFriendRequest(String currentUserId, String toUserId) async {
+  Future<void> sendFriendRequest(String currentUserId, String toUserId, String toUserName) async {
     try {
       final friendRequest = FriendRequest(
         id: '${currentUserId}_$toUserId',
@@ -37,6 +38,14 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
         status: 'pending',
       );
       await sendFriendRequestUseCase.call(friendRequest);
+      
+      // Gửi thông báo cho người nhận lời mời
+      final notificationService = FriendsDependencyInjection.friendNotificationService;
+      await notificationService['sendFriendRequestNotification']({
+        'fromUserName': 'Người dùng', // TODO: Lấy tên người gửi thực tế
+        'fromUserId': currentUserId,
+      });
+      
       if (state is FriendSearchLoaded) {
         final currentUsers = (state as FriendSearchLoaded).users;
         final updatedUsers = currentUsers
