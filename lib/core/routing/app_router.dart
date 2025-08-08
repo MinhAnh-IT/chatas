@@ -136,9 +136,11 @@ class AppRouter {
             repository: repository,
           );
           final editMessageUseCase = EditMessageUseCase(repository: repository);
-          final deleteMessageUseCase = DeleteMessageUseCase(repository: repository);
+          final deleteMessageUseCase = DeleteMessageUseCase(
+            repository: repository,
+          );
           final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
-          
+
           // Setup ChatThread repository and use cases for first message creation
           final chatThreadRepository = ChatThreadRepositoryImpl();
           final sendFirstMessageUseCase = SendFirstMessageUseCase(

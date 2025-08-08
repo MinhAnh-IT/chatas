@@ -29,11 +29,11 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   String? _currentChatThreadId;
   ChatThread? _currentThread;
   bool _isTemporaryThread = false;
-  
+
   // Current user information
   String? _currentUserId;
   String? _currentUserName;
-  
+
   // Reply state
   String? _replyToMessageId;
 
@@ -56,7 +56,9 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
 
   /// Sets the current user information for message sending
   void setCurrentUser({required String userId, required String userName}) {
-    print('ChatMessageCubit: Setting current user - ID: $userId, Name: $userName');
+    print(
+      'ChatMessageCubit: Setting current user - ID: $userId, Name: $userName',
+    );
     _currentUserId = userId;
     _currentUserName = userName;
   }
@@ -64,7 +66,8 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   /// Initializes current user from auth service
   Future<void> initializeCurrentUser() async {
     try {
-      final User? currentUser = await AuthDependencyInjection.getCurrentUserUseCase();
+      final User? currentUser =
+          await AuthDependencyInjection.getCurrentUserUseCase();
       if (currentUser != null) {
         _currentUserId = currentUser.userId;
         _currentUserName = currentUser.fullName;
@@ -90,16 +93,22 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       // Subscribe to real-time message updates
       _messagesSubscription = _getMessagesStreamUseCase(chatThreadId).listen(
         (messages) {
-          print('ChatMessageCubit: Received ${messages.length} messages for thread $chatThreadId');
+          print(
+            'ChatMessageCubit: Received ${messages.length} messages for thread $chatThreadId',
+          );
           emit(ChatMessageLoaded(messages: messages));
         },
         onError: (error) {
-          print('ChatMessageCubit: Error loading messages for thread $chatThreadId: $error');
+          print(
+            'ChatMessageCubit: Error loading messages for thread $chatThreadId: $error',
+          );
           emit(ChatMessageError(message: error.toString()));
         },
       );
     } catch (e) {
-      print('ChatMessageCubit: Exception loading messages for thread $chatThreadId: $e');
+      print(
+        'ChatMessageCubit: Exception loading messages for thread $chatThreadId: $e',
+      );
       emit(ChatMessageError(message: e.toString()));
     }
   }
@@ -132,16 +141,22 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     }
 
     // Ensure current user is set
-    print('ChatMessageCubit: Checking user info - ID: $_currentUserId, Name: $_currentUserName');
+    print(
+      'ChatMessageCubit: Checking user info - ID: $_currentUserId, Name: $_currentUserName',
+    );
     if (_currentUserId == null || _currentUserName == null) {
       print('ChatMessageCubit: User info is null, emitting error');
-      emit(const ChatMessageError(message: 'Không thể xác định thông tin người dùng'));
+      emit(
+        const ChatMessageError(
+          message: 'Không thể xác định thông tin người dùng',
+        ),
+      );
       return;
     }
 
     try {
       final currentState = state;
-      
+
       // Handle temporary thread - create real thread first
       if (_isTemporaryThread && _currentThread != null) {
         // Create the first message
@@ -159,29 +174,31 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           createdAt: now,
           updatedAt: now,
         );
-        
+
         final realThreadId = await _sendFirstMessageUseCase(
           chatThread: _currentThread!,
           message: firstMessage,
         );
-        
+
         print('ChatMessageCubit: Created real thread with ID: $realThreadId');
-        
+
         // Update to real thread
         _currentChatThreadId = realThreadId;
         _isTemporaryThread = false;
         _currentThread = null;
-        
+
         // Wait a bit to ensure message is saved before subscribing to stream
         await Future.delayed(const Duration(milliseconds: 200));
-        
-        print('ChatMessageCubit: Loading messages for real thread: $realThreadId');
-        
+
+        print(
+          'ChatMessageCubit: Loading messages for real thread: $realThreadId',
+        );
+
         // Start listening to the real thread's messages
         await loadMessages(realThreadId);
         return;
       }
-      
+
       // Handle normal message sending for existing threads
       if (currentState is ChatMessageLoaded) {
         // Create a pending message
@@ -209,7 +226,9 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         );
 
         // Send the actual message
-        print('ChatMessageCubit: Sending message to thread: $_currentChatThreadId');
+        print(
+          'ChatMessageCubit: Sending message to thread: $_currentChatThreadId',
+        );
         await _sendMessageUseCase(
           chatThreadId: _currentChatThreadId!,
           content: content.trim(),
@@ -217,7 +236,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           senderName: _currentUserName!,
           replyToMessageId: _replyToMessageId,
         );
-        
+
         // Clear reply state after sending
         if (_replyToMessageId != null) {
           _replyToMessageId = null;
@@ -261,7 +280,11 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       // Ensure current user is set
       if (_currentUserId == null) {
-        emit(const ChatMessageError(message: 'Không thể xác định thông tin người dùng'));
+        emit(
+          const ChatMessageError(
+            message: 'Không thể xác định thông tin người dùng',
+          ),
+        );
         return;
       }
 
@@ -295,7 +318,11 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       // Ensure current user is set
       if (_currentUserId == null) {
-        emit(const ChatMessageError(message: 'Không thể xác định thông tin người dùng'));
+        emit(
+          const ChatMessageError(
+            message: 'Không thể xác định thông tin người dùng',
+          ),
+        );
         return;
       }
 
@@ -320,7 +347,11 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       // Ensure current user is set
       if (_currentUserId == null) {
-        emit(const ChatMessageError(message: 'Không thể xác định thông tin người dùng'));
+        emit(
+          const ChatMessageError(
+            message: 'Không thể xác định thông tin người dùng',
+          ),
+        );
         return;
       }
 
@@ -343,7 +374,11 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     try {
       // Ensure current user is set
       if (_currentUserId == null) {
-        emit(const ChatMessageError(message: 'Không thể xác định thông tin người dùng'));
+        emit(
+          const ChatMessageError(
+            message: 'Không thể xác định thông tin người dùng',
+          ),
+        );
         return;
       }
 

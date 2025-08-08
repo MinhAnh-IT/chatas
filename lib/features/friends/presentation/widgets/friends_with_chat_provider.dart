@@ -37,7 +37,7 @@ class FriendsWithChatProvider extends StatelessWidget {
               otherUserName: state.chatThread.name,
             );
             context.go(route);
-            
+
             // Reset the cubit state after navigation
             context.read<OpenChatCubit>().reset();
           } else if (state is OpenChatError) {
@@ -49,7 +49,7 @@ class FriendsWithChatProvider extends StatelessWidget {
                 duration: const Duration(seconds: 3),
               ),
             );
-            
+
             // Reset the cubit state after showing error
             context.read<OpenChatCubit>().reset();
           }
@@ -85,9 +85,13 @@ mixin ChatOpeningMixin {
     final parts = friend.friendId.split('_');
     if (parts.length == 2) {
       actualFriendId = parts[1]; // Extract the actual friend's user ID
-      print('ChatOpeningMixin: Extracted actualFriendId: $actualFriendId from composite: ${friend.friendId}');
+      print(
+        'ChatOpeningMixin: Extracted actualFriendId: $actualFriendId from composite: ${friend.friendId}',
+      );
     } else {
-      print('ChatOpeningMixin: WARNING - friendId format unexpected: ${friend.friendId}');
+      print(
+        'ChatOpeningMixin: WARNING - friendId format unexpected: ${friend.friendId}',
+      );
     }
 
     // Use OpenChatCubit to handle the chat opening

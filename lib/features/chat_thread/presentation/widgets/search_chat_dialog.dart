@@ -45,7 +45,7 @@ class _SearchChatDialogState extends State<SearchChatDialog> {
     });
 
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    
+
     widget.cubit
         .searchChatThreads(query, currentUserId)
         .then((results) {

@@ -12,12 +12,9 @@ class DeleteMessageUseCase {
   ///
   /// [messageId] The ID of the message to delete
   /// [userId] The ID of the user attempting to delete (for ownership validation)
-  /// 
+  ///
   /// Throws [Exception] if user doesn't own the message or deletion fails
-  Future<void> call({
-    required String messageId,
-    required String userId,
-  }) async {
+  Future<void> call({required String messageId, required String userId}) async {
     await _repository.deleteMessageWithValidation(
       messageId: messageId,
       userId: userId,

@@ -36,16 +36,20 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isFromCurrentUser = message.isFromUser(currentUserId);
-    
-    print('MessageBubble: messageId=${message.id}, senderId="${message.senderId}", currentUserId="$currentUserId", isFromCurrentUser=$isFromCurrentUser, senderName="${message.senderName}"');
-    
+
+    print(
+      'MessageBubble: messageId=${message.id}, senderId="${message.senderId}", currentUserId="$currentUserId", isFromCurrentUser=$isFromCurrentUser, senderName="${message.senderName}"',
+    );
+
     // Check if this is current user even if senderId doesn't match
     // More specific backward compatibility - only for messages that should be from current user
-    final isCurrentUserMessage = isFromCurrentUser || 
-        (message.senderId == 'current_user' && message.senderName == 'Current User');
-        
+    final isCurrentUserMessage =
+        isFromCurrentUser ||
+        (message.senderId == 'current_user' &&
+            message.senderName == 'Current User');
+
     print('MessageBubble: isCurrentUserMessage=$isCurrentUserMessage');
-        
+
     return GestureDetector(
       onTap: onTap,
       onLongPress: () => _showContextMenu(context),
@@ -84,10 +88,12 @@ class MessageBubble extends StatelessWidget {
   Widget _buildTimestamp(BuildContext context) {
     final theme = Theme.of(context);
     final timestampText = app_date_utils.DateUtils.formatTime(message.sentAt);
-    
+
     // Check if this is current user even if senderId doesn't match
-    final isCurrentUserMessage = message.isFromUser(currentUserId) || 
-        (message.senderId == 'current_user' && message.senderName == 'Current User');
+    final isCurrentUserMessage =
+        message.isFromUser(currentUserId) ||
+        (message.senderId == 'current_user' &&
+            message.senderName == 'Current User');
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
@@ -114,10 +120,12 @@ class MessageBubble extends StatelessWidget {
   Widget _buildMessageContainer(BuildContext context) {
     final theme = Theme.of(context);
     final isFromCurrentUser = message.isFromUser(currentUserId);
-    
+
     // Check if this is current user even if senderId doesn't match
-    final isCurrentUserMessage = isFromCurrentUser || 
-        (message.senderId == 'current_user' && message.senderName == 'Current User');
+    final isCurrentUserMessage =
+        isFromCurrentUser ||
+        (message.senderId == 'current_user' &&
+            message.senderName == 'Current User');
 
     return Stack(
       children: [
@@ -165,15 +173,16 @@ class MessageBubble extends StatelessWidget {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero);
     final screenSize = MediaQuery.of(context).size;
-    
+
     // Calculate menu position - center horizontally below the message
     const menuWidth = 180.0; // Width of context menu
     const menuHeight = 200.0; // Approximate height of context menu
-    
+
     // Center the menu horizontally relative to the message
     double left = position.dx + (renderBox.size.width / 2) - (menuWidth / 2);
-    double top = position.dy + renderBox.size.height + 12; // 12px margin below message
-    
+    double top =
+        position.dy + renderBox.size.height + 12; // 12px margin below message
+
     // Adjust horizontal position if menu would go off screen
     if (left + menuWidth > screenSize.width - 16) {
       left = screenSize.width - menuWidth - 16; // 16px margin from right edge
@@ -181,7 +190,7 @@ class MessageBubble extends StatelessWidget {
     if (left < 16) {
       left = 16; // 16px margin from left edge
     }
-    
+
     // Adjust vertical position if menu would go off screen
     if (top + menuHeight > screenSize.height - 100) {
       // Show above the message instead
@@ -191,11 +200,11 @@ class MessageBubble extends StatelessWidget {
         top = 100; // Safe margin from top
       }
     }
-    
+
     print('MessageBubble: Showing context menu at position: ($left, $top)');
     print('MessageBubble: Message position: (${position.dx}, ${position.dy})');
     print('MessageBubble: Message size: ${renderBox.size}');
-    
+
     MessageContextMenu.show(
       context: context,
       position: Offset(left, top),
@@ -268,9 +277,11 @@ class MessageBubble extends StatelessWidget {
         spacing: 4.0,
         children: reactionCounts.entries.map((entry) {
           // Check if current user has this reaction
-          final currentUserHasReaction = message.reactions.entries
-              .any((mapEntry) => mapEntry.key == currentUserId && mapEntry.value == entry.key);
-          
+          final currentUserHasReaction = message.reactions.entries.any(
+            (mapEntry) =>
+                mapEntry.key == currentUserId && mapEntry.value == entry.key,
+          );
+
           return GestureDetector(
             onTap: () => onReactionTap(message.id, entry.key),
             child: Container(
@@ -279,12 +290,15 @@ class MessageBubble extends StatelessWidget {
                 vertical: 4.0,
               ),
               decoration: BoxDecoration(
-                color: currentUserHasReaction 
+                color: currentUserHasReaction
                     ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
                     : Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(12.0),
-                border: currentUserHasReaction 
-                    ? Border.all(color: Theme.of(context).colorScheme.primary, width: 1)
+                border: currentUserHasReaction
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1,
+                      )
                     : null,
               ),
               child: Row(
@@ -334,12 +348,14 @@ class MessageBubble extends StatelessWidget {
   /// For other users, use the message.senderName.
   String _getDisplayName() {
     final isFromCurrentUser = message.isFromUser(currentUserId);
-    
+
     // Check if this is current user even if senderId doesn't match
     // (for backward compatibility with old messages)
-    final isCurrentUserMessage = isFromCurrentUser || 
-        (message.senderId == 'current_user' && message.senderName == 'Current User');
-    
+    final isCurrentUserMessage =
+        isFromCurrentUser ||
+        (message.senderId == 'current_user' &&
+            message.senderName == 'Current User');
+
     if (isCurrentUserMessage) {
       // For current user, use provided currentUserName or fallback to message.senderName
       return currentUserName ?? message.senderName;

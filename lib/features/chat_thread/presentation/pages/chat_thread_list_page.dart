@@ -25,7 +25,8 @@ class ChatThreadListPage extends StatefulWidget {
   State<ChatThreadListPage> createState() => _ChatThreadListPageState();
 }
 
-class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBindingObserver {
+class _ChatThreadListPageState extends State<ChatThreadListPage>
+    with WidgetsBindingObserver {
   late ChatThreadListCubit _cubit;
   bool _isSearchVisible = false;
   final TextEditingController _searchController = TextEditingController();
@@ -41,7 +42,9 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBin
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
     final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
     final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
-    final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(repository);
+    final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(
+      repository,
+    );
 
     _cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
@@ -53,7 +56,9 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBin
     // Get current user ID and fetch threads
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     print('ChatThreadListPage: initState - Current user ID: $currentUserId');
-    print('ChatThreadListPage: initState - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}');
+    print(
+      'ChatThreadListPage: initState - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}',
+    );
     if (currentUserId.isNotEmpty) {
       _cubit.fetchChatThreads(currentUserId);
     } else {
@@ -86,11 +91,11 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBin
     String threadId,
     String threadName,
   ) {
-    // Get current user ID from Firebase Auth  
+    // Get current user ID from Firebase Auth
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    
+
     print('ChatThreadListPage: Navigating with currentUserId: $currentUserId');
-    
+
     final route = AppRouteConstants.chatMessageRoute(
       threadId,
       currentUserId: currentUserId,
@@ -143,7 +148,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBin
     });
 
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    
+
     _cubit
         .searchChatThreads(query, currentUserId)
         .then((results) {
@@ -188,7 +193,8 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBin
             onRefresh: _handleRefresh,
             errorMessage: state.message,
             onRetry: () {
-              final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+              final currentUserId =
+                  FirebaseAuth.instance.currentUser?.uid ?? '';
               if (currentUserId.isNotEmpty) {
                 _cubit.fetchChatThreads(currentUserId);
               }
@@ -271,7 +277,9 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> with WidgetsBin
         print('ChatThreadListPage: Building page, refreshing chat threads');
         final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
         print('ChatThreadListPage: build - Current user ID: $currentUserId');
-        print('ChatThreadListPage: build - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}');
+        print(
+          'ChatThreadListPage: build - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}',
+        );
         if (currentUserId.isNotEmpty) {
           _cubit.fetchChatThreads(currentUserId);
         } else {

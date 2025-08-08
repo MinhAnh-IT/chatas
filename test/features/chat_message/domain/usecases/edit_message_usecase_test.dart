@@ -21,101 +21,113 @@ void main() {
     const newContent = 'Updated message content';
     const userId = 'test_user_id';
 
-    test('should call repository editMessage with correct parameters', () async {
-      // arrange
-      when(mockRepository.editMessage(
-        messageId: anyNamed('messageId'),
-        newContent: anyNamed('newContent'),
-        userId: anyNamed('userId'),
-      )).thenAnswer((_) async {});
+    test(
+      'should call repository editMessage with correct parameters',
+      () async {
+        // arrange
+        when(
+          mockRepository.editMessage(
+            messageId: anyNamed('messageId'),
+            newContent: anyNamed('newContent'),
+            userId: anyNamed('userId'),
+          ),
+        ).thenAnswer((_) async {});
 
-      // act
-      await useCase(
-        messageId: messageId,
-        newContent: newContent,
-        userId: userId,
-      );
+        // act
+        await useCase(
+          messageId: messageId,
+          newContent: newContent,
+          userId: userId,
+        );
 
-      // assert
-      verify(mockRepository.editMessage(
-        messageId: messageId,
-        newContent: newContent,
-        userId: userId,
-      )).called(1);
-    });
+        // assert
+        verify(
+          mockRepository.editMessage(
+            messageId: messageId,
+            newContent: newContent,
+            userId: userId,
+          ),
+        ).called(1);
+      },
+    );
 
     test('should throw exception when content is empty', () async {
       // act & assert
       expect(
-        () => useCase(
-          messageId: messageId,
-          newContent: '',
-          userId: userId,
-        ),
+        () => useCase(messageId: messageId, newContent: '', userId: userId),
         throwsA(isA<Exception>()),
       );
 
       // verify repository method was not called
-      verifyNever(mockRepository.editMessage(
-        messageId: anyNamed('messageId'),
-        newContent: anyNamed('newContent'),
-        userId: anyNamed('userId'),
-      ));
+      verifyNever(
+        mockRepository.editMessage(
+          messageId: anyNamed('messageId'),
+          newContent: anyNamed('newContent'),
+          userId: anyNamed('userId'),
+        ),
+      );
     });
 
     test('should throw exception when content is only whitespace', () async {
       // act & assert
       expect(
-        () => useCase(
-          messageId: messageId,
-          newContent: '   ',
-          userId: userId,
-        ),
+        () => useCase(messageId: messageId, newContent: '   ', userId: userId),
         throwsA(isA<Exception>()),
       );
 
       // verify repository method was not called
-      verifyNever(mockRepository.editMessage(
-        messageId: anyNamed('messageId'),
-        newContent: anyNamed('newContent'),
-        userId: anyNamed('userId'),
-      ));
-    });
-
-    test('should trim whitespace from content before calling repository', () async {
-      // arrange
-      const contentWithWhitespace = '  Updated content  ';
-      const expectedTrimmedContent = 'Updated content';
-      
-      when(mockRepository.editMessage(
-        messageId: anyNamed('messageId'),
-        newContent: anyNamed('newContent'),
-        userId: anyNamed('userId'),
-      )).thenAnswer((_) async {});
-
-      // act
-      await useCase(
-        messageId: messageId,
-        newContent: contentWithWhitespace,
-        userId: userId,
+      verifyNever(
+        mockRepository.editMessage(
+          messageId: anyNamed('messageId'),
+          newContent: anyNamed('newContent'),
+          userId: anyNamed('userId'),
+        ),
       );
-
-      // assert
-      verify(mockRepository.editMessage(
-        messageId: messageId,
-        newContent: expectedTrimmedContent,
-        userId: userId,
-      )).called(1);
     });
+
+    test(
+      'should trim whitespace from content before calling repository',
+      () async {
+        // arrange
+        const contentWithWhitespace = '  Updated content  ';
+        const expectedTrimmedContent = 'Updated content';
+
+        when(
+          mockRepository.editMessage(
+            messageId: anyNamed('messageId'),
+            newContent: anyNamed('newContent'),
+            userId: anyNamed('userId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        // act
+        await useCase(
+          messageId: messageId,
+          newContent: contentWithWhitespace,
+          userId: userId,
+        );
+
+        // assert
+        verify(
+          mockRepository.editMessage(
+            messageId: messageId,
+            newContent: expectedTrimmedContent,
+            userId: userId,
+          ),
+        ).called(1);
+      },
+    );
 
     test('should propagate repository exceptions', () async {
       // arrange
       const errorMessage = 'Repository error';
-      when(mockRepository.editMessage(
-        messageId: anyNamed('messageId'),
-        newContent: anyNamed('newContent'),
-        userId: anyNamed('userId'),
-      )).thenThrow(Exception(errorMessage));
+      when(
+        mockRepository.editMessage(
+          messageId: anyNamed('messageId'),
+          newContent: anyNamed('newContent'),
+          userId: anyNamed('userId'),
+        ),
+      ).thenThrow(Exception(errorMessage));
 
       // act & assert
       expect(

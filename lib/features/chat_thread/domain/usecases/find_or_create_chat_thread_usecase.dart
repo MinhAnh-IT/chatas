@@ -27,21 +27,20 @@ class FindOrCreateChatThreadUseCase {
     if (currentUserId == friendId) {
       throw Exception('Cannot create chat thread with yourself');
     }
-    
+
     // Get all existing threads for current user
     final allThreads = await repository.getChatThreads(currentUserId);
-    
+
     // Look for existing thread between these two users
     for (final thread in allThreads) {
-      if (!thread.isGroup && 
+      if (!thread.isGroup &&
           thread.members.length == 2 &&
-          thread.members.contains(currentUserId) && 
+          thread.members.contains(currentUserId) &&
           thread.members.contains(friendId)) {
-
         return thread;
       }
     }
-    
+
     // No existing thread found, return a temporary thread
     // This will be created in database only when first message is sent
     final now = DateTime.now();
@@ -57,7 +56,7 @@ class FindOrCreateChatThreadUseCase {
       createdAt: now,
       updatedAt: now,
     );
-    
+
     return tempThread;
   }
 }

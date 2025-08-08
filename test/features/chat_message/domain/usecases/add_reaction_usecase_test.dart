@@ -33,15 +33,16 @@ void main() {
         ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(messageId: messageId, reaction: reactionType, userId: 'test_user');
+        await useCase.call(
+          messageId: messageId,
+          reaction: reactionType,
+          userId: 'test_user',
+        );
 
         // Assert
         verify(
-          () => mockRepository.addReaction(
-            messageId,
-            'test_user',
-            reactionType,
-          ),
+          () =>
+              mockRepository.addReaction(messageId, 'test_user', reactionType),
         ).called(1);
       });
 
@@ -55,15 +56,16 @@ void main() {
         ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(messageId: messageId, reaction: reactionType, userId: 'test_user');
+        await useCase.call(
+          messageId: messageId,
+          reaction: reactionType,
+          userId: 'test_user',
+        );
 
         // Assert
         verify(
-          () => mockRepository.addReaction(
-            messageId,
-            'test_user',
-            reactionType,
-          ),
+          () =>
+              mockRepository.addReaction(messageId, 'test_user', reactionType),
         ).called(1);
       });
 
@@ -79,7 +81,11 @@ void main() {
 
         // Act & Assert
         expect(
-          () => useCase.call(messageId: messageId, reaction: reactionType, userId: 'test_user'),
+          () => useCase.call(
+            messageId: messageId,
+            reaction: reactionType,
+            userId: 'test_user',
+          ),
           throwsA(exception),
         );
       });
@@ -94,7 +100,11 @@ void main() {
 
         // Act & Assert
         for (final reactionType in ReactionType.values) {
-          await useCase.call(messageId: messageId, reaction: reactionType, userId: 'test_user');
+          await useCase.call(
+            messageId: messageId,
+            reaction: reactionType,
+            userId: 'test_user',
+          );
 
           verify(
             () => mockRepository.addReaction(
@@ -116,15 +126,16 @@ void main() {
         ).thenAnswer((_) async {});
 
         // Act
-        await useCase.call(messageId: messageId, reaction: reactionType, userId: 'test_user');
+        await useCase.call(
+          messageId: messageId,
+          reaction: reactionType,
+          userId: 'test_user',
+        );
 
         // Assert
         verify(
-          () => mockRepository.addReaction(
-            messageId,
-            'test_user',
-            reactionType,
-          ),
+          () =>
+              mockRepository.addReaction(messageId, 'test_user', reactionType),
         ).called(1);
       });
     });

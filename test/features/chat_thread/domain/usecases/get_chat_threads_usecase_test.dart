@@ -108,7 +108,10 @@ void main() {
           ).thenThrow(const FormatException('Invalid data format'));
 
           // Act & Assert
-          expect(() => useCase('current_user'), throwsA(isA<FormatException>()));
+          expect(
+            () => useCase('current_user'),
+            throwsA(isA<FormatException>()),
+          );
           verify(mockRepository.getChatThreads('current_user')).called(1);
         },
       );

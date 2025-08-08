@@ -58,13 +58,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   /// Handles both regular threads and temporary threads.
   void _initializeMessages() async {
     final cubit = context.read<ChatMessageCubit>();
-    
-    // Set current user from widget parameter  
+
+    // Set current user from widget parameter
     await _setCurrentUserInfo(cubit);
-    
-    print('ChatMessagePage: Initialized with currentUserId: ${widget.currentUserId}');
+
+    print(
+      'ChatMessagePage: Initialized with currentUserId: ${widget.currentUserId}',
+    );
     print('ChatMessagePage: Thread ID: ${widget.threadId}');
-    
+
     // Check if this is a temporary thread (starts with 'temp_')
     if (widget.threadId.startsWith('temp_')) {
       print('ChatMessagePage: This is a temporary thread');
@@ -82,7 +84,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         createdAt: now,
         updatedAt: now,
       );
-      
+
       cubit.loadTemporaryThread(temporaryThread);
     } else {
       // For regular threads, load messages normally
@@ -101,27 +103,39 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   /// Sets current user information from widget parameter (with auth service name)
   Future<void> _setCurrentUserInfo(ChatMessageCubit cubit) async {
-    print('ChatMessagePage: Setting user info - using widget currentUserId: ${widget.currentUserId}');
-    print('ChatMessagePage: Firebase currentUser: ${FirebaseAuth.instance.currentUser?.uid}');
-    print('ChatMessagePage: Firebase currentUser email: ${FirebaseAuth.instance.currentUser?.email}');
-    
+    print(
+      'ChatMessagePage: Setting user info - using widget currentUserId: ${widget.currentUserId}',
+    );
+    print(
+      'ChatMessagePage: Firebase currentUser: ${FirebaseAuth.instance.currentUser?.uid}',
+    );
+    print(
+      'ChatMessagePage: Firebase currentUser email: ${FirebaseAuth.instance.currentUser?.email}',
+    );
+
     String userName = 'Current User'; // Default fallback name
-    
+
     // Check if Firebase user matches widget user
     if (FirebaseAuth.instance.currentUser?.uid != widget.currentUserId) {
-      print('ChatMessagePage: WARNING - Firebase user (${FirebaseAuth.instance.currentUser?.uid}) != widget user (${widget.currentUserId})');
+      print(
+        'ChatMessagePage: WARNING - Firebase user (${FirebaseAuth.instance.currentUser?.uid}) != widget user (${widget.currentUserId})',
+      );
     }
-    
+
     try {
       // Always try to get full name from auth service
       print('ChatMessagePage: Calling getCurrentUserUseCase...');
       final user = await AuthDependencyInjection.getCurrentUserUseCase();
       print('ChatMessagePage: getCurrentUserUseCase result: $user');
-      
+
       if (user != null) {
-        print('ChatMessagePage: Auth user data - ID: "${user.userId}", fullName: "${user.fullName}", username: "${user.username}", email: "${user.email}"');
-        print('ChatMessagePage: User fields lengths - fullName: ${user.fullName.length}, username: ${user.username.length}, email: ${user.email.length}');
-        
+        print(
+          'ChatMessagePage: Auth user data - ID: "${user.userId}", fullName: "${user.fullName}", username: "${user.username}", email: "${user.email}"',
+        );
+        print(
+          'ChatMessagePage: User fields lengths - fullName: ${user.fullName.length}, username: ${user.username.length}, email: ${user.email.length}',
+        );
+
         // Validate that user ID matches
         if (user.userId == widget.currentUserId) {
           // Try to get a meaningful name
@@ -135,14 +149,20 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             userName = user.email.split('@')[0]; // Use email prefix as fallback
             print('ChatMessagePage: Using email prefix: $userName');
           }
-          
+
           print('ChatMessagePage: Final user name selected: $userName');
         } else {
-          print('ChatMessagePage: ERROR - Auth user ID (${user.userId}) does not match widget currentUserId (${widget.currentUserId})');
+          print(
+            'ChatMessagePage: ERROR - Auth user ID (${user.userId}) does not match widget currentUserId (${widget.currentUserId})',
+          );
           // Force get user by ID directly from Firestore
           try {
-            print('ChatMessagePage: Attempting direct fetch by userId: ${widget.currentUserId}');
-            final directUser = await AuthDependencyInjection.authRemoteDataSource.getUserById(widget.currentUserId);
+            print(
+              'ChatMessagePage: Attempting direct fetch by userId: ${widget.currentUserId}',
+            );
+            final directUser = await AuthDependencyInjection
+                .authRemoteDataSource
+                .getUserById(widget.currentUserId);
             if (directUser != null) {
               if (directUser.fullName.isNotEmpty) {
                 userName = directUser.fullName;
@@ -151,7 +171,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
               } else if (directUser.email.isNotEmpty) {
                 userName = directUser.email.split('@')[0];
               }
-              print('ChatMessagePage: Direct fetch successful - Final name: $userName');
+              print(
+                'ChatMessagePage: Direct fetch successful - Final name: $userName',
+              );
             }
           } catch (e2) {
             print('ChatMessagePage: Direct fetch failed: $e2');
@@ -161,8 +183,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         print('ChatMessagePage: Auth service returned null user');
         // Try direct fetch by ID
         try {
-          print('ChatMessagePage: Attempting direct fetch by userId: ${widget.currentUserId}');
-          final directUser = await AuthDependencyInjection.authRemoteDataSource.getUserById(widget.currentUserId);
+          print(
+            'ChatMessagePage: Attempting direct fetch by userId: ${widget.currentUserId}',
+          );
+          final directUser = await AuthDependencyInjection.authRemoteDataSource
+              .getUserById(widget.currentUserId);
           if (directUser != null) {
             if (directUser.fullName.isNotEmpty) {
               userName = directUser.fullName;
@@ -171,7 +196,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             } else if (directUser.email.isNotEmpty) {
               userName = directUser.email.split('@')[0];
             }
-            print('ChatMessagePage: Direct fetch successful - Final name: $userName');
+            print(
+              'ChatMessagePage: Direct fetch successful - Final name: $userName',
+            );
           }
         } catch (e2) {
           print('ChatMessagePage: Direct fetch failed: $e2');
@@ -182,11 +209,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       print('ChatMessagePage: Stack trace: $stackTrace');
       // Use default name
     }
-    
-    cubit.setCurrentUser(
-      userId: widget.currentUserId,
-      userName: userName,
-    );
+
+    cubit.setCurrentUser(userId: widget.currentUserId, userName: userName);
   }
 
   /// Scrolls to the bottom of the message list.
@@ -229,12 +253,13 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     final cubit = context.read<ChatMessageCubit>();
     final messages = cubit.currentMessages;
     final message = messages.firstWhere((msg) => msg.id == messageId);
-    
+
     // Check if current user has this reaction
     final currentUserId = widget.currentUserId;
-    final currentUserHasReaction = message.reactions.entries
-        .any((entry) => entry.key == currentUserId && entry.value == reactionType);
-    
+    final currentUserHasReaction = message.reactions.entries.any(
+      (entry) => entry.key == currentUserId && entry.value == reactionType,
+    );
+
     if (currentUserHasReaction) {
       // User can remove their own reaction
       showDialog(
@@ -338,9 +363,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   /// Shows edit message dialog.
   void _showEditDialog(String messageId, String currentContent) {
     if (!mounted) return;
-    
-    final TextEditingController controller = TextEditingController(text: currentContent);
-    
+
+    final TextEditingController controller = TextEditingController(
+      text: currentContent,
+    );
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -362,16 +389,21 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             onPressed: () async {
               final newContent = controller.text.trim();
               Navigator.of(dialogContext).pop();
-              
+
               if (newContent.isNotEmpty && newContent != currentContent) {
                 try {
                   if (mounted) {
-                    await context.read<ChatMessageCubit>().editMessage(messageId, newContent);
-                    
+                    await context.read<ChatMessageCubit>().editMessage(
+                      messageId,
+                      newContent,
+                    );
+
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(ChatMessagePageConstants.messageEditedSuccessfully),
+                          content: Text(
+                            ChatMessagePageConstants.messageEditedSuccessfully,
+                          ),
                           duration: Duration(seconds: 1),
                         ),
                       );
@@ -381,7 +413,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Lỗi chỉnh sửa tin nhắn: ${e.toString()}'),
+                        content: Text(
+                          'Lỗi chỉnh sửa tin nhắn: ${e.toString()}',
+                        ),
                         backgroundColor: Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 3),
                       ),
@@ -400,7 +434,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   /// Shows delete confirmation dialog.
   void _showDeleteConfirmation(String messageId) {
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -414,16 +448,20 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           TextButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              
+
               try {
                 // Use the original context, not dialog context
                 if (mounted) {
-                  await context.read<ChatMessageCubit>().deleteMessage(messageId);
-                  
+                  await context.read<ChatMessageCubit>().deleteMessage(
+                    messageId,
+                  );
+
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(ChatMessagePageConstants.messageDeletedSuccessfully),
+                        content: Text(
+                          ChatMessagePageConstants.messageDeletedSuccessfully,
+                        ),
                         duration: Duration(seconds: 1),
                       ),
                     );
@@ -635,7 +673,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       builder: (context, state) {
         final cubit = context.read<ChatMessageCubit>();
         final replyToMessageId = cubit.replyToMessageId;
-        
+
         // Find the reply message if replying
         ChatMessage? replyToMessage;
         if (replyToMessageId != null && state is ChatMessageLoaded) {
@@ -648,7 +686,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             cubit.clearReply();
           }
         }
-        
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -658,14 +696,16 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 replyToMessage: replyToMessage,
                 onCancel: () => cubit.clearReply(),
               ),
-            
+
             // Message input
             MessageInput(
               onSendMessage: _handleSendMessage,
               onAttachmentPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(ChatMessagePageConstants.attachmentFeatureMessage),
+                    content: Text(
+                      ChatMessagePageConstants.attachmentFeatureMessage,
+                    ),
                   ),
                 );
               },

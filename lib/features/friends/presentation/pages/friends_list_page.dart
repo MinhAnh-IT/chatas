@@ -17,7 +17,8 @@ class FriendsListPage extends StatefulWidget {
   State<FriendsListPage> createState() => _FriendsListPageState();
 }
 
-class _FriendsListPageState extends State<FriendsListPage> with ChatOpeningMixin {
+class _FriendsListPageState extends State<FriendsListPage>
+    with ChatOpeningMixin {
   final TextEditingController _searchController = TextEditingController();
 
   @override

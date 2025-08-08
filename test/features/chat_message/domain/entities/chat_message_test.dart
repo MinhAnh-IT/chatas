@@ -60,9 +60,7 @@ void main() {
 
     group('isFromCurrentUser getter', () {
       test('returns true when senderId matches temporaryUserId', () {
-        final currentUserMessage = testMessage.copyWith(
-          senderId: 'test_user',
-        );
+        final currentUserMessage = testMessage.copyWith(senderId: 'test_user');
 
         expect(currentUserMessage.isFromUser('test_user'), isTrue);
       });

@@ -28,7 +28,8 @@ class MockEditMessageUseCase extends Mock implements EditMessageUseCase {}
 
 class MockDeleteMessageUseCase extends Mock implements DeleteMessageUseCase {}
 
-class MockSendFirstMessageUseCase extends Mock implements SendFirstMessageUseCase {}
+class MockSendFirstMessageUseCase extends Mock
+    implements SendFirstMessageUseCase {}
 
 void main() {
   setUpAll(() {
@@ -66,7 +67,7 @@ void main() {
         deleteMessageUseCase: mockDeleteMessageUseCase,
         sendFirstMessageUseCase: mockSendFirstMessageUseCase,
       );
-      
+
       // Set current user for testing
       cubit.setCurrentUser(userId: 'test_user', userName: 'Test User');
     });

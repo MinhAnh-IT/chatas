@@ -44,7 +44,9 @@ void main() {
 
       // assert
       expect(
-        find.text('${ChatMessagePageConstants.replyingToPrefix} ${testMessage.senderName}'),
+        find.text(
+          '${ChatMessagePageConstants.replyingToPrefix} ${testMessage.senderName}',
+        ),
         findsOneWidget,
       );
     });
@@ -72,7 +74,7 @@ void main() {
     testWidgets('calls onCancel when close button is tapped', (tester) async {
       // arrange
       bool cancelCalled = false;
-      
+
       await tester.pumpWidget(
         createWidgetUnderTest(
           replyToMessage: testMessage,
@@ -96,7 +98,8 @@ void main() {
         senderId: 'sender_id',
         senderName: 'Test Sender',
         senderAvatarUrl: '',
-        content: 'This is a very long message content that should be truncated when displayed in the reply preview widget because it exceeds the maximum length limit set for the preview display',
+        content:
+            'This is a very long message content that should be truncated when displayed in the reply preview widget because it exceeds the maximum length limit set for the preview display',
         sentAt: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -144,7 +147,7 @@ void main() {
       // assert - check for container with proper decoration
       final containerFinder = find.byType(Container).first;
       expect(containerFinder, findsOneWidget);
-      
+
       final container = tester.widget<Container>(containerFinder);
       final decoration = container.decoration as BoxDecoration?;
       expect(decoration?.border, isNotNull);
@@ -159,9 +162,12 @@ void main() {
       // assert
       final iconButtonFinder = find.byType(IconButton);
       expect(iconButtonFinder, findsOneWidget);
-      
+
       final iconButton = tester.widget<IconButton>(iconButtonFinder);
-      expect(iconButton.tooltip, equals(ChatMessagePageConstants.cancelReplyButton));
+      expect(
+        iconButton.tooltip,
+        equals(ChatMessagePageConstants.cancelReplyButton),
+      );
     });
   });
 }

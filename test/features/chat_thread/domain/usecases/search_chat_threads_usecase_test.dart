@@ -164,7 +164,10 @@ void main() {
 
     test('should return results in original order', () async {
       // act
-      final result = await useCase('a', 'current_user'); // matches John (Jane), Bob (Thanks)
+      final result = await useCase(
+        'a',
+        'current_user',
+      ); // matches John (Jane), Bob (Thanks)
 
       // assert
       expect(result.length, greaterThan(0));

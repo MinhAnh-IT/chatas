@@ -28,7 +28,8 @@ class SendMessageUseCase {
       chatThreadId: chatThreadId,
       senderId: senderId,
       senderName: senderName,
-      senderAvatarUrl: senderAvatarUrl ?? ChatMessagePageConstants.temporaryAvatarUrl,
+      senderAvatarUrl:
+          senderAvatarUrl ?? ChatMessagePageConstants.temporaryAvatarUrl,
       content: content,
       type: type,
       status: MessageStatus.sending,

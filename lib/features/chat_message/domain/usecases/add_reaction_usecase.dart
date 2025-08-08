@@ -15,10 +15,6 @@ class AddReactionUseCase {
     required ReactionType reaction,
     required String userId,
   }) async {
-    await repository.addReaction(
-      messageId,
-      userId,
-      reaction,
-    );
+    await repository.addReaction(messageId, userId, reaction);
   }
 }
