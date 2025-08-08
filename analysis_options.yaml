@@ -23,12 +23,12 @@ linter:
   rules:
     # Temporarily disable some lint rules to make CI pass
     # TODO: Fix these issues gradually
-    use_build_context_synchronously: false  # 5 issues - fix async context usage
-    prefer_const_constructors: false  # 1 issue - add const where possible
-    prefer_const_literals_to_create_immutables: false  # 1 issue - use const for immutable lists
-    avoid_print: false  # Temporarily disable print warnings for debugging
-    file_names: false  # Temporarily disable file naming conventions
-    use_super_parameters: false  # Temporarily disable super parameter suggestions
+    use_build_context_synchronously: false # 5 issues - fix async context usage
+    prefer_const_constructors: false # 1 issue - add const where possible
+    prefer_const_literals_to_create_immutables: false # 1 issue - use const for immutable lists
+    avoid_print: false # Temporarily disable print warnings for debugging
+    file_names: false # Temporarily disable file naming conventions
+    use_super_parameters: false # Temporarily disable super parameter suggestions
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
