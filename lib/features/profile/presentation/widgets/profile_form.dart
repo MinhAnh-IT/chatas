@@ -3,18 +3,15 @@ import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/update_profile_request.dart';
 import '../../../../shared/utils/profile_validator.dart';
 import '../../constants/profile_constants.dart';
-import 'change_password_dialog.dart';
 
 class ProfileForm extends StatefulWidget {
   final UserProfile profile;
   final Function(UpdateProfileRequest) onProfileUpdated;
-  final VoidCallback? onChangePassword;
 
   const ProfileForm({
     super.key,
     required this.profile,
     required this.onProfileUpdated,
-    this.onChangePassword,
   });
 
   @override
@@ -57,7 +54,7 @@ class _ProfileFormState extends State<ProfileForm> {
             value: widget.profile.email,
             icon: Icons.email_outlined,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Full Name
           _buildTextField(
@@ -66,7 +63,7 @@ class _ProfileFormState extends State<ProfileForm> {
             icon: Icons.person_outline,
             validator: ProfileValidator.validateFullName,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Username
           _buildTextField(
@@ -75,40 +72,15 @@ class _ProfileFormState extends State<ProfileForm> {
             icon: Icons.alternate_email_outlined,
             validator: ProfileValidator.validateUsername,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Gender
           _buildGenderDropdown(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Birth Date
           _buildBirthDatePicker(),
-          const SizedBox(height: 24),
-
-          // Change Password Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const ChangePasswordDialog(),
-                );
-              },
-              icon: const Icon(Icons.lock_outline),
-              label: const Text('Đổi mật khẩu'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE67E22),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
 
           // Save Button
           SizedBox(
@@ -116,14 +88,19 @@ class _ProfileFormState extends State<ProfileForm> {
             child: ElevatedButton(
               onPressed: _saveProfile,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8E44AD),
+                backgroundColor: const Color(0xFF3498DB),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                elevation: 2,
+                shadowColor: const Color(0xFF3498DB).withOpacity(0.3),
               ),
-              child: const Text('Lưu thay đổi'),
+              child: const Text(
+                'Lưu thay đổi',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],
@@ -143,17 +120,17 @@ class _ProfileFormState extends State<ProfileForm> {
           label,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C3E50),
           ),
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.grey.shade50,
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFF8F9FA),
           ),
           child: Row(
             children: [
@@ -162,7 +139,11 @@ class _ProfileFormState extends State<ProfileForm> {
               Expanded(
                 child: Text(
                   value,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -185,8 +166,8 @@ class _ProfileFormState extends State<ProfileForm> {
           label,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C3E50),
           ),
         ),
         const SizedBox(height: 8),
@@ -196,25 +177,31 @@ class _ProfileFormState extends State<ProfileForm> {
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: Colors.grey.shade600),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF3498DB), width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE74C3C), width: 2),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE74C3C), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 12,
+              vertical: 16,
             ),
+            filled: true,
+            fillColor: Colors.white,
           ),
         ),
       ],
@@ -229,8 +216,8 @@ class _ProfileFormState extends State<ProfileForm> {
           'Giới tính',
           style: TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C3E50),
           ),
         ),
         const SizedBox(height: 8),
@@ -239,21 +226,23 @@ class _ProfileFormState extends State<ProfileForm> {
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.person_outline, color: Colors.grey.shade600),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF3498DB), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 12,
+              vertical: 16,
             ),
+            filled: true,
+            fillColor: Colors.white,
           ),
           items: ProfileConstants.genderOptions.map((gender) {
             return DropdownMenuItem(value: gender, child: Text(gender));
@@ -277,18 +266,20 @@ class _ProfileFormState extends State<ProfileForm> {
           'Ngày sinh',
           style: TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C3E50),
           ),
         ),
         const SizedBox(height: 8),
         InkWell(
           onTap: _selectBirthDate,
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
             ),
             child: Row(
               children: [
@@ -300,8 +291,11 @@ class _ProfileFormState extends State<ProfileForm> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '${_selectedBirthDate.day}/${_selectedBirthDate.month}/${_selectedBirthDate.year}',
-                    style: const TextStyle(fontSize: 16),
+                    '${_selectedBirthDate.day.toString().padLeft(2, '0')}/${_selectedBirthDate.month.toString().padLeft(2, '0')}/${_selectedBirthDate.year}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
@@ -319,6 +313,19 @@ class _ProfileFormState extends State<ProfileForm> {
       initialDate: _selectedBirthDate,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF3498DB),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color(0xFF2C3E50),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedBirthDate) {
       setState(() {
@@ -342,7 +349,14 @@ class _ProfileFormState extends State<ProfileForm> {
       );
       if (validationError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(validationError), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(validationError),
+            backgroundColor: const Color(0xFFE74C3C),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
         return;
       }
