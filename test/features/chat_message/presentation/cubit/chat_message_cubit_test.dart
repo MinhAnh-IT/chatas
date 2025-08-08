@@ -7,6 +7,9 @@ import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream
 import 'package:chatas/features/chat_message/domain/usecases/send_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/add_reaction_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cubit.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_state.dart';
 import 'package:chatas/features/chat_message/constants/chat_message_page_constants.dart';
@@ -21,6 +24,13 @@ class MockAddReactionUseCase extends Mock implements AddReactionUseCase {}
 
 class MockRemoveReactionUseCase extends Mock implements RemoveReactionUseCase {}
 
+class MockEditMessageUseCase extends Mock implements EditMessageUseCase {}
+
+class MockDeleteMessageUseCase extends Mock implements DeleteMessageUseCase {}
+
+class MockSendFirstMessageUseCase extends Mock
+    implements SendFirstMessageUseCase {}
+
 void main() {
   setUpAll(() {
     // Register fallback values for enums
@@ -33,6 +43,9 @@ void main() {
     late MockSendMessageUseCase mockSendMessageUseCase;
     late MockAddReactionUseCase mockAddReactionUseCase;
     late MockRemoveReactionUseCase mockRemoveReactionUseCase;
+    late MockEditMessageUseCase mockEditMessageUseCase;
+    late MockDeleteMessageUseCase mockDeleteMessageUseCase;
+    late MockSendFirstMessageUseCase mockSendFirstMessageUseCase;
     late StreamController<List<ChatMessage>> messagesStreamController;
 
     setUp(() {
@@ -40,6 +53,9 @@ void main() {
       mockSendMessageUseCase = MockSendMessageUseCase();
       mockAddReactionUseCase = MockAddReactionUseCase();
       mockRemoveReactionUseCase = MockRemoveReactionUseCase();
+      mockEditMessageUseCase = MockEditMessageUseCase();
+      mockDeleteMessageUseCase = MockDeleteMessageUseCase();
+      mockSendFirstMessageUseCase = MockSendFirstMessageUseCase();
       messagesStreamController = StreamController<List<ChatMessage>>();
 
       cubit = ChatMessageCubit(
@@ -47,7 +63,13 @@ void main() {
         sendMessageUseCase: mockSendMessageUseCase,
         addReactionUseCase: mockAddReactionUseCase,
         removeReactionUseCase: mockRemoveReactionUseCase,
+        editMessageUseCase: mockEditMessageUseCase,
+        deleteMessageUseCase: mockDeleteMessageUseCase,
+        sendFirstMessageUseCase: mockSendFirstMessageUseCase,
       );
+
+      // Set current user for testing
+      cubit.setCurrentUser(userId: 'test_user', userName: 'Test User');
     });
 
     tearDown(() {
@@ -164,6 +186,8 @@ void main() {
             () => mockSendMessageUseCase.call(
               chatThreadId: any(named: 'chatThreadId'),
               content: any(named: 'content'),
+              senderId: any(named: 'senderId'),
+              senderName: any(named: 'senderName'),
             ),
           ).thenAnswer((_) async {});
           return cubit;
@@ -188,6 +212,8 @@ void main() {
             () => mockSendMessageUseCase.call(
               chatThreadId: testThreadId,
               content: testContent,
+              senderId: any(named: 'senderId'),
+              senderName: any(named: 'senderName'),
             ),
           ).called(1);
         },
@@ -198,12 +224,17 @@ void main() {
         build: () {
           // Reset mocks to ensure no interference
           reset(mockSendMessageUseCase);
-          return ChatMessageCubit(
+          final cubit = ChatMessageCubit(
             getMessagesStreamUseCase: mockGetMessagesStreamUseCase,
             sendMessageUseCase: mockSendMessageUseCase,
             addReactionUseCase: mockAddReactionUseCase,
             removeReactionUseCase: mockRemoveReactionUseCase,
+            editMessageUseCase: mockEditMessageUseCase,
+            deleteMessageUseCase: mockDeleteMessageUseCase,
+            sendFirstMessageUseCase: mockSendFirstMessageUseCase,
           );
+          cubit.setCurrentUser(userId: 'test_user', userName: 'Test User');
+          return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
         act: (cubit) => cubit.sendMessage(testContent),
@@ -213,6 +244,8 @@ void main() {
             () => mockSendMessageUseCase.call(
               chatThreadId: any(named: 'chatThreadId'),
               content: any(named: 'content'),
+              senderId: any(named: 'senderId'),
+              senderName: any(named: 'senderName'),
             ),
           );
         },
@@ -236,6 +269,8 @@ void main() {
             () => mockSendMessageUseCase.call(
               chatThreadId: any(named: 'chatThreadId'),
               content: any(named: 'content'),
+              senderId: any(named: 'senderId'),
+              senderName: any(named: 'senderName'),
             ),
           );
         },
@@ -248,6 +283,8 @@ void main() {
             () => mockSendMessageUseCase.call(
               chatThreadId: any(named: 'chatThreadId'),
               content: any(named: 'content'),
+              senderId: any(named: 'senderId'),
+              senderName: any(named: 'senderName'),
             ),
           ).thenThrow(Exception('Send failed'));
           when(
@@ -295,6 +332,7 @@ void main() {
             () => mockAddReactionUseCase.call(
               messageId: any(named: 'messageId'),
               reaction: any(named: 'reaction'),
+              userId: any(named: 'userId'),
             ),
           ).thenAnswer((_) async {});
           return cubit;
@@ -313,6 +351,7 @@ void main() {
             () => mockAddReactionUseCase.call(
               messageId: testMessageId,
               reaction: testReaction,
+              userId: any(named: 'userId'),
             ),
           ).called(1);
         },
@@ -325,6 +364,7 @@ void main() {
             () => mockAddReactionUseCase.call(
               messageId: any(named: 'messageId'),
               reaction: any(named: 'reaction'),
+              userId: any(named: 'userId'),
             ),
           ).thenThrow(Exception('Add reaction failed'));
           return cubit;
@@ -358,12 +398,12 @@ void main() {
           return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
-        act: (cubit) => cubit.removeReaction(testMessageId, testUserId),
+        act: (cubit) => cubit.removeReaction(testMessageId),
         verify: (_) {
           verify(
             () => mockRemoveReactionUseCase.call(
               messageId: testMessageId,
-              userId: testUserId,
+              userId: 'test_user',
             ),
           ).called(1);
         },
@@ -381,7 +421,7 @@ void main() {
           return cubit;
         },
         seed: () => const ChatMessageLoaded(messages: []),
-        act: (cubit) => cubit.removeReaction(testMessageId, testUserId),
+        act: (cubit) => cubit.removeReaction(testMessageId),
         expect: () => [
           const ChatMessageError(message: 'Exception: Remove reaction failed'),
         ],
@@ -463,8 +503,8 @@ void main() {
         final pendingMessage = ChatMessage(
           id: 'pending_msg',
           chatThreadId: 'thread1',
-          senderId: ChatMessagePageConstants.temporaryUserId,
-          senderName: ChatMessagePageConstants.temporaryUserName,
+          senderId: 'test_user',
+          senderName: 'Test User',
           senderAvatarUrl: ChatMessagePageConstants.temporaryAvatarUrl,
           content: 'Pending message',
           status: MessageStatus.sending,

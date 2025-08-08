@@ -35,7 +35,9 @@ class UserModel extends Equatable {
     return UserModel(
       userId: json['userId'] ?? '',
       isOnline: json['isOnline'] ?? false,
-      lastActive: json['lastActive'] ?? DateTime.now().toIso8601String(),
+      lastActive: DateTime.parse(
+        json['lastActive'] ?? DateTime.now().toIso8601String(),
+      ),
       fullName: json['fullName'] ?? '',
       username: json['username'] ?? '',
       email: json['email'] ?? '',
@@ -57,6 +59,8 @@ class UserModel extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
+      'isOnline': isOnline,
+      'lastActive': lastActive.toIso8601String(),
       'fullName': fullName,
       'username': username,
       'email': email,

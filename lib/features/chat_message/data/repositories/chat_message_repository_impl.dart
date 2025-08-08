@@ -93,6 +93,38 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
     }
   }
 
+  @override
+  Future<void> editMessage({
+    required String messageId,
+    required String newContent,
+    required String userId,
+  }) async {
+    try {
+      await _remoteDataSource.editMessage(
+        messageId: messageId,
+        newContent: newContent,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to edit message: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteMessageWithValidation({
+    required String messageId,
+    required String userId,
+  }) async {
+    try {
+      await _remoteDataSource.deleteMessageWithValidation(
+        messageId: messageId,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to delete message: $e');
+    }
+  }
+
   /// Converts ReactionType enum to string for data layer.
   String _reactionTypeToString(ReactionType reaction) {
     switch (reaction) {

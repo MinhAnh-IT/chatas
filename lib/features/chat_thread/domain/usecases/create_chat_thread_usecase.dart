@@ -7,6 +7,7 @@ class CreateChatThreadUseCase {
   CreateChatThreadUseCase(this.repository);
 
   Future<ChatThread> call({
+    required String currentUserId,
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
@@ -20,10 +21,7 @@ class CreateChatThreadUseCase {
       lastMessage: initialMessage ?? 'Đoạn chat mới được tạo',
       lastMessageTime: now,
       avatarUrl: friendAvatarUrl,
-      members: [
-        'current_user',
-        friendId,
-      ], // current_user is the current logged-in user
+      members: [currentUserId, friendId],
       isGroup: false,
       unreadCount: 0,
       createdAt: now,
