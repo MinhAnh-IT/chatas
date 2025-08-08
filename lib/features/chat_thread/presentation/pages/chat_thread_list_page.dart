@@ -1,5 +1,7 @@
 import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
@@ -11,8 +13,8 @@ import '../../data/repositories/chat_thread_repository_impl.dart';
 import '../../domain/entities/chat_thread.dart';
 import '../cubit/chat_thread_list_cubit.dart';
 import '../cubit/chat_thread_list_state.dart';
+import '../widgets/chat_thread_list_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
 
 class ChatThreadListPage extends StatefulWidget {
   const ChatThreadListPage({super.key});
@@ -23,6 +25,10 @@ class ChatThreadListPage extends StatefulWidget {
 
 class _ChatThreadListPageState extends State<ChatThreadListPage> {
   late ChatThreadListCubit _cubit;
+  bool _isSearchVisible = false;
+  final TextEditingController _searchController = TextEditingController();
+  List<ChatThread> _searchResults = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -30,12 +36,22 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     final repository = ChatThreadRepositoryImpl();
     final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
+    final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
+    final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
 
     _cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
       createChatThreadUseCase: createChatThreadUseCase,
+      searchChatThreadsUseCase: searchChatThreadsUseCase,
+      deleteChatThreadUseCase: deleteChatThreadUseCase,
     );
     _cubit.fetchChatThreads();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   /// Navigates to chat message page when a thread is tapped.
@@ -66,6 +82,146 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
     }
   }
 
+  /// Shows search dialog and handles search result selection.
+  void _toggleSearch() {
+    setState(() {
+      _isSearchVisible = !_isSearchVisible;
+      if (!_isSearchVisible) {
+        _searchController.clear();
+        _searchResults = [];
+        _isSearching = false;
+      }
+    });
+  }
+
+  /// Performs search based on the query
+  void _performSearch(String query) {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    _cubit
+        .searchChatThreads(query)
+        .then((results) {
+          if (mounted) {
+            setState(() {
+              _searchResults = results;
+              _isSearching = false;
+            });
+          }
+        })
+        .catchError((error) {
+          if (mounted) {
+            setState(() {
+              _searchResults = [];
+              _isSearching = false;
+            });
+          }
+        });
+  }
+
+  Widget _buildContent() {
+    // If search is visible, show search results or empty message
+    if (_isSearchVisible) {
+      return _buildSearchResults();
+    }
+
+    // Otherwise show normal chat thread list
+    return BlocBuilder<ChatThreadListCubit, ChatThreadListState>(
+      builder: (context, state) {
+        if (state is ChatThreadListLoading) {
+          return RefreshableListView<ChatThread>(
+            items: const [],
+            onRefresh: _handleRefresh,
+            isLoading: true,
+            itemBuilder: (context, thread, index) => const SizedBox.shrink(),
+          );
+        }
+
+        if (state is ChatThreadListError) {
+          return RefreshableListView<ChatThread>(
+            items: const [],
+            onRefresh: _handleRefresh,
+            errorMessage: state.message,
+            onRetry: () => _cubit.fetchChatThreads(),
+            itemBuilder: (context, thread, index) => const SizedBox.shrink(),
+          );
+        }
+
+        if (state is ChatThreadListLoaded) {
+          final threads = state.threads;
+          return RefreshableListView<ChatThread>(
+            items: threads,
+            onRefresh: _handleRefresh,
+            showRefreshMessage: false, // We handle the message manually
+            itemBuilder: (context, thread, index) {
+              return ChatThreadListTile(
+                thread: thread,
+                onTap: () {
+                  _navigateToChatMessage(context, thread.id, thread.name);
+                },
+              );
+            },
+            emptyWidget: const Center(
+              child: Text(ChatThreadListPageConstants.noChats),
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (_searchController.text.trim().isEmpty) {
+      return const Center(
+        child: Text(
+          ChatThreadListPageConstants.searchEmptyHint,
+          style: TextStyle(color: Colors.grey, fontSize: 16),
+        ),
+      );
+    }
+
+    if (_isSearching) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_searchResults.isEmpty) {
+      return const Center(
+        child: Text(
+          ChatThreadListPageConstants.noSearchResults,
+          style: TextStyle(color: Colors.grey, fontSize: 16),
+        ),
+      );
+    }
+
+    return RefreshableListView<ChatThread>(
+      items: _searchResults,
+      onRefresh: _handleRefresh,
+      showRefreshMessage: false,
+      itemBuilder: (context, thread, index) {
+        return ChatThreadListTile(
+          thread: thread,
+          onTap: () {
+            _navigateToChatMessage(context, thread.id, thread.name);
+          },
+        );
+      },
+      emptyWidget: const Center(
+        child: Text(ChatThreadListPageConstants.noSearchResults),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
@@ -77,70 +233,75 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: ChatThreadListPageConstants.searchTooltip,
-              onPressed: () {},
+              onPressed: _toggleSearch,
             ),
           ],
         ),
-        body: BlocBuilder<ChatThreadListCubit, ChatThreadListState>(
-          builder: (context, state) {
-            if (state is ChatThreadListLoading) {
-              return RefreshableListView<ChatThread>(
-                items: const [],
-                onRefresh: _handleRefresh,
-                isLoading: true,
-                itemBuilder: (context, thread, index) =>
-                    const SizedBox.shrink(),
-              );
-            }
-
-            if (state is ChatThreadListError) {
-              return RefreshableListView<ChatThread>(
-                items: const [],
-                onRefresh: _handleRefresh,
-                errorMessage: state.message,
-                onRetry: () => _cubit.fetchChatThreads(),
-                itemBuilder: (context, thread, index) =>
-                    const SizedBox.shrink(),
-              );
-            }
-
-            if (state is ChatThreadListLoaded) {
-              final threads = state.threads;
-              return RefreshableListView<ChatThread>(
-                items: threads,
-                onRefresh: _handleRefresh,
-                showRefreshMessage: false, // We handle the message manually
-                itemBuilder: (context, thread, index) {
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: NetworkImage(thread.avatarUrl),
-                      radius: ChatThreadListPageConstants.avatarRadius,
+        body: Column(
+          children: [
+            // Search bar
+            if (_isSearchVisible)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
                     ),
-                    title: Text(thread.name),
-                    subtitle: Text(thread.lastMessage),
-                    trailing: Text(
-                      chat_utils.DateUtils.formatTime(thread.lastMessageTime),
-                      style: const TextStyle(
-                        fontSize: ChatThreadListPageConstants.trailingFontSize,
-                      ),
-                    ),
-                    onTap: () {
-                      _navigateToChatMessage(context, thread.id, thread.name);
-                    },
-                  );
-                },
-                emptyWidget: const Center(
-                  child: Text(ChatThreadListPageConstants.noChats),
+                  ],
                 ),
-              );
-            }
-
-            return const SizedBox.shrink();
-          },
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: ChatThreadListPageConstants.searchHint,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: 'Đóng tìm kiếm',
+                      onPressed: () {
+                        _toggleSearch(); // Ẩn search bar thay vì chỉ clear text
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+                  onChanged: _performSearch,
+                  autofocus: true,
+                ),
+              ),
+            // Content
+            Expanded(child: _buildContent()),
+          ],
         ),
         bottomNavigationBar: CommonBottomNavigation(
           currentIndex: 0,
-          onTap: (index) {},
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                // Đã ở trang Chat (hiện tại)
+                break;
+              case 1:
+                // Chuyển đến trang Bạn bè
+                context.go(AppRouteConstants.friendsPath);
+                break;
+              case 2:
+                // Trang Thông báo (chưa implement)
+                break;
+              case 3:
+                // Chuyển đến trang Profile
+                context.go('/profile');
+                break;
+            }
+          },
         ),
       ),
     );
