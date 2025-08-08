@@ -11,6 +11,7 @@ import '../widgets/message_input.dart';
 import '../widgets/reaction_picker.dart';
 import '../../constants/chat_message_page_constants.dart';
 import '../../domain/entities/chat_message.dart';
+import '../../../chat_thread/domain/entities/chat_thread.dart';
 import '../../../../shared/widgets/refreshable_list_view.dart';
 
 /// Main chat message page that displays a conversation between users.
@@ -50,8 +51,41 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   /// Initializes the message stream for the current thread.
+  /// Handles both regular threads and temporary threads.
   void _initializeMessages() {
-    context.read<ChatMessageCubit>().loadMessages(widget.threadId);
+    final cubit = context.read<ChatMessageCubit>();
+    
+    // Check if this is a temporary thread (starts with 'temp_')
+    if (widget.threadId.startsWith('temp_')) {
+      // For temporary threads, create a temporary ChatThread object
+      final now = DateTime.now();
+      final temporaryThread = ChatThread(
+        id: widget.threadId,
+        name: widget.otherUserName,
+        lastMessage: '',
+        lastMessageTime: now,
+        avatarUrl: '', // Will be handled by SmartAvatar widget
+        members: [widget.currentUserId, _extractFriendIdFromTempThread()],
+        isGroup: false,
+        unreadCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      );
+      
+      cubit.loadTemporaryThread(temporaryThread);
+    } else {
+      // For regular threads, load messages normally
+      cubit.loadMessages(widget.threadId);
+    }
+  }
+
+  /// Extracts friend ID from temporary thread ID format: temp_<friendId>_<timestamp>
+  String _extractFriendIdFromTempThread() {
+    final parts = widget.threadId.split('_');
+    if (parts.length >= 3) {
+      return parts[1]; // Second part should be friend ID
+    }
+    return 'unknown'; // Fallback
   }
 
   /// Scrolls to the bottom of the message list.
@@ -284,6 +318,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
         if (state is ChatMessageLoaded) {
           return _buildMessageListView(state.messages);
+        }
+
+        if (state is ChatMessageTemporary) {
+          // Show empty message list for temporary threads
+          return _buildMessageListView(const []);
         }
 
         return const SizedBox.shrink();
