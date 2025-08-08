@@ -4,6 +4,7 @@ import '../../domain/usecases/getSentFriendRequests.dart';
 import '../../domain/usecases/acceptFriendRequest.dart';
 import '../../domain/usecases/rejectFriendRequest.dart';
 import '../../domain/usecases/cancelFriendRequest.dart';
+import '../../injection/friends_injection.dart';
 import 'friend_request_state.dart';
 
 class FriendRequestCubit extends Cubit<FriendRequestState> {
@@ -63,11 +64,19 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
     String requestId,
     String senderId,
     String receiverId,
+    String senderName,
   ) async {
     emit(state.copyWith(isAccepting: true, clearActionError: true));
 
     try {
       await acceptFriendRequest(requestId, senderId, receiverId);
+
+      // Gửi thông báo cho người gửi lời mời rằng lời mời đã được chấp nhận
+      final notificationService = FriendsDependencyInjection.friendNotificationService;
+      await notificationService['sendFriendAcceptedNotification']({
+        'accepterName': 'Bạn', // TODO: Lấy tên người chấp nhận thực tế
+        'accepterId': receiverId,
+      });
 
       // Cập nhật danh sách sau khi chấp nhận
       final updatedRequests = state.receivedRequests
@@ -85,11 +94,18 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
   }
 
   /// Từ chối lời mời kết bạn
-  Future<void> rejectRequest(String requestId) async {
+  Future<void> rejectRequest(String requestId, String senderName) async {
     emit(state.copyWith(isRejecting: true, clearActionError: true));
 
     try {
       await rejectFriendRequest(requestId);
+
+      // Gửi thông báo cho người gửi lời mời rằng lời mời đã bị từ chối
+      final notificationService = FriendsDependencyInjection.friendNotificationService;
+      await notificationService['sendFriendRejectedNotification']({
+        'rejecterName': 'Người dùng', // TODO: Lấy tên người từ chối thực tế
+        'rejecterId': currentUserId,
+      });
 
       // Cập nhật danh sách sau khi từ chối
       final updatedRequests = state.receivedRequests
