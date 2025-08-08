@@ -16,7 +16,6 @@ import '../cubit/chat_thread_list_cubit.dart';
 import '../cubit/chat_thread_list_state.dart';
 import '../widgets/chat_thread_list_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chatas/shared/utils/date_utils.dart' as chat_utils;
 import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
 import 'package:chatas/features/notifications/presentation/cubit/notification_state.dart';
 import 'package:chatas/features/notifications/notification_injection.dart';
