@@ -144,31 +144,6 @@ class ChatMessage extends Equatable {
     return reactions[userId];
   }
 
-  @override
-  List<Object?> get props => [
-    id,
-    chatThreadId,
-    senderId,
-    senderName,
-    senderAvatarUrl,
-    content,
-    type,
-    status,
-    sentAt,
-    editedAt,
-    isDeleted,
-    reactions,
-    replyToMessageId,
-    createdAt,
-    updatedAt,
-    fileUrl,
-    fileName,
-    fileType,
-    fileSize,
-    thumbnailUrl,
-    deletedFor,
-  ];
-
   ChatMessage copyWith({
     String? id,
     String? chatThreadId,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
@@ -13,6 +14,7 @@ import '../../domain/entities/update_profile_request.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:chatas/features/auth/constants/auth_remote_constants.dart';
+import '../../../../shared/widgets/online_status_indicator.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -28,11 +30,36 @@ class _ProfilePageState extends State<ProfilePage> {
   UserProfile? _profile;
   bool _isLoading = true;
   bool _isUpdating = false;
+  bool _isOnline = true;
 
   @override
   void initState() {
     super.initState();
     _getUserProfile();
+    _setUserOnline();
+  }
+
+  Future<void> _setUserOnline() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        final now = DateTime.now();
+        await _firestore.collection('users').doc(user.uid).update({
+          'isOnline': true,
+          'lastActive': now.toIso8601String(),
+          'updatedAt': now.toIso8601String(),
+        });
+
+        // Update local state
+        if (mounted) {
+          setState(() {
+            _isOnline = true;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error setting user online: $e');
+    }
   }
 
   Future<void> _getUserProfile() async {
@@ -68,6 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
               birthDate: birthDate,
               profileImageUrl: data[AuthRemoteConstants.avatarUrlField] ?? '',
             );
+            _isOnline = data['isOnline'] ?? false;
             _isLoading = false;
           });
         } else {
@@ -388,26 +416,41 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  // Profile Image
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                  // Profile Image with Online Status
+                  Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: ProfileImagePicker(
-                      imageUrl: profile.profileImageUrl,
-                      onImageSelected: (imagePath) {
-                        _uploadProfileImage(imagePath);
-                      },
-                    ),
+                        child: ProfileImagePicker(
+                          imageUrl: profile.profileImageUrl,
+                          onImageSelected: (imagePath) {
+                            _uploadProfileImage(imagePath);
+                          },
+                        ),
+                      ),
+                      // Online Status Indicator
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: OnlineStatusIndicator(
+                          isOnline: _isOnline,
+                          lastActive: DateTime.now(),
+                          size: 20,
+                          showLastActive: false,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
 
@@ -432,6 +475,80 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Online Status Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _isOnline
+                          ? Colors.white.withOpacity(0.2)
+                          : Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _isOnline
+                                ? const Color(0xFF4CAF50)
+                                : Colors.grey.shade400,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _isOnline ? 'Đang hoạt động' : 'Không hoạt động',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Test button to toggle online status
+                        GestureDetector(
+                          onTap: () async {
+                            final user = _firebaseAuth.currentUser;
+                            if (user != null) {
+                              final newStatus = !_isOnline;
+                              final now = DateTime.now();
+                              await _firestore
+                                  .collection('users')
+                                  .doc(user.uid)
+                                  .update({
+                                    'isOnline': newStatus,
+                                    'lastActive': now.toIso8601String(),
+                                    'updatedAt': now.toIso8601String(),
+                                  });
+
+                              setState(() {
+                                _isOnline = newStatus;
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Email
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,

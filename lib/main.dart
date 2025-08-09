@@ -1,15 +1,30 @@
 import 'package:chatas/core/routing/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'features/friends/injection/friends_injection.dart';
+import 'features/auth/online_status_exports.dart';
+import 'features/friends/services/fcm_push_service.dart';
+import 'features/notifications/notification_injection.dart';
+import 'features/notifications/background_message_handler.dart';
+import 'core/services/credentials_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize dependencies
+  // Load Firebase credentials securely
+  await CredentialsLoader.loadFirebaseCredentials();
+
+  // Thiết lập background message handler cho FCM
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // Initialize dependencies - notifications TRƯỚC friends
+  setupNotificationDependencies();
   FriendsDependencyInjection.init();
+
+  OnlineStatusService.instance.initialize();
 
   runApp(MyApp());
 }
