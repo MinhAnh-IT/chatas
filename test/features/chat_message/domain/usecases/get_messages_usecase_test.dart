@@ -16,7 +16,7 @@ void main() {
 
     setUp(() {
       mockRepository = MockChatMessageRepository();
-      useCase = GetMessagesUseCase(mockRepository);
+      useCase = GetMessagesUseCase(repository: mockRepository);
     });
 
     final tDateTime = DateTime(2024, 1, 1, 12, 0);
@@ -42,40 +42,43 @@ void main() {
     test('should get messages from repository', () async {
       // arrange
       when(
-        mockRepository.getMessages('thread_456'),
+        mockRepository.getMessages('thread_456', 'user_123'),
       ).thenAnswer((_) async => [tChatMessage]);
 
       // act
-      final result = await useCase('thread_456');
+      final result = await useCase('thread_456', 'user_123');
 
       // assert
       expect(result, [tChatMessage]);
-      verify(mockRepository.getMessages('thread_456')).called(1);
+      verify(mockRepository.getMessages('thread_456', 'user_123')).called(1);
     });
 
     test('should throw exception when repository fails', () async {
       // arrange
       when(
-        mockRepository.getMessages('thread_456'),
+        mockRepository.getMessages('thread_456', 'user_123'),
       ).thenThrow(Exception('Failed to get messages'));
 
       // act & assert
-      expect(() => useCase('thread_456'), throwsA(isA<Exception>()));
-      verify(mockRepository.getMessages('thread_456')).called(1);
+      expect(
+        () => useCase('thread_456', 'user_123'),
+        throwsA(isA<Exception>()),
+      );
+      verify(mockRepository.getMessages('thread_456', 'user_123')).called(1);
     });
 
     test('should return empty list when no messages exist', () async {
       // arrange
       when(
-        mockRepository.getMessages('thread_456'),
+        mockRepository.getMessages('thread_456', 'user_123'),
       ).thenAnswer((_) async => <ChatMessage>[]);
 
       // act
-      final result = await useCase('thread_456');
+      final result = await useCase('thread_456', 'user_123');
 
       // assert
       expect(result, isEmpty);
-      verify(mockRepository.getMessages('thread_456')).called(1);
+      verify(mockRepository.getMessages('thread_456', 'user_123')).called(1);
     });
 
     test('should handle multiple messages', () async {
@@ -99,17 +102,17 @@ void main() {
       ).toEntity();
 
       when(
-        mockRepository.getMessages('thread_456'),
+        mockRepository.getMessages('thread_456', 'user_123'),
       ).thenAnswer((_) async => [message1, message2]);
 
       // act
-      final result = await useCase('thread_456');
+      final result = await useCase('thread_456', 'user_123');
 
       // assert
       expect(result, hasLength(2));
       expect(result[0], message1);
       expect(result[1], message2);
-      verify(mockRepository.getMessages('thread_456')).called(1);
+      verify(mockRepository.getMessages('thread_456', 'user_123')).called(1);
     });
   });
 }

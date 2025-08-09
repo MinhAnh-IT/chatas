@@ -6,6 +6,11 @@ import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repo
 
 // Fake repository for testing
 class FakeChatThreadRepository implements ChatThreadRepository {
+  @override
+  Future<List<ChatThread>> getArchivedChatThreads(String currentUserId) async {
+    return [];
+  }
+
   final List<ChatThread> _threads;
 
   FakeChatThreadRepository(this._threads);
@@ -14,7 +19,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   Future<List<ChatThread>> getChatThreads(String currentUserId) async =>
       _threads;
 
-  @override
   Future<void> addChatThread(ChatThread chatThread) async {
     _threads.add(chatThread);
   }
@@ -27,6 +31,53 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   @override
   Future<void> hideChatThread(String threadId, String userId) async {
     // Implementation for testing
+  }
+
+  @override
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> unhideChatThread(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> updateLastRecreatedAt(
+    String threadId,
+    DateTime timestamp,
+  ) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<List<ChatThread>> searchChatThreads(
+    String query,
+    String currentUserId,
+  ) async {
+    // Implementation for testing
+    return _threads
+        .where(
+          (thread) =>
+              thread.name.toLowerCase().contains(query.toLowerCase()) ||
+              thread.lastMessage.toLowerCase().contains(query.toLowerCase()),
+        )
+        .toList();
+  }
+
+  @override
+  Future<void> resetThreadForUser(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<List<ChatThread>> getAllChatThreads(String currentUserId) async {
+    return _threads;
   }
 
   @override
@@ -62,8 +113,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         unreadCounts: thread.unreadCounts,
         createdAt: thread.createdAt,
         updatedAt: DateTime.now(),
-        groupAdminId: thread.groupAdminId,
-        groupDescription: thread.groupDescription,
       );
     }
   }
@@ -84,8 +133,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         unreadCounts: thread.unreadCounts,
         createdAt: thread.createdAt,
         updatedAt: DateTime.now(),
-        groupAdminId: thread.groupAdminId,
-        groupDescription: thread.groupDescription,
       );
     }
   }
@@ -109,8 +156,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         unreadCounts: thread.unreadCounts,
         createdAt: thread.createdAt,
         updatedAt: DateTime.now(),
-        groupAdminId: thread.groupAdminId,
-        groupDescription: thread.groupDescription,
       );
     }
   }
@@ -138,6 +183,79 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         groupDescription: description,
       );
     }
+  }
+
+  // Implementation for new methods
+
+  @override
+  Future<void> updateLastMessage(
+    String threadId,
+    String message,
+    DateTime timestamp,
+  ) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> incrementUnreadCount(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> resetUnreadCount(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> archiveThreadForUser(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> reviveThreadForUser(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> leaveGroup(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<void> joinGroup(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<ChatThread> findOrCreate1v1Thread(
+    String user1,
+    String user2, {
+    String? threadName,
+    String? avatarUrl,
+  }) async {
+    // Implementation for testing
+    final threadId = '${user1}_${user2}';
+    return ChatThread(
+      id: threadId,
+      name: threadName ?? 'Test Chat',
+      lastMessage: '',
+      lastMessageTime: DateTime.now(),
+      avatarUrl: avatarUrl ?? '',
+      members: [user1, user2],
+      isGroup: false,
+      unreadCounts: {},
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
   }
 }
 

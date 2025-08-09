@@ -53,9 +53,12 @@ class MockChatMessageRemoteDataSource extends _i1.Mock
           as _i2.FirebaseFirestore);
 
   @override
-  _i4.Future<List<_i5.ChatMessageModel>> fetchMessages(String? chatThreadId) =>
+  _i4.Future<List<_i5.ChatMessageModel>> fetchMessages(
+    String? chatThreadId,
+    String? currentUserId,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#fetchMessages, [chatThreadId]),
+            Invocation.method(#fetchMessages, [chatThreadId, currentUserId]),
             returnValue: _i4.Future<List<_i5.ChatMessageModel>>.value(
               <_i5.ChatMessageModel>[],
             ),
@@ -63,9 +66,24 @@ class MockChatMessageRemoteDataSource extends _i1.Mock
           as _i4.Future<List<_i5.ChatMessageModel>>);
 
   @override
-  _i4.Stream<List<_i5.ChatMessageModel>> messagesStream(String? chatThreadId) =>
+  _i4.Future<List<_i5.ChatMessageModel>> fetchAllMessages(
+    String? chatThreadId,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#messagesStream, [chatThreadId]),
+            Invocation.method(#fetchAllMessages, [chatThreadId]),
+            returnValue: _i4.Future<List<_i5.ChatMessageModel>>.value(
+              <_i5.ChatMessageModel>[],
+            ),
+          )
+          as _i4.Future<List<_i5.ChatMessageModel>>);
+
+  @override
+  _i4.Stream<List<_i5.ChatMessageModel>> messagesStream(
+    String? chatThreadId,
+    String? currentUserId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#messagesStream, [chatThreadId, currentUserId]),
             returnValue: _i4.Stream<List<_i5.ChatMessageModel>>.empty(),
           )
           as _i4.Stream<List<_i5.ChatMessageModel>>);

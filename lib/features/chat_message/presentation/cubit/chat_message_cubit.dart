@@ -10,6 +10,8 @@ import '../../domain/usecases/delete_message_usecase.dart';
 import '../../domain/usecases/mark_messages_as_read_usecase.dart';
 import '../../../chat_thread/domain/entities/chat_thread.dart';
 import '../../../chat_thread/domain/usecases/send_first_message_usecase.dart';
+import '../../../chat_thread/data/repositories/chat_thread_repository_impl.dart';
+import '../../../chat_thread/data/datasources/chat_thread_remote_data_source.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../constants/chat_message_page_constants.dart';
@@ -89,38 +91,32 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     }
   }
 
-  /// Loads messages for a specific chat thread and sets up real-time updates.
-  /// Subscribes to the message stream for automatic updates.
+  /// Loads messages for a specific chat thread.
   Future<void> loadMessages(String chatThreadId) async {
-    try {
-      emit(const ChatMessageLoading());
-      _currentChatThreadId = chatThreadId;
-      _currentThread = null; // Clear any temporary thread
-      _isTemporaryThread = false;
-
-      // Cancel any existing subscription
-      await _messagesSubscription?.cancel();
-
-      // Subscribe to real-time message updates
-      _messagesSubscription = _getMessagesStreamUseCase(chatThreadId).listen(
-        (messages) {
-          emit(
-            ChatMessageLoaded(
-              messages: messages,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            ),
-          );
-        },
-        onError: (error) {
-          emit(ChatMessageError(message: error.toString()));
-        },
+    if (_currentUserId == null) {
+      emit(
+        const ChatMessageError(
+          message: ChatMessagePageConstants.userInfoUnknown,
+        ),
       );
+      return;
+    }
 
-      // Mark messages as read when opening the chat
-      // Add a small delay to ensure the subscription is established
-      Future.delayed(const Duration(milliseconds: 100), () {
-        markMessagesAsRead();
-      });
+    emit(ChatMessageLoading());
+
+    try {
+      _currentChatThreadId = chatThreadId;
+      _messagesSubscription?.cancel();
+
+      _messagesSubscription =
+          _getMessagesStreamUseCase(chatThreadId, _currentUserId!).listen(
+            (messages) {
+              emit(ChatMessageLoaded(messages: messages));
+            },
+            onError: (error) {
+              emit(ChatMessageError(message: error.toString()));
+            },
+          );
     } catch (e) {
       emit(ChatMessageError(message: e.toString()));
     }
@@ -208,6 +204,70 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         // Start listening to the real thread's messages
         await loadMessages(realThreadId);
         return;
+      }
+
+      // SPECIAL CASE: Check if this is a hidden thread that needs to be revived
+      // This happens when user recreates a deleted 1-1 chat
+      if (currentState is ChatMessageLoaded && currentState.messages.isEmpty) {
+        // No messages visible might indicate a hidden thread
+        // Try to get thread info to check if user is in hiddenFor
+        try {
+          final repository = ChatThreadRepositoryImpl(
+            remoteDataSource: ChatThreadRemoteDataSource(),
+          );
+          final thread = await repository.getChatThreadById(
+            _currentChatThreadId!,
+          );
+
+          if (thread != null &&
+              thread.isHiddenFor(_currentUserId!) &&
+              !thread.isGroup) {
+            print(
+              'ChatMessageCubit: Detected first message to hidden 1-1 thread, using SendFirstMessageUseCase',
+            );
+
+            // Create the first message
+            final now = DateTime.now();
+            final firstMessage = ChatMessage(
+              id: 'msg_${now.millisecondsSinceEpoch}',
+              chatThreadId: _currentChatThreadId!,
+              senderId: _currentUserId!,
+              senderName: _currentUserName!,
+              senderAvatarUrl:
+                  _currentUserAvatarUrl ??
+                  ChatMessagePageConstants.temporaryAvatarUrl,
+              content: content.trim(),
+              type: MessageType.text,
+              status: MessageStatus.sent,
+              sentAt: now,
+              replyToMessageId: _replyToMessageId,
+              createdAt: now,
+              updatedAt: now,
+            );
+
+            // Set lastRecreatedAt to indicate this is a recreation
+            final threadWithRecreationFlag = thread.copyWith(
+              lastRecreatedAt: now,
+            );
+
+            await _sendFirstMessageUseCase(
+              chatThread: threadWithRecreationFlag,
+              message: firstMessage,
+            );
+
+            // Clear reply state after sending first message
+            if (_replyToMessageId != null) {
+              _replyToMessageId = null;
+            }
+
+            // Wait a bit to ensure message is saved before returning
+            await Future.delayed(const Duration(milliseconds: 200));
+            return;
+          }
+        } catch (e) {
+          print('ChatMessageCubit: Error checking hidden thread status: $e');
+          // Fall through to normal message sending
+        }
       }
 
       // Handle normal message sending for existing threads

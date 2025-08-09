@@ -3,12 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
 import 'package:chatas/features/chat_thread/data/datasources/chat_thread_remote_data_source.dart'
-    as _i3;
+    as _i4;
 import 'package:chatas/features/chat_thread/data/models/chat_thread_model.dart'
-    as _i5;
+    as _i6;
+import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart'
+    as _i3;
 import 'package:cloud_firestore/cloud_firestore.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
@@ -32,11 +34,16 @@ class _FakeFirebaseFirestore_0 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
+class _FakeChatThread_1 extends _i1.SmartFake implements _i3.ChatThread {
+  _FakeChatThread_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [ChatThreadRemoteDataSource].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockChatThreadRemoteDataSource extends _i1.Mock
-    implements _i3.ChatThreadRemoteDataSource {
+    implements _i4.ChatThreadRemoteDataSource {
   MockChatThreadRemoteDataSource() {
     _i1.throwOnMissingStub(this);
   }
@@ -53,112 +60,286 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
           as _i2.FirebaseFirestore);
 
   @override
-  _i4.Future<List<_i5.ChatThreadModel>> fetchChatThreads(
+  _i5.Future<List<_i6.ChatThreadModel>> fetchChatThreads(
     String? currentUserId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#fetchChatThreads, [currentUserId]),
-            returnValue: _i4.Future<List<_i5.ChatThreadModel>>.value(
-              <_i5.ChatThreadModel>[],
+            returnValue: _i5.Future<List<_i6.ChatThreadModel>>.value(
+              <_i6.ChatThreadModel>[],
             ),
           )
-          as _i4.Future<List<_i5.ChatThreadModel>>);
+          as _i5.Future<List<_i6.ChatThreadModel>>);
 
   @override
-  _i4.Future<void> addChatThread(_i5.ChatThreadModel? model) =>
+  _i5.Future<List<_i6.ChatThreadModel>> fetchAllChatThreads(
+    String? currentUserId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#fetchAllChatThreads, [currentUserId]),
+            returnValue: _i5.Future<List<_i6.ChatThreadModel>>.value(
+              <_i6.ChatThreadModel>[],
+            ),
+          )
+          as _i5.Future<List<_i6.ChatThreadModel>>);
+
+  @override
+  _i5.Future<void> addChatThread(_i6.ChatThreadModel? model) =>
       (super.noSuchMethod(
             Invocation.method(#addChatThread, [model]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> updateChatThread(String? id, _i5.ChatThreadModel? model) =>
+  _i5.Future<void> updateChatThread(String? id, _i6.ChatThreadModel? model) =>
       (super.noSuchMethod(
             Invocation.method(#updateChatThread, [id, model]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> deleteChatThread(String? id) =>
+  _i5.Future<void> updateChatThreadMembers(
+    String? threadId,
+    List<String>? members,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadMembers, [threadId, members]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateChatThreadName(String? threadId, String? name) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadName, [threadId, name]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateChatThreadAvatar(
+    String? threadId,
+    String? avatarUrl,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadAvatar, [threadId, avatarUrl]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateLastMessage(
+    String? threadId,
+    String? message,
+    DateTime? timestamp,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateLastMessage, [
+              threadId,
+              message,
+              timestamp,
+            ]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> incrementUnreadCount(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#incrementUnreadCount, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> resetUnreadCount(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#resetUnreadCount, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.ChatThreadModel?> getChatThreadById(String? threadId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getChatThreadById, [threadId]),
+            returnValue: _i5.Future<_i6.ChatThreadModel?>.value(),
+          )
+          as _i5.Future<_i6.ChatThreadModel?>);
+
+  @override
+  _i5.Future<void> deleteChatThread(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteChatThread, [id]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Stream<List<_i5.ChatThreadModel>> chatThreadsStream(
+  _i5.Future<void> hideChatThread(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#hideChatThread, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> unhideChatThread(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#unhideChatThread, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateLastRecreatedAt(
+    String? threadId,
+    DateTime? timestamp,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateLastRecreatedAt, [threadId, timestamp]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> markThreadDeletedForUser(
+    String? threadId,
+    String? userId,
+    DateTime? cutoff,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#markThreadDeletedForUser, [
+              threadId,
+              userId,
+              cutoff,
+            ]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> archiveThreadForUser(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#archiveThreadForUser, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> reviveThreadForUser(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#reviveThreadForUser, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> leaveGroup(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#leaveGroup, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> joinGroup(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#joinGroup, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i3.ChatThread> findOrCreate1v1Thread(
+    String? user1,
+    String? user2,
+    String? threadName,
+    String? avatarUrl,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#findOrCreate1v1Thread, [
+              user1,
+              user2,
+              threadName,
+              avatarUrl,
+            ]),
+            returnValue: _i5.Future<_i3.ChatThread>.value(
+              _FakeChatThread_1(
+                this,
+                Invocation.method(#findOrCreate1v1Thread, [
+                  user1,
+                  user2,
+                  threadName,
+                  avatarUrl,
+                ]),
+              ),
+            ),
+          )
+          as _i5.Future<_i3.ChatThread>);
+
+  @override
+  _i5.Future<void> resetThreadForUser(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#resetThreadForUser, [threadId, userId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<_i6.ChatThreadModel>> searchChatThreads(
+    String? query,
+    String? currentUserId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchChatThreads, [query, currentUserId]),
+            returnValue: _i5.Future<List<_i6.ChatThreadModel>>.value(
+              <_i6.ChatThreadModel>[],
+            ),
+          )
+          as _i5.Future<List<_i6.ChatThreadModel>>);
+
+  @override
+  _i5.Stream<List<_i6.ChatThreadModel>> chatThreadsStream(
     String? currentUserId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#chatThreadsStream, [currentUserId]),
-            returnValue: _i4.Stream<List<_i5.ChatThreadModel>>.empty(),
+            returnValue: _i5.Stream<List<_i6.ChatThreadModel>>.empty(),
           )
-          as _i4.Stream<List<_i5.ChatThreadModel>>);
+          as _i5.Stream<List<_i6.ChatThreadModel>>);
 
   @override
-  _i4.Future<void> createChatThread(_i5.ChatThreadModel? model) =>
+  _i5.Future<void> createChatThread(_i6.ChatThreadModel? model) =>
       (super.noSuchMethod(
             Invocation.method(#createChatThread, [model]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<_i5.ChatThreadModel?> getChatThreadById(String? chatThreadId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getChatThreadById, [chatThreadId]),
-            returnValue: _i4.Future<_i5.ChatThreadModel?>.value(),
-          )
-          as _i4.Future<_i5.ChatThreadModel?>);
-
-  @override
-  _i4.Future<void> updateChatThreadMembers(
-    String? chatThreadId,
-    List<String>? members,
-  ) =>
-      (super.noSuchMethod(
-            Invocation.method(#updateChatThreadMembers, [
-              chatThreadId,
-              members,
-            ]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> updateChatThreadName(String? chatThreadId, String? name) =>
-      (super.noSuchMethod(
-            Invocation.method(#updateChatThreadName, [chatThreadId, name]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> updateChatThreadAvatar(
-    String? chatThreadId,
-    String? avatarUrl,
-  ) =>
-      (super.noSuchMethod(
-            Invocation.method(#updateChatThreadAvatar, [
-              chatThreadId,
-              avatarUrl,
-            ]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> updateChatThreadDescription(
+  _i5.Future<void> updateChatThreadDescription(
     String? chatThreadId,
     String? description,
   ) =>
@@ -167,8 +348,25 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
               chatThreadId,
               description,
             ]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateVisibilityCutoff(
+    String? threadId,
+    String? userId,
+    DateTime? cutoff,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateVisibilityCutoff, [
+              threadId,
+              userId,
+              cutoff,
+            ]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 }

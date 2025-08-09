@@ -1,16 +1,23 @@
-import '../entities/chat_message.dart';
 import '../repositories/chat_message_repository.dart';
+import '../entities/chat_message.dart';
 
-/// Use case for fetching messages from a specific chat thread.
-/// Encapsulates the business logic for retrieving message history.
+/// Use case for getting messages from a chat thread.
 class GetMessagesUseCase {
-  final ChatMessageRepository repository;
+  final ChatMessageRepository _repository;
 
-  const GetMessagesUseCase(this.repository);
+  const GetMessagesUseCase({required ChatMessageRepository repository})
+    : _repository = repository;
 
-  /// Executes the use case to get messages for a chat thread.
-  /// Returns a list of [ChatMessage] entities sorted by time.
-  Future<List<ChatMessage>> call(String chatThreadId) async {
-    return await repository.getMessages(chatThreadId);
+  /// Gets all messages for a specific chat thread.
+  ///
+  /// [chatThreadId] The ID of the chat thread to get messages from
+  /// [currentUserId] The ID of the current user (for filtering deleted messages)
+  ///
+  /// Returns a list of [ChatMessage] entities
+  Future<List<ChatMessage>> call(
+    String chatThreadId,
+    String currentUserId,
+  ) async {
+    return await _repository.getMessages(chatThreadId, currentUserId);
   }
 }

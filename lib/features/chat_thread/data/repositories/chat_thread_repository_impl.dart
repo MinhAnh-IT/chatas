@@ -17,9 +17,86 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
+  Future<List<ChatThread>> getAllChatThreads(String currentUserId) async {
+    final models = await _remoteDataSource.fetchAllChatThreads(currentUserId);
+    return models.map((model) => model.toEntity()).toList();
+  }
+
+  @override
+  Future<List<ChatThread>> getArchivedChatThreads(String currentUserId) async {
+    final models = await _remoteDataSource.getArchivedChatThreads(
+      currentUserId,
+    );
+    return models.map((model) => model.toEntity()).toList();
+  }
+
   Future<void> addChatThread(ChatThread chatThread) async {
     final model = ChatThreadModel.fromEntity(chatThread);
     return await _remoteDataSource.addChatThread(model);
+  }
+
+  @override
+  Future<void> createChatThread(ChatThread chatThread) async {
+    final model = ChatThreadModel.fromEntity(chatThread);
+    return await _remoteDataSource.addChatThread(model);
+  }
+
+  @override
+  Future<ChatThread?> getChatThreadById(String threadId) async {
+    final model = await _remoteDataSource.getChatThreadById(threadId);
+    return model?.toEntity();
+  }
+
+  @override
+  Future<void> updateChatThreadMembers(
+    String threadId,
+    List<String> members,
+  ) async {
+    return await _remoteDataSource.updateChatThreadMembers(threadId, members);
+  }
+
+  @override
+  Future<void> updateChatThreadName(String threadId, String name) async {
+    return await _remoteDataSource.updateChatThreadName(threadId, name);
+  }
+
+  @override
+  Future<void> updateChatThreadAvatar(String threadId, String avatarUrl) async {
+    return await _remoteDataSource.updateChatThreadAvatar(threadId, avatarUrl);
+  }
+
+  @override
+  Future<void> updateChatThreadDescription(
+    String threadId,
+    String description,
+  ) async {
+    return await _remoteDataSource.updateChatThreadDescription(
+      threadId,
+      description,
+    );
+  }
+
+  @override
+  Future<void> updateLastMessage(
+    String threadId,
+    String message,
+    DateTime timestamp,
+  ) async {
+    return await _remoteDataSource.updateLastMessage(
+      threadId,
+      message,
+      timestamp,
+    );
+  }
+
+  @override
+  Future<void> incrementUnreadCount(String threadId, String userId) async {
+    return await _remoteDataSource.incrementUnreadCount(threadId, userId);
+  }
+
+  @override
+  Future<void> resetUnreadCount(String threadId, String userId) async {
+    return await _remoteDataSource.resetUnreadCount(threadId, userId);
   }
 
   @override
@@ -33,52 +110,93 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
-  Future<void> createChatThread(ChatThread chatThread) async {
-    final model = ChatThreadModel.fromEntity(chatThread);
-    return await _remoteDataSource.createChatThread(model);
+  Future<void> unhideChatThread(String threadId, String userId) async {
+    return await _remoteDataSource.unhideChatThread(threadId, userId);
   }
 
   @override
-  Future<ChatThread?> getChatThreadById(String chatThreadId) async {
-    final model = await _remoteDataSource.getChatThreadById(chatThreadId);
-    return model?.toEntity();
-  }
-
-  @override
-  Future<void> updateChatThreadMembers(
-    String chatThreadId,
-    List<String> members,
+  Future<void> updateLastRecreatedAt(
+    String threadId,
+    DateTime timestamp,
   ) async {
-    return await _remoteDataSource.updateChatThreadMembers(
-      chatThreadId,
-      members,
+    return await _remoteDataSource.updateLastRecreatedAt(threadId, timestamp);
+  }
+
+  @override
+  Future<void> resetThreadForUser(String threadId, String userId) async {
+    return await _remoteDataSource.resetThreadForUser(threadId, userId);
+  }
+
+  @override
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
+    return await _remoteDataSource.markThreadDeletedForUser(
+      threadId,
+      userId,
+      cutoff,
     );
   }
 
   @override
-  Future<void> updateChatThreadName(String chatThreadId, String name) async {
-    return await _remoteDataSource.updateChatThreadName(chatThreadId, name);
+  Future<void> archiveThreadForUser(String threadId, String userId) async {
+    return await _remoteDataSource.archiveThreadForUser(threadId, userId);
   }
 
   @override
-  Future<void> updateChatThreadAvatar(
-    String chatThreadId,
-    String avatarUrl,
-  ) async {
-    return await _remoteDataSource.updateChatThreadAvatar(
-      chatThreadId,
+  Future<void> reviveThreadForUser(String threadId, String userId) async {
+    return await _remoteDataSource.reviveThreadForUser(threadId, userId);
+  }
+
+  @override
+  Future<void> leaveGroup(String threadId, String userId) async {
+    return await _remoteDataSource.leaveGroup(threadId, userId);
+  }
+
+  @override
+  Future<void> joinGroup(String threadId, String userId) async {
+    return await _remoteDataSource.joinGroup(threadId, userId);
+  }
+
+  @override
+  Future<ChatThread> findOrCreate1v1Thread(
+    String user1,
+    String user2, {
+    String? threadName,
+    String? avatarUrl,
+  }) async {
+    return await _remoteDataSource.findOrCreate1v1Thread(
+      user1,
+      user2,
+      threadName,
       avatarUrl,
     );
   }
 
   @override
-  Future<void> updateChatThreadDescription(
-    String chatThreadId,
-    String description,
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoff,
   ) async {
-    return await _remoteDataSource.updateChatThreadDescription(
-      chatThreadId,
-      description,
+    return await _remoteDataSource.updateVisibilityCutoff(
+      threadId,
+      userId,
+      cutoff,
     );
+  }
+
+  @override
+  Future<List<ChatThread>> searchChatThreads(
+    String query,
+    String currentUserId,
+  ) async {
+    final models = await _remoteDataSource.searchChatThreads(
+      query,
+      currentUserId,
+    );
+    return models.map((model) => model.toEntity()).toList();
   }
 }

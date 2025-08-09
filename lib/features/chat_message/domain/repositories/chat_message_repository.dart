@@ -5,11 +5,21 @@ import '../entities/chat_message.dart';
 abstract class ChatMessageRepository {
   /// Fetches all messages for a specific chat thread.
   /// Returns a list of [ChatMessage] entities sorted by creation time.
-  Future<List<ChatMessage>> getMessages(String chatThreadId);
+  Future<List<ChatMessage>> getMessages(
+    String chatThreadId,
+    String currentUserId,
+  );
+
+  /// Fetches ALL messages for a specific chat thread without filtering by deletedFor.
+  /// Used for administrative operations like marking all messages as deleted.
+  Future<List<ChatMessage>> getAllMessages(String chatThreadId);
 
   /// Provides a real-time stream of messages for a specific chat thread.
   /// Returns a stream that emits updated message lists when changes occur.
-  Stream<List<ChatMessage>> messagesStream(String chatThreadId);
+  Stream<List<ChatMessage>> messagesStream(
+    String chatThreadId,
+    String currentUserId,
+  );
 
   /// Sends a new message to the specified chat thread.
   /// Takes a [ChatMessage] entity and persists it to the data source.
@@ -51,6 +61,6 @@ abstract class ChatMessageRepository {
   Future<void> removeReaction(String messageId, String userId);
 
   /// Marks all messages in a chat thread as read for a specific user.
-  /// Resets the unread count for the chat thread.
+  /// Updates the chat thread's unread count and message read status.
   Future<void> markMessagesAsRead(String chatThreadId, String userId);
 }
