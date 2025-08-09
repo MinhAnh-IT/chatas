@@ -122,6 +122,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
+    bool forceCreateNew = false,
   }) async {
     try {
       return await findOrCreateChatThreadUseCase(
@@ -129,6 +130,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
         friendId: friendId,
         friendName: friendName,
         friendAvatarUrl: friendAvatarUrl,
+        forceCreateNew: forceCreateNew,
       );
     } catch (e) {
       // If error occurs, return a temporary thread to allow messaging

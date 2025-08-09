@@ -126,7 +126,7 @@ void main() {
         'emits [Loading, Loaded] when messages are loaded successfully',
         build: () {
           when(
-            () => mockGetMessagesStreamUseCase.call(any()),
+            () => mockGetMessagesStreamUseCase.call(any(), any()),
           ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
@@ -136,7 +136,9 @@ void main() {
         },
         expect: () => [const ChatMessageLoading(), isA<ChatMessageLoaded>()],
         verify: (_) {
-          verify(() => mockGetMessagesStreamUseCase.call('thread1')).called(1);
+          verify(
+            () => mockGetMessagesStreamUseCase.call('thread1', 'test_user'),
+          ).called(1);
         },
       );
 
@@ -144,7 +146,7 @@ void main() {
         'emits [Loading, Error] when stream throws error',
         build: () {
           when(
-            () => mockGetMessagesStreamUseCase.call(any()),
+            () => mockGetMessagesStreamUseCase.call(any(), any()),
           ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
@@ -162,7 +164,7 @@ void main() {
         'cancels previous subscription when loading new messages',
         build: () {
           when(
-            () => mockGetMessagesStreamUseCase.call(any()),
+            () => mockGetMessagesStreamUseCase.call(any(), any()),
           ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
@@ -172,8 +174,12 @@ void main() {
           cubit.loadMessages('thread2');
         },
         verify: (_) {
-          verify(() => mockGetMessagesStreamUseCase.call('thread1')).called(1);
-          verify(() => mockGetMessagesStreamUseCase.call('thread2')).called(1);
+          verify(
+            () => mockGetMessagesStreamUseCase.call('thread1', 'test_user'),
+          ).called(1);
+          verify(
+            () => mockGetMessagesStreamUseCase.call('thread2', 'test_user'),
+          ).called(1);
         },
       );
     });
@@ -185,7 +191,7 @@ void main() {
       setUp(() {
         // Set up cubit with loaded state
         when(
-          () => mockGetMessagesStreamUseCase.call(any()),
+          () => mockGetMessagesStreamUseCase.call(any(), any()),
         ).thenAnswer((_) => messagesStreamController.stream);
         cubit.loadMessages(testThreadId);
         messagesStreamController.add([]);
@@ -268,7 +274,7 @@ void main() {
         'does not send empty message',
         build: () {
           when(
-            () => mockGetMessagesStreamUseCase.call(any()),
+            () => mockGetMessagesStreamUseCase.call(any(), any()),
           ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
@@ -301,7 +307,7 @@ void main() {
             ),
           ).thenThrow(Exception('Send failed'));
           when(
-            () => mockGetMessagesStreamUseCase.call(any()),
+            () => mockGetMessagesStreamUseCase.call(any(), any()),
           ).thenAnswer((_) => Stream.value(<ChatMessage>[]));
           return cubit;
         },
@@ -448,7 +454,7 @@ void main() {
         'reloads messages when currentChatThreadId is available',
         build: () {
           when(
-            () => mockGetMessagesStreamUseCase.call(any()),
+            () => mockGetMessagesStreamUseCase.call(any(), any()),
           ).thenAnswer((_) => messagesStreamController.stream);
           return cubit;
         },
@@ -459,7 +465,7 @@ void main() {
         verify: (_) {
           // loadMessages called twice - once for initial load, once for refresh
           verify(
-            () => mockGetMessagesStreamUseCase.call(testThreadId),
+            () => mockGetMessagesStreamUseCase.call(testThreadId, 'test_user'),
           ).called(2);
         },
       );
@@ -469,7 +475,7 @@ void main() {
         build: () => cubit,
         act: (cubit) => cubit.refreshMessages(),
         verify: (_) {
-          verifyNever(() => mockGetMessagesStreamUseCase.call(any()));
+          verifyNever(() => mockGetMessagesStreamUseCase.call(any(), any()));
         },
       );
     });

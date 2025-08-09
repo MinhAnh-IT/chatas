@@ -17,6 +17,7 @@ class OpenChatCubit extends Cubit<OpenChatState> {
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
+    bool forceCreateNew = false,
   }) async {
     emit(OpenChatLoading());
 
@@ -26,6 +27,7 @@ class OpenChatCubit extends Cubit<OpenChatState> {
         friendId: friendId,
         friendName: friendName,
         friendAvatarUrl: friendAvatarUrl,
+        forceCreateNew: forceCreateNew,
       );
 
       emit(OpenChatReady(chatThread));

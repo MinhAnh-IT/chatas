@@ -65,6 +65,18 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
           as _i4.Future<List<_i5.ChatThreadModel>>);
 
   @override
+  _i4.Future<List<_i5.ChatThreadModel>> fetchAllChatThreads(
+    String? currentUserId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#fetchAllChatThreads, [currentUserId]),
+            returnValue: _i4.Future<List<_i5.ChatThreadModel>>.value(
+              <_i5.ChatThreadModel>[],
+            ),
+          )
+          as _i4.Future<List<_i5.ChatThreadModel>>);
+
+  @override
   _i4.Future<void> addChatThread(_i5.ChatThreadModel? model) =>
       (super.noSuchMethod(
             Invocation.method(#addChatThread, [model]),
@@ -86,6 +98,24 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
   _i4.Future<void> deleteChatThread(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteChatThread, [id]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> hideChatThread(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#hideChatThread, [threadId, userId]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> unhideChatThread(String? threadId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#unhideChatThread, [threadId, userId]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

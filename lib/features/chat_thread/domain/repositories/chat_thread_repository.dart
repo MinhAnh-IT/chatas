@@ -2,6 +2,11 @@ import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
 
 abstract class ChatThreadRepository {
   Future<List<ChatThread>> getChatThreads(String currentUserId);
+
+  /// Gets all chat threads for a user, including hidden ones.
+  /// Used for finding existing threads before creating new ones.
+  Future<List<ChatThread>> getAllChatThreads(String currentUserId);
+
   Future<void> addChatThread(ChatThread chatThread);
 
   /// Deletes a chat thread by its ID.
@@ -10,6 +15,10 @@ abstract class ChatThreadRepository {
   /// Hides a chat thread for a specific user (soft delete).
   /// The thread remains visible for other users.
   Future<void> hideChatThread(String threadId, String userId);
+
+  /// Unhides a chat thread for a specific user.
+  /// Removes the user from the hiddenFor list.
+  Future<void> unhideChatThread(String threadId, String userId);
 
   // New methods for group chat management
   Future<void> createChatThread(ChatThread chatThread);
