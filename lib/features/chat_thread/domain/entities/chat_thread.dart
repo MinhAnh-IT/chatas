@@ -8,9 +8,12 @@ class ChatThread extends Equatable {
   final String avatarUrl;
   final List<String> members;
   final bool isGroup;
-  final int unreadCount;
+  final Map<String, int> unreadCounts; // Per-user unread counts
   final DateTime createdAt;
   final DateTime updatedAt;
+  // Group specific fields
+  final String? groupAdminId; // Admin user ID for group management
+  final String? groupDescription; // Optional group description
 
   const ChatThread({
     required this.id,
@@ -20,10 +23,27 @@ class ChatThread extends Equatable {
     required this.avatarUrl,
     required this.members,
     required this.isGroup,
-    required this.unreadCount,
+    required this.unreadCounts,
     required this.createdAt,
     required this.updatedAt,
+    this.groupAdminId,
+    this.groupDescription,
   });
+
+  /// Gets unread count for a specific user
+  int getUnreadCount(String userId) {
+    return unreadCounts[userId] ?? 0;
+  }
+
+  /// Check if user is group admin
+  bool isUserAdmin(String userId) {
+    return groupAdminId == userId;
+  }
+
+  /// Check if user can manage group (admin only)
+  bool canUserManage(String userId) {
+    return isGroup && isUserAdmin(userId);
+  }
 
   @override
   List<Object?> get props => [
@@ -34,8 +54,10 @@ class ChatThread extends Equatable {
     avatarUrl,
     members,
     isGroup,
-    unreadCount,
+    unreadCounts,
     createdAt,
     updatedAt,
+    groupAdminId,
+    groupDescription,
   ];
 }

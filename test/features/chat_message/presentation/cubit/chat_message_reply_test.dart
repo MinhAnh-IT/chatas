@@ -10,6 +10,7 @@ import 'package:chatas/features/chat_message/domain/usecases/add_reaction_usecas
 import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cubit.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_state.dart';
@@ -24,6 +25,7 @@ import 'chat_message_reply_test.mocks.dart';
   EditMessageUseCase,
   DeleteMessageUseCase,
   SendFirstMessageUseCase,
+  MarkMessagesAsReadUseCase,
 ])
 void main() {
   group('ChatMessageCubit Reply Functionality', () {
@@ -35,6 +37,7 @@ void main() {
     late MockEditMessageUseCase mockEditMessageUseCase;
     late MockDeleteMessageUseCase mockDeleteMessageUseCase;
     late MockSendFirstMessageUseCase mockSendFirstMessageUseCase;
+    late MockMarkMessagesAsReadUseCase mockMarkMessagesAsReadUseCase;
 
     setUp(() {
       mockGetMessagesStreamUseCase = MockGetMessagesStreamUseCase();
@@ -44,6 +47,7 @@ void main() {
       mockEditMessageUseCase = MockEditMessageUseCase();
       mockDeleteMessageUseCase = MockDeleteMessageUseCase();
       mockSendFirstMessageUseCase = MockSendFirstMessageUseCase();
+      mockMarkMessagesAsReadUseCase = MockMarkMessagesAsReadUseCase();
 
       cubit = ChatMessageCubit(
         getMessagesStreamUseCase: mockGetMessagesStreamUseCase,
@@ -53,6 +57,7 @@ void main() {
         editMessageUseCase: mockEditMessageUseCase,
         deleteMessageUseCase: mockDeleteMessageUseCase,
         sendFirstMessageUseCase: mockSendFirstMessageUseCase,
+        markMessagesAsReadUseCase: mockMarkMessagesAsReadUseCase,
       );
 
       // Set up current user

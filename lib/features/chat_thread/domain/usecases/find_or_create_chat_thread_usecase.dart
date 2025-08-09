@@ -52,7 +52,7 @@ class FindOrCreateChatThreadUseCase {
       avatarUrl: friendAvatarUrl,
       members: [currentUserId, friendId],
       isGroup: false,
-      unreadCount: 0,
+      unreadCounts: {},
       createdAt: now,
       updatedAt: now,
     );

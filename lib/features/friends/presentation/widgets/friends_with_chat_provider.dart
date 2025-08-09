@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/friend.dart';
 import '../../../../features/chat_thread/presentation/cubit/open_chat_cubit.dart';
+import '../../../auth/di/auth_dependency_injection.dart';
 import '../../../../features/chat_thread/presentation/cubit/open_chat_state.dart';
 import '../../../../features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import '../../../../features/chat_thread/data/repositories/chat_thread_repository_impl.dart';
@@ -67,7 +68,7 @@ mixin ChatOpeningMixin {
     BuildContext context,
     Friend friend,
     String currentUserId,
-  ) {
+  ) async {
     // Check if friend is blocked
     if (friend.isBlock) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,12 +95,27 @@ mixin ChatOpeningMixin {
       );
     }
 
+    // Get friend's avatar URL from their user profile
+    String friendAvatarUrl = '';
+    try {
+      // Import and use auth service to get friend's profile
+      final friendUser = await AuthDependencyInjection.authRemoteDataSource
+          .getUserById(actualFriendId);
+      if (friendUser != null) {
+        friendAvatarUrl = friendUser.avatarUrl;
+        print('ChatOpeningMixin: Got friend avatar URL: $friendAvatarUrl');
+      }
+    } catch (e) {
+      print('ChatOpeningMixin: Error getting friend avatar: $e');
+      // Continue with empty avatar - SmartAvatar will handle fallback
+    }
+
     // Use OpenChatCubit to handle the chat opening
     context.read<OpenChatCubit>().openChatWithFriend(
       currentUserId: currentUserId,
       friendId: actualFriendId,
       friendName: friend.nickName.isNotEmpty ? friend.nickName : 'Người dùng',
-      friendAvatarUrl: '', // Avatar will be handled by SmartAvatar widget
+      friendAvatarUrl: friendAvatarUrl,
     );
 
     // Show loading indicator
