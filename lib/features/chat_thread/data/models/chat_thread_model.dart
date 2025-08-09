@@ -138,7 +138,7 @@ class ChatThreadModel extends Equatable {
 
   static Map<String, DateTime> _parseDateTimeMap(dynamic map) {
     if (map is! Map) return {};
-    
+
     final result = <String, DateTime>{};
     for (final entry in map.entries) {
       if (entry.key is String) {

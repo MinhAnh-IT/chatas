@@ -92,7 +92,9 @@ class AppRouter {
           // Create repository and use cases for archived page
           final repository = ChatThreadRepositoryImpl();
           final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
-          final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(repository);
+          final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(
+            repository,
+          );
           final createChatThreadUseCase = CreateChatThreadUseCase(repository);
           final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
           final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
@@ -101,7 +103,9 @@ class AppRouter {
           final archiveThreadUseCase = ArchiveThreadUseCase(repository);
           final leaveGroupUseCase = LeaveGroupUseCase(repository);
           final joinGroupUseCase = JoinGroupUseCase(repository);
-          final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(repository);
+          final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(
+            repository,
+          );
 
           return BlocProvider(
             create: (context) => ChatThreadListCubit(

@@ -17,11 +17,10 @@ class ArchivedThreadsPage extends StatefulWidget {
 }
 
 class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
-
   @override
   void initState() {
     super.initState();
-    
+
     // Get cubit from context (should be provided by parent)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -46,10 +45,15 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
     }
   }
 
-  void _navigateToChatMessage(BuildContext context, String threadId, String? otherUserName) {
-    context.push('/chat-message/$threadId', extra: {
-      'otherUserName': otherUserName ?? 'Chat',
-    });
+  void _navigateToChatMessage(
+    BuildContext context,
+    String threadId,
+    String? otherUserName,
+  ) {
+    context.push(
+      '/chat-message/$threadId',
+      extra: {'otherUserName': otherUserName ?? 'Chat'},
+    );
   }
 
   void _unarchiveThread(ChatThread thread) {
@@ -58,7 +62,7 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
       // Unarchive the thread using cubit
       final cubit = context.read<ChatThreadListCubit>();
       cubit.unarchiveThread(thread.id, currentUserId);
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -74,9 +78,9 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
   // List<ChatThread> _filterArchivedThreads(List<ChatThread> allThreads) {
   //   final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
   //   if (currentUserId.isEmpty) return [];
-  //   
+  //
   //   // Filter threads that are archived for current user
-  //   return allThreads.where((thread) => 
+  //   return allThreads.where((thread) =>
   //     thread.hiddenFor.contains(currentUserId)
   //   ).toList();
   // }
@@ -108,7 +112,8 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
               onRefresh: _handleRefresh,
               errorMessage: state.message,
               onRetry: () {
-                final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                final currentUserId =
+                    FirebaseAuth.instance.currentUser?.uid ?? '';
                 if (currentUserId.isNotEmpty) {
                   _fetchArchivedThreads(currentUserId);
                 }
@@ -120,7 +125,7 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
           if (state is ChatThreadListLoaded) {
             // Use threads directly since they're already filtered
             final archivedThreads = state.threads;
-            
+
             return RefreshableListView<ChatThread>(
               items: archivedThreads,
               onRefresh: _handleRefresh,
@@ -138,26 +143,16 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.archive_outlined,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
+                    Icon(Icons.archive_outlined, size: 64, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
                       'Không có cuộc trò chuyện nào được lưu trữ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
                       'Các cuộc trò chuyện bạn lưu trữ sẽ xuất hiện ở đây',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -201,9 +196,7 @@ class ArchivedThreadListTile extends StatelessWidget {
       ),
       title: Text(
         thread.name,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,11 +211,7 @@ class ArchivedThreadListTile extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(
-                Icons.archive,
-                size: 14,
-                color: Colors.grey[500],
-              ),
+              Icon(Icons.archive, size: 14, color: Colors.grey[500]),
               const SizedBox(width: 4),
               Text(
                 'Đã lưu trữ',

@@ -87,7 +87,8 @@ class ChatThreadListTile extends StatelessWidget {
 
               if (userDoc.exists) {
                 final data = userDoc.data()!;
-                final avatarUrl = data[AuthRemoteConstants.avatarUrlField] as String? ?? '';
+                final avatarUrl =
+                    data[AuthRemoteConstants.avatarUrlField] as String? ?? '';
                 print(
                   'ChatThreadListTile: Direct Firestore - avatarUrl: "$avatarUrl"',
                 );
@@ -183,8 +184,10 @@ class ChatThreadListTile extends StatelessWidget {
 
               if (userDoc.exists) {
                 final data = userDoc.data()!;
-                final fullName = data[AuthRemoteConstants.fullNameField] as String? ?? '';
-                final username = data[AuthRemoteConstants.usernameField] as String? ?? '';
+                final fullName =
+                    data[AuthRemoteConstants.fullNameField] as String? ?? '';
+                final username =
+                    data[AuthRemoteConstants.usernameField] as String? ?? '';
                 final displayName = fullName.isNotEmpty
                     ? fullName
                     : username.isNotEmpty
@@ -227,12 +230,12 @@ class ChatThreadListTile extends StatelessWidget {
       );
     }
   }
-  
+
   /// Shows action options for group chats (Archive/Leave).
   void _showGroupChatActions(BuildContext context) {
     // Store the original context that has access to ChatThreadListCubit
     final originalContext = context;
-    
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bottomSheetContext) {
@@ -243,7 +246,9 @@ class ChatThreadListTile extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.archive_outlined),
                 title: const Text('Lưu trữ nhóm'),
-                subtitle: const Text('Ẩn khỏi danh sách nhưng vẫn nhận tin nhắn mới'),
+                subtitle: const Text(
+                  'Ẩn khỏi danh sách nhưng vẫn nhận tin nhắn mới',
+                ),
                 onTap: () {
                   Navigator.pop(bottomSheetContext);
                   // Use original context that has access to Provider
@@ -252,7 +257,10 @@ class ChatThreadListTile extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.exit_to_app, color: Colors.red),
-                title: const Text('Rời nhóm', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Rời nhóm',
+                  style: TextStyle(color: Colors.red),
+                ),
                 subtitle: const Text('Không thể đọc hoặc gửi tin nhắn mới'),
                 onTap: () {
                   Navigator.pop(bottomSheetContext);
@@ -271,18 +279,20 @@ class ChatThreadListTile extends StatelessWidget {
       },
     );
   }
-  
+
   /// Shows confirmation dialog for leaving group.
   void _showLeaveGroupConfirmation(BuildContext context) {
     // Store the original context that has access to ChatThreadListCubit
     final originalContext = context;
-    
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Rời nhóm'),
-          content: Text('Bạn có chắc muốn rời khỏi nhóm "${thread.name}"? Bạn sẽ không thể đọc hoặc gửi tin nhắn mới.'),
+          content: Text(
+            'Bạn có chắc muốn rời khỏi nhóm "${thread.name}"? Bạn sẽ không thể đọc hoặc gửi tin nhắn mới.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -308,11 +318,11 @@ class ChatThreadListTile extends StatelessWidget {
     try {
       final cubit = context.read<ChatThreadListCubit>();
       final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    
+
       if (thread.isGroup) {
         // For group chats: hide/archive (user choice can be added later)
         cubit.hideChatThread(thread.id, currentUserId);
-        
+
         // Show success message for group
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -324,11 +334,11 @@ class ChatThreadListTile extends StatelessWidget {
       } else {
         // For 1-1 chats: mark as deleted with visibility cutoff
         cubit.markThreadDeleted(
-          thread.id, 
-          currentUserId, 
+          thread.id,
+          currentUserId,
           lastMessageTime: thread.lastMessageTime,
         );
-        
+
         // Show success message for 1-1 chat
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -349,15 +359,15 @@ class ChatThreadListTile extends StatelessWidget {
       );
     }
   }
-  
+
   /// Archives a group chat for the current user.
   void _archiveGroupChat(BuildContext context) {
     try {
       final cubit = context.read<ChatThreadListCubit>();
       final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      
+
       cubit.archiveThread(thread.id, currentUserId);
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -377,15 +387,15 @@ class ChatThreadListTile extends StatelessWidget {
       );
     }
   }
-  
+
   /// Makes the current user leave a group chat.
   void _leaveGroupChat(BuildContext context) {
     try {
       final cubit = context.read<ChatThreadListCubit>();
       final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      
+
       cubit.leaveGroup(thread.id, currentUserId);
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

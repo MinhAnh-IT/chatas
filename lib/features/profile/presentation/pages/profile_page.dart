@@ -48,9 +48,12 @@ class _ProfilePageState extends State<ProfilePage> {
           final data = userDoc.data()!;
           DateTime birthDate;
           if (data[AuthRemoteConstants.birthDateField] is Timestamp) {
-            birthDate = (data[AuthRemoteConstants.birthDateField] as Timestamp).toDate();
+            birthDate = (data[AuthRemoteConstants.birthDateField] as Timestamp)
+                .toDate();
           } else if (data[AuthRemoteConstants.birthDateField] is String) {
-            birthDate = DateTime.parse(data[AuthRemoteConstants.birthDateField]);
+            birthDate = DateTime.parse(
+              data[AuthRemoteConstants.birthDateField],
+            );
           } else {
             birthDate = DateTime.now().subtract(const Duration(days: 6570));
           }
