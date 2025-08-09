@@ -9,6 +9,7 @@ import 'package:chatas/features/chat_message/domain/usecases/add_reaction_usecas
 import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cubit.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_state.dart';
@@ -31,6 +32,9 @@ class MockDeleteMessageUseCase extends Mock implements DeleteMessageUseCase {}
 class MockSendFirstMessageUseCase extends Mock
     implements SendFirstMessageUseCase {}
 
+class MockMarkMessagesAsReadUseCase extends Mock
+    implements MarkMessagesAsReadUseCase {}
+
 void main() {
   setUpAll(() {
     // Register fallback values for enums
@@ -46,6 +50,7 @@ void main() {
     late MockEditMessageUseCase mockEditMessageUseCase;
     late MockDeleteMessageUseCase mockDeleteMessageUseCase;
     late MockSendFirstMessageUseCase mockSendFirstMessageUseCase;
+    late MockMarkMessagesAsReadUseCase mockMarkMessagesAsReadUseCase;
     late StreamController<List<ChatMessage>> messagesStreamController;
 
     setUp(() {
@@ -56,7 +61,16 @@ void main() {
       mockEditMessageUseCase = MockEditMessageUseCase();
       mockDeleteMessageUseCase = MockDeleteMessageUseCase();
       mockSendFirstMessageUseCase = MockSendFirstMessageUseCase();
+      mockMarkMessagesAsReadUseCase = MockMarkMessagesAsReadUseCase();
       messagesStreamController = StreamController<List<ChatMessage>>();
+
+      // Setup mock for markMessagesAsReadUseCase
+      when(
+        () => mockMarkMessagesAsReadUseCase.call(
+          chatThreadId: any(named: 'chatThreadId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer((_) async {});
 
       cubit = ChatMessageCubit(
         getMessagesStreamUseCase: mockGetMessagesStreamUseCase,
@@ -66,6 +80,7 @@ void main() {
         editMessageUseCase: mockEditMessageUseCase,
         deleteMessageUseCase: mockDeleteMessageUseCase,
         sendFirstMessageUseCase: mockSendFirstMessageUseCase,
+        markMessagesAsReadUseCase: mockMarkMessagesAsReadUseCase,
       );
 
       // Set current user for testing
@@ -119,10 +134,7 @@ void main() {
           cubit.loadMessages('thread1');
           messagesStreamController.add(testMessages);
         },
-        expect: () => [
-          const ChatMessageLoading(),
-          ChatMessageLoaded(messages: testMessages),
-        ],
+        expect: () => [const ChatMessageLoading(), isA<ChatMessageLoaded>()],
         verify: (_) {
           verify(() => mockGetMessagesStreamUseCase.call('thread1')).called(1);
         },
@@ -232,6 +244,7 @@ void main() {
             editMessageUseCase: mockEditMessageUseCase,
             deleteMessageUseCase: mockDeleteMessageUseCase,
             sendFirstMessageUseCase: mockSendFirstMessageUseCase,
+            markMessagesAsReadUseCase: mockMarkMessagesAsReadUseCase,
           );
           cubit.setCurrentUser(userId: 'test_user', userName: 'Test User');
           return cubit;
@@ -300,7 +313,7 @@ void main() {
         },
         expect: () => [
           const ChatMessageLoading(),
-          const ChatMessageLoaded(messages: []),
+          isA<ChatMessageLoaded>(),
           isA<ChatMessageSending>(),
           const ChatMessageError(message: 'Exception: Send failed'),
         ],

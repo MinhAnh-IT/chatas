@@ -160,17 +160,28 @@ class AuthRemoteDataSource {
 
   Future<User?> getUserById(String userId) async {
     try {
+      print('AuthRemoteDataSource: getUserById called for userId: $userId');
       final userDoc = await _firestore
           .collection(AuthConstants.usersCollection)
           .doc(userId)
           .get();
 
+      print('AuthRemoteDataSource: Document exists: ${userDoc.exists}');
       if (userDoc.exists) {
-        final userModel = UserModel.fromJson(userDoc.data()!);
-        return userModel.toEntity();
+        final data = userDoc.data()!;
+        print('AuthRemoteDataSource: User data: $data');
+        final userModel = UserModel.fromJson(data);
+        final user = userModel.toEntity();
+        print('AuthRemoteDataSource: User entity avatar: ${user.avatarUrl}');
+        return user;
+      } else {
+        print(
+          'AuthRemoteDataSource: User document does not exist for ID: $userId',
+        );
       }
       return null;
     } catch (e) {
+      print('AuthRemoteDataSource: Error getting user by ID: $e');
       return null;
     }
   }

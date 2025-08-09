@@ -17,6 +17,7 @@ import '../cubit/chat_thread_list_cubit.dart';
 import '../cubit/chat_thread_list_state.dart';
 import '../widgets/chat_thread_list_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'friend_selection_page.dart';
 
 class ChatThreadListPage extends StatefulWidget {
   const ChatThreadListPage({super.key});
@@ -102,6 +103,53 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
       otherUserName: threadName,
     );
     context.go(route);
+  }
+
+  void _showCreateGroupDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tạo nhóm chat'),
+        content: const Text('Chọn loại chat bạn muốn tạo:'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to friend selection for 1-on-1 chat
+              _navigateToFriendSelection(false);
+            },
+            child: const Text('Chat 1-1'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to friend selection for group chat
+              _navigateToFriendSelection(true);
+            },
+            child: const Text('Nhóm chat'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToFriendSelection(bool isGroupChat) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FriendSelectionPage(
+          isGroupChat: isGroupChat,
+          onCreateChat: () {
+            // Refresh the chat thread list after creating a new chat
+            _handleRefresh();
+          },
+        ),
+      ),
+    );
   }
 
   /// Handles refresh action when user pulls down to refresh.
@@ -293,6 +341,11 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
         appBar: CommonAppBar(
           title: ChatThreadListPageConstants.title,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Tạo nhóm chat',
+              onPressed: _showCreateGroupDialog,
+            ),
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: ChatThreadListPageConstants.searchTooltip,
