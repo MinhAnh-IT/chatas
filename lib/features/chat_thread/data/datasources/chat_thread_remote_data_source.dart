@@ -24,14 +24,17 @@ class ChatThreadRemoteDataSource {
     );
 
     // Debug: Print details of each thread
-    final threads = snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id; // Set document ID from Firestore
-      print(
-        'ChatThreadRemoteDataSource: Thread ${doc.id} - Members: ${data['members']}, Name: ${data['name']}, AvatarUrl: ${data['avatarUrl']}, HiddenFor: ${data['hiddenFor'] ?? []}',
-      );
-      return ChatThreadModel.fromJson(data);
-    }).where((thread) => !thread.hiddenFor.contains(currentUserId)).toList(); // Filter out hidden threads
+    final threads = snapshot.docs
+        .map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id; // Set document ID from Firestore
+          print(
+            'ChatThreadRemoteDataSource: Thread ${doc.id} - Members: ${data['members']}, Name: ${data['name']}, AvatarUrl: ${data['avatarUrl']}, HiddenFor: ${data['hiddenFor'] ?? []}',
+          );
+          return ChatThreadModel.fromJson(data);
+        })
+        .where((thread) => !thread.hiddenFor.contains(currentUserId))
+        .toList(); // Filter out hidden threads
 
     print(
       'ChatThreadRemoteDataSource: After filtering hidden threads: ${threads.length} threads visible for user $currentUserId',
@@ -73,7 +76,7 @@ class ChatThreadRemoteDataSource {
     print(
       'ChatThreadRemoteDataSource: Hiding chat thread $threadId for user $userId',
     );
-    
+
     // Get current thread data
     final threadDoc = await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
@@ -86,7 +89,7 @@ class ChatThreadRemoteDataSource {
 
     final data = threadDoc.data()!;
     final currentHiddenFor = List<String>.from(data['hiddenFor'] ?? []);
-    
+
     // Add user to hiddenFor list if not already there
     if (!currentHiddenFor.contains(userId)) {
       currentHiddenFor.add(userId);
@@ -121,11 +124,14 @@ class ChatThreadRemoteDataSource {
           print(
             'ChatThreadRemoteDataSource: Stream received ${snapshot.docs.length} threads for user',
           );
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id; // Set document ID from Firestore
-            return ChatThreadModel.fromJson(data);
-          }).where((thread) => !thread.hiddenFor.contains(currentUserId)).toList(); // Filter out hidden threads
+          return snapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id; // Set document ID from Firestore
+                return ChatThreadModel.fromJson(data);
+              })
+              .where((thread) => !thread.hiddenFor.contains(currentUserId))
+              .toList(); // Filter out hidden threads
         });
   }
 
