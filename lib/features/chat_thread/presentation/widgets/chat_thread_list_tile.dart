@@ -223,18 +223,18 @@ class ChatThreadListTile extends StatelessWidget {
     );
   }
 
-  /// Deletes the chat thread and shows appropriate feedback.
+  /// Hides the chat thread for the current user and shows appropriate feedback.
   void _deleteChatThread(BuildContext context) {
     final cubit = context.read<ChatThreadListCubit>();
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    cubit.deleteChatThread(thread.id, currentUserId);
+    cubit.hideChatThread(thread.id, currentUserId);
 
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(ChatThreadListPageConstants.deleteSuccess),
+      SnackBar(
+        content: Text('Đã ẩn đoạn chat "${thread.name}"'),
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
