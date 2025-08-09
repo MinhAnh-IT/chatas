@@ -232,7 +232,8 @@ class _FriendsListPageState extends State<FriendsListPage> {
               // Đã ở trang Bạn bè (hiện tại)
               break;
             case 2:
-              // Trang Thông báo (chưa implement)
+              // Chuyển đến trang Thông báo
+              context.go(AppRouteConstants.notificationsPath);
               break;
             case 3:
               // Chuyển đến trang Profile

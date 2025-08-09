@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_route_constants.dart';
+import '../../../../shared/widgets/bottom_navigation.dart';
 import '../../domain/entities/notification.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
@@ -13,12 +16,29 @@ class NotificationsPage extends StatefulWidget {
   State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage> {
+class _NotificationsPageState extends State<NotificationsPage>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Load notifications when page opens
     context.read<NotificationCubit>().loadNotifications();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Refresh notifications when app comes to foreground
+    if (state == AppLifecycleState.resumed) {
+      context.read<NotificationCubit>().refreshNotifications();
+    }
   }
 
   @override
@@ -140,6 +160,28 @@ class _NotificationsPageState extends State<NotificationsPage> {
           }
 
           return const SizedBox.shrink();
+        },
+      ),
+      bottomNavigationBar: CommonBottomNavigation(
+        currentIndex: 2, // Notifications tab is index 2
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Chuyển đến trang Chat
+              context.go('/');
+              break;
+            case 1:
+              // Chuyển đến trang Bạn bè
+              context.go(AppRouteConstants.friendsPath);
+              break;
+            case 2:
+              // Đã ở trang Thông báo (hiện tại)
+              break;
+            case 3:
+              // Chuyển đến trang Profile
+              context.go('/profile');
+              break;
+          }
         },
       ),
     );

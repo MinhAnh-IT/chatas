@@ -18,7 +18,8 @@ import 'package:chatas/features/friends/injection/friends_injection.dart';
 import 'package:chatas/features/friends/services/notification_navigation_service.dart';
 import 'package:chatas/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
-import 'package:chatas/features/notifications/notification_injection.dart';
+import 'package:chatas/features/notifications/notification_injection.dart'
+    as notification_di;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -121,12 +122,12 @@ class AppRouter {
         builder: (context, state) {
           return BlocProvider(
             create: (context) => NotificationCubit(
-              initializeNotifications: sl(),
-              getNotifications: sl(),
-              markAsRead: sl(),
-              getUnreadCount: sl(),
-              sendFriendRequestNotification: sl(),
-              sendFriendAcceptedNotification: sl(),
+              initializeNotifications: notification_di.sl(),
+              getNotifications: notification_di.sl(),
+              markAsRead: notification_di.sl(),
+              getUnreadCount: notification_di.sl(),
+              sendFriendRequestNotification: notification_di.sl(),
+              sendFriendAcceptedNotification: notification_di.sl(),
             ),
             child: const NotificationsPage(),
           );

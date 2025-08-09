@@ -4,8 +4,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
+import 'package:get_it/get_it.dart';
 import '../../notifications/data/datasources/notification_local_notification_datasource.dart';
+import '../../notifications/domain/repositories/notification_repository.dart';
+import '../../notifications/domain/entities/notification.dart';
+import '../../notifications/presentation/cubit/notification_cubit.dart';
 import 'notification_navigation_service.dart';
+
+final GetIt sl = GetIt.instance;
 
 class FCMPushService {
   // Firebase Admin SDK credentials
@@ -419,6 +425,33 @@ class FCMPushService {
   static Future<void> _showForegroundNotification(RemoteMessage message) async {
     try {
       print('🔔 Hiển thị foreground notification...');
+
+      // Lưu notification vào database local trước
+      try {
+        final notificationRepository = sl<NotificationRepository>();
+        final notification = NotificationEntity(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: message.notification?.title ?? 'Thông báo',
+          body: message.notification?.body ?? '',
+          type: message.data['action'] ?? 'unknown',
+          data: message.data,
+          createdAt: DateTime.now(),
+          isRead: false,
+        );
+        await notificationRepository.saveNotification(notification);
+        print('✅ Đã lưu notification vào database local');
+
+        // Trigger refresh notifications ở UI nếu có thể
+        try {
+          final notificationCubit = sl<NotificationCubit>();
+          notificationCubit.refreshNotifications();
+          print('🔄 Đã refresh notifications UI');
+        } catch (e) {
+          print('⚠️  Không thể refresh UI (có thể chưa init): $e');
+        }
+      } catch (e) {
+        print('❌ Lỗi lưu notification vào database: $e');
+      }
 
       // Tạo ID 32-bit từ timestamp
       final notificationId =

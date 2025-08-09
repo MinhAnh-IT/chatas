@@ -18,7 +18,8 @@ import '../widgets/chat_thread_list_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
 import 'package:chatas/features/notifications/presentation/cubit/notification_state.dart';
-import 'package:chatas/features/notifications/notification_injection.dart';
+import 'package:chatas/features/notifications/notification_injection.dart'
+    as notification_di;
 
 class ChatThreadListPage extends StatefulWidget {
   const ChatThreadListPage({super.key});
@@ -53,12 +54,12 @@ class _ChatThreadListPageState extends State<ChatThreadListPage> {
 
     // Khởi tạo notification cubit
     _notificationCubit = NotificationCubit(
-      initializeNotifications: sl(),
-      getNotifications: sl(),
-      markAsRead: sl(),
-      getUnreadCount: sl(),
-      sendFriendRequestNotification: sl(),
-      sendFriendAcceptedNotification: sl(),
+      initializeNotifications: notification_di.sl(),
+      getNotifications: notification_di.sl(),
+      markAsRead: notification_di.sl(),
+      getUnreadCount: notification_di.sl(),
+      sendFriendRequestNotification: notification_di.sl(),
+      sendFriendAcceptedNotification: notification_di.sl(),
     );
 
     _cubit.fetchChatThreads();

@@ -10,7 +10,7 @@ Dự án này sử dụng Firebase Admin SDK cho push notifications. Vì lý do 
 
 1. Truy cập [Firebase Console](https://console.firebase.google.com)
 2. Chọn project của bạn (`chatas-9469d`)
-3. Vào **Project Settings** > **Service Accounts**
+3. Vào **Project Settings** > **Service Accounts **
 4. Nhấp **Generate new private key**
 5. Tải file JSON về
 

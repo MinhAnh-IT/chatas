@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../domain/entities/notification.dart';
 import '../../domain/usecases/get_notifications.dart';
 import '../../domain/usecases/get_unread_notifications_count.dart';
 import '../../domain/usecases/initialize_notifications.dart';
