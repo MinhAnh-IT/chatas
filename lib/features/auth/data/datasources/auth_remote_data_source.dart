@@ -42,7 +42,7 @@ class AuthRemoteDataSource {
       if (userCredential.user != null) {
         final userModel = UserModel(
           userId: userCredential.user!.uid,
-          isOnline: false,
+          isOnline: true, // User is online when they register
           lastActive: DateTime.now(),
           fullName: request.fullName,
           username: request.username,
@@ -82,7 +82,6 @@ class AuthRemoteDataSource {
             .where('username', isEqualTo: request.emailOrUsername)
             .limit(1)
             .get();
-
         if (userQuery.docs.isEmpty) {
           return const AuthFailure(
             'User not found',
@@ -107,8 +106,26 @@ class AuthRemoteDataSource {
             .get();
 
         if (userDoc.exists) {
+          // Update online status when user logs in
+          final now = DateTime.now();
+          await _firestore
+              .collection(AuthConstants.usersCollection)
+              .doc(userCredential.user!.uid)
+              .update({
+                'isOnline': true,
+                'lastActive': now.toIso8601String(),
+                'updatedAt': now.toIso8601String(),
+              });
+
           final userModel = UserModel.fromJson(userDoc.data()!);
-          return AuthSuccess(userModel.toEntity());
+          // Create updated user model with online status
+          final updatedUserModel = userModel.copyWith(
+            isOnline: true,
+            lastActive: now,
+            updatedAt: now,
+          );
+
+          return AuthSuccess(updatedUserModel.toEntity());
         } else {
           return const AuthFailure('User data not found');
         }
@@ -126,6 +143,20 @@ class AuthRemoteDataSource {
 
   Future<AuthResult> logout() async {
     try {
+      final currentUser = _firebaseAuth.currentUser;
+      if (currentUser != null) {
+        // Update online status to offline when user logs out
+        final now = DateTime.now();
+        await _firestore
+            .collection(AuthConstants.usersCollection)
+            .doc(currentUser.uid)
+            .update({
+              'isOnline': false,
+              'lastActive': now.toIso8601String(),
+              'updatedAt': now.toIso8601String(),
+            });
+      }
+
       await _firebaseAuth.signOut();
       return const AuthSuccess(null);
     } catch (e) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'features/friends/injection/friends_injection.dart';
+import 'features/auth/online_status_exports.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,6 +11,9 @@ void main() async {
 
   // Initialize dependencies
   FriendsDependencyInjection.init();
+
+  // Initialize online status service
+  OnlineStatusService.instance.initialize();
 
   runApp(MyApp());
 }
