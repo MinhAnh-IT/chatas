@@ -120,6 +120,100 @@ class ChatThreadListTile extends StatelessWidget {
     return thread.avatarUrl; // Fallback to original
   }
 
+  /// Gets the display name dynamically for 1-on-1 chats
+  Future<String> _getDisplayName() async {
+    print(
+      'ChatThreadListTile: _getDisplayName called for thread: ${thread.id}',
+    );
+    print('ChatThreadListTile: thread.name = "${thread.name}"');
+    print('ChatThreadListTile: thread.isGroup = ${thread.isGroup}');
+
+    // For group chats, use the group name
+    if (thread.isGroup) {
+      return thread.name;
+    }
+
+    // For 1-on-1 chats, get the friend's name
+    if (thread.members.length == 2) {
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      print('ChatThreadListTile: Current user ID: $currentUserId');
+
+      final friendId = thread.members.firstWhere(
+        (id) => id != currentUserId,
+        orElse: () => '',
+      );
+      print('ChatThreadListTile: Friend ID identified: $friendId');
+
+      if (friendId.isNotEmpty) {
+        try {
+          print(
+            'ChatThreadListTile: Calling getUserById for friendId: $friendId',
+          );
+          final friendUser = await AuthDependencyInjection.authRemoteDataSource
+              .getUserById(friendId);
+          print(
+            'ChatThreadListTile: getUserById returned: ${friendUser != null ? "user found" : "null"}',
+          );
+
+          if (friendUser != null) {
+            final friendName = friendUser.fullName.isNotEmpty 
+                ? friendUser.fullName 
+                : friendUser.username.isNotEmpty 
+                    ? friendUser.username 
+                    : 'Người dùng';
+            print(
+              'ChatThreadListTile: SUCCESS - Got friend name for $friendId: $friendName',
+            );
+            return friendName;
+          } else {
+            // Fallback: Direct Firestore query
+            print(
+              'ChatThreadListTile: getUserById failed, trying direct Firestore query',
+            );
+            try {
+              final firestore = FirebaseFirestore.instance;
+              final userDoc = await firestore
+                  .collection('users')
+                  .doc(friendId)
+                  .get();
+              print(
+                'ChatThreadListTile: Direct Firestore query - document exists: ${userDoc.exists}',
+              );
+
+              if (userDoc.exists) {
+                final data = userDoc.data()!;
+                final fullName = data['fullName'] as String? ?? '';
+                final username = data['username'] as String? ?? '';
+                final displayName = fullName.isNotEmpty 
+                    ? fullName 
+                    : username.isNotEmpty 
+                        ? username 
+                        : 'Người dùng';
+                print(
+                  'ChatThreadListTile: SUCCESS via direct Firestore - Got friend name: $displayName',
+                );
+                return displayName;
+              }
+            } catch (e2) {
+              print(
+                'ChatThreadListTile: Direct Firestore query also failed: $e2',
+              );
+            }
+          }
+        } catch (e) {
+          print('ChatThreadListTile: ERROR getting friend name: $e');
+        }
+      } else {
+        print('ChatThreadListTile: Friend ID is empty - cannot get name');
+      }
+    }
+
+    print(
+      'ChatThreadListTile: Falling back to original name: "${thread.name}"',
+    );
+    return thread.name; // Fallback to original
+  }
+
   /// Handles the long press gesture to show delete options.
   void _handleLongPress(BuildContext context) {
     DeleteChatThreadDialog.show(
@@ -194,12 +288,18 @@ class ChatThreadListTile extends StatelessWidget {
                         print(
                           'ChatThreadListTile: thread.name=${thread.name}, thread.avatarUrl=${thread.avatarUrl}, dynamicAvatarUrl=$avatarUrl',
                         );
-                        return SmartAvatar(
-                          imageUrl: avatarUrl,
-                          radius: ChatThreadListPageConstants.avatarRadius,
-                          fallbackText: thread.name,
-                          showBorder: true,
-                          showShadow: true,
+                        return FutureBuilder<String>(
+                          future: _getDisplayName(),
+                          builder: (context, nameSnapshot) {
+                            final displayName = nameSnapshot.data ?? thread.name;
+                            return SmartAvatar(
+                              imageUrl: avatarUrl,
+                              radius: ChatThreadListPageConstants.avatarRadius,
+                              fallbackText: displayName,
+                              showBorder: true,
+                              showShadow: true,
+                            );
+                          },
                         );
                       },
                     ),
@@ -244,14 +344,20 @@ class ChatThreadListTile extends StatelessWidget {
                       ),
                   ],
                 ),
-                title: Text(
-                  thread.name,
-                  style: TextStyle(
-                    color: isDeleting ? Colors.grey : null,
-                    fontWeight: unreadCount > 0
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                  ),
+                title: FutureBuilder<String>(
+                  future: _getDisplayName(),
+                  builder: (context, snapshot) {
+                    final displayName = snapshot.data ?? thread.name;
+                    return Text(
+                      displayName,
+                      style: TextStyle(
+                        color: isDeleting ? Colors.grey : null,
+                        fontWeight: unreadCount > 0
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    );
+                  },
                 ),
                 subtitle: Text(
                   thread.lastMessage,
