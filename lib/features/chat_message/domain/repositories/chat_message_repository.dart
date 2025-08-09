@@ -10,6 +10,10 @@ abstract class ChatMessageRepository {
     String currentUserId,
   );
 
+  /// Fetches ALL messages for a specific chat thread without filtering by deletedFor.
+  /// Used for administrative operations like marking all messages as deleted.
+  Future<List<ChatMessage>> getAllMessages(String chatThreadId);
+
   /// Provides a real-time stream of messages for a specific chat thread.
   /// Returns a stream that emits updated message lists when changes occur.
   Stream<List<ChatMessage>> messagesStream(

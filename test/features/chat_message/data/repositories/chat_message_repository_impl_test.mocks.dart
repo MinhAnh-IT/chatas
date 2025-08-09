@@ -66,6 +66,18 @@ class MockChatMessageRemoteDataSource extends _i1.Mock
           as _i4.Future<List<_i5.ChatMessageModel>>);
 
   @override
+  _i4.Future<List<_i5.ChatMessageModel>> fetchAllMessages(
+    String? chatThreadId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#fetchAllMessages, [chatThreadId]),
+            returnValue: _i4.Future<List<_i5.ChatMessageModel>>.value(
+              <_i5.ChatMessageModel>[],
+            ),
+          )
+          as _i4.Future<List<_i5.ChatMessageModel>>);
+
+  @override
   _i4.Stream<List<_i5.ChatMessageModel>> messagesStream(
     String? chatThreadId,
     String? currentUserId,

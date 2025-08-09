@@ -362,5 +362,67 @@ void main() {
         ).called(1);
       });
     });
+
+    test('should get all messages without filtering by deletedFor', () async {
+      // arrange
+      final messages = [
+        ChatMessageModel(
+          id: 'msg1',
+          chatThreadId: 'thread1',
+          senderId: 'user1',
+          senderName: 'User1',
+          senderAvatarUrl: 'avatar1.jpg',
+          content: 'Hello',
+          type: 'text',
+          status: 'sent',
+          isDeleted: false,
+          reactions: const {},
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          sentAt: DateTime.now(),
+          deletedFor: ['user2'], // Deleted for user2 but not user1
+        ),
+        ChatMessageModel(
+          id: 'msg2',
+          chatThreadId: 'thread1',
+          senderId: 'user2',
+          senderName: 'User2',
+          senderAvatarUrl: 'avatar2.jpg',
+          content: 'Hi',
+          type: 'text',
+          status: 'sent',
+          isDeleted: false,
+          reactions: const {},
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          sentAt: DateTime.now(),
+          deletedFor: [], // Not deleted for anyone
+        ),
+      ];
+
+      when(
+        mockRemoteDataSource.fetchAllMessages('thread1'),
+      ).thenAnswer((_) async => messages);
+
+      // act
+      final result = await repository.getAllMessages('thread1');
+
+      // assert
+      expect(result.length, 2); // Should return both messages
+      verify(mockRemoteDataSource.fetchAllMessages('thread1')).called(1);
+    });
+
+    test('should handle exceptions in getAllMessages', () async {
+      // arrange
+      when(
+        mockRemoteDataSource.fetchAllMessages('thread1'),
+      ).thenThrow(Exception('Database error'));
+
+      // act & assert
+      expect(
+        () => repository.getAllMessages('thread1'),
+        throwsA(isA<Exception>()),
+      );
+    });
   });
 }
