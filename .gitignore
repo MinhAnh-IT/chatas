@@ -46,7 +46,5 @@ app.*.map.json
 .auth_feature_structure.dart
 
 # Firebase/Security related
-*firebase-adminsdk*.json
-assets/firebase_credentials.json
 *.pem
 *.p12
