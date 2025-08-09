@@ -23,7 +23,7 @@ class CreateChatThreadUseCase {
       avatarUrl: friendAvatarUrl,
       members: [currentUserId, friendId],
       isGroup: false,
-      unreadCount: 0,
+      unreadCounts: {}, // Initialize empty unread counts
       createdAt: now,
       updatedAt: now,
     );

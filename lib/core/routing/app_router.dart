@@ -11,6 +11,7 @@ import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_use
 import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:chatas/features/chat_message/data/repositories/chat_message_repository_impl.dart';
 import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_page.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
@@ -140,6 +141,9 @@ class AppRouter {
             repository: repository,
           );
           final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
+          final markMessagesAsReadUseCase = MarkMessagesAsReadUseCase(
+            repository,
+          );
 
           // Setup ChatThread repository and use cases for first message creation
           final chatThreadRepository = ChatThreadRepositoryImpl();
@@ -157,6 +161,7 @@ class AppRouter {
               editMessageUseCase: editMessageUseCase,
               deleteMessageUseCase: deleteMessageUseCase,
               sendFirstMessageUseCase: sendFirstMessageUseCase,
+              markMessagesAsReadUseCase: markMessagesAsReadUseCase,
             ),
             child: ChatMessagePage(
               threadId: threadId,

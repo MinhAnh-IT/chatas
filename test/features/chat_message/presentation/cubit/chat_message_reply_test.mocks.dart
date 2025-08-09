@@ -17,6 +17,8 @@ import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecas
     as _i10;
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart'
     as _i4;
+import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart'
+    as _i15;
 import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_usecase.dart'
     as _i9;
 import 'package:chatas/features/chat_message/domain/usecases/send_message_usecase.dart'
@@ -114,6 +116,11 @@ class MockSendMessageUseCase extends _i1.Mock
     String? senderAvatarUrl,
     _i6.MessageType? type = _i6.MessageType.text,
     String? replyToMessageId,
+    String? fileUrl,
+    String? fileName,
+    String? fileType,
+    int? fileSize,
+    String? thumbnailUrl,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#call, [], {
@@ -124,6 +131,11 @@ class MockSendMessageUseCase extends _i1.Mock
               #senderAvatarUrl: senderAvatarUrl,
               #type: type,
               #replyToMessageId: replyToMessageId,
+              #fileUrl: fileUrl,
+              #fileName: fileName,
+              #fileType: fileType,
+              #fileSize: fileSize,
+              #thumbnailUrl: thumbnailUrl,
             }),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
@@ -298,4 +310,40 @@ class MockSendFirstMessageUseCase extends _i1.Mock
             ),
           )
           as _i5.Future<String>);
+}
+
+/// A class which mocks [MarkMessagesAsReadUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockMarkMessagesAsReadUseCase extends _i1.Mock
+    implements _i15.MarkMessagesAsReadUseCase {
+  MockMarkMessagesAsReadUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.ChatMessageRepository get repository =>
+      (super.noSuchMethod(
+            Invocation.getter(#repository),
+            returnValue: _FakeChatMessageRepository_0(
+              this,
+              Invocation.getter(#repository),
+            ),
+          )
+          as _i2.ChatMessageRepository);
+
+  @override
+  _i5.Future<void> call({
+    required String? chatThreadId,
+    required String? userId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#call, [], {
+              #chatThreadId: chatThreadId,
+              #userId: userId,
+            }),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 }

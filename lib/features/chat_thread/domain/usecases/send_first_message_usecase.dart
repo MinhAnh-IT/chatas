@@ -41,7 +41,9 @@ class SendFirstMessageUseCase {
         avatarUrl: chatThread.avatarUrl,
         members: chatThread.members,
         isGroup: chatThread.isGroup,
-        unreadCount: 0,
+        unreadCounts: {
+          chatThread.members[1]: 1,
+        }, // Recipient has 1 unread message
         createdAt: now,
         updatedAt: now,
       );
