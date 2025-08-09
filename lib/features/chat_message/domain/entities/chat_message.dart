@@ -143,6 +143,7 @@ class ChatMessage extends Equatable {
   ReactionType? getUserReaction(String userId) {
     return reactions[userId];
   }
+
   @override
   List<Object?> get props => [
     id,
