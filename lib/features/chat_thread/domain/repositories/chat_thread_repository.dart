@@ -7,6 +7,10 @@ abstract class ChatThreadRepository {
   /// Deletes a chat thread by its ID.
   Future<void> deleteChatThread(String threadId);
 
+  /// Hides a chat thread for a specific user (soft delete).
+  /// The thread remains visible for other users.
+  Future<void> hideChatThread(String threadId, String userId);
+
   // New methods for group chat management
   Future<void> createChatThread(ChatThread chatThread);
   Future<ChatThread?> getChatThreadById(String chatThreadId);

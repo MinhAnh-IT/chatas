@@ -28,6 +28,11 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
+  Future<void> hideChatThread(String threadId, String userId) async {
+    return await _remoteDataSource.hideChatThread(threadId, userId);
+  }
+
+  @override
   Future<void> createChatThread(ChatThread chatThread) async {
     final model = ChatThreadModel.fromEntity(chatThread);
     return await _remoteDataSource.createChatThread(model);
