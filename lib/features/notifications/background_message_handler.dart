@@ -21,7 +21,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     // TODO: Cần setup dependency injection cho background context
     // Hiện tại chưa thể lưu được do GetIt chưa được init trong background
-    print('📝 Background notification received: ${message.notification?.title}');
+    print(
+      '📝 Background notification received: ${message.notification?.title}',
+    );
     print('📝 Background notification data: ${message.data}');
   } catch (e) {
     print('❌ Lỗi xử lý background notification: $e');

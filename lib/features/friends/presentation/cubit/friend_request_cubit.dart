@@ -75,7 +75,7 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
       // Gửi thông báo cho người gửi lời mời rằng lời mời đã được chấp nhận
       final notificationService =
           FriendsDependencyInjection.friendNotificationService;
-      
+
       // Lấy tên thực của người chấp nhận từ Firestore
       String accepterName = 'Bạn'; // Default fallback
       try {
@@ -85,12 +85,13 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
             .get();
         if (accepterDoc.exists) {
           final userData = accepterDoc.data() as Map<String, dynamic>;
-          accepterName = userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
+          accepterName =
+              userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
         }
       } catch (e) {
         // Sử dụng default name nếu có lỗi
       }
-      
+
       await notificationService['sendFriendAcceptedNotification']({
         'accepterName': accepterName,
         'accepterId': receiverId,
@@ -113,7 +114,11 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
   }
 
   /// Từ chối lời mời kết bạn
-  Future<void> rejectRequest(String requestId, String senderId, String senderName) async {
+  Future<void> rejectRequest(
+    String requestId,
+    String senderId,
+    String senderName,
+  ) async {
     emit(state.copyWith(isRejecting: true, clearActionError: true));
 
     try {
@@ -122,7 +127,7 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
       // Gửi thông báo cho người gửi lời mời rằng lời mời đã bị từ chối
       final notificationService =
           FriendsDependencyInjection.friendNotificationService;
-      
+
       // Lấy tên thực của người từ chối từ Firestore
       String rejecterName = 'Bạn'; // Default fallback
       try {
@@ -132,12 +137,13 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
             .get();
         if (rejecterDoc.exists) {
           final userData = rejecterDoc.data() as Map<String, dynamic>;
-          rejecterName = userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
+          rejecterName =
+              userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
         }
       } catch (e) {
         // Sử dụng default name nếu có lỗi
       }
-      
+
       await notificationService['sendFriendRejectedNotification']({
         'rejecterName': rejecterName,
         'rejecterId': currentUserId,

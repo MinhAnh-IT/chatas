@@ -47,7 +47,7 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
       // Gửi thông báo cho người nhận lời mời
       final notificationService =
           FriendsDependencyInjection.friendNotificationService;
-      
+
       // Lấy tên thực của người gửi từ Firestore
       String fromUserName = 'Người dùng'; // Default fallback
       try {
@@ -57,16 +57,18 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
             .get();
         if (currentUserDoc.exists) {
           final userData = currentUserDoc.data() as Map<String, dynamic>;
-          fromUserName = userData['fullName'] ?? userData['displayName'] ?? 'Người dùng';
+          fromUserName =
+              userData['fullName'] ?? userData['displayName'] ?? 'Người dùng';
         }
       } catch (e) {
         // Sử dụng default name nếu có lỗi
       }
-      
+
       await notificationService['sendFriendRequestNotification']({
         'fromUserName': fromUserName,
         'fromUserId': currentUserId,
-        'toUserId': toUserId, // Thêm ID người nhận để gửi thông báo cho đúng người
+        'toUserId':
+            toUserId, // Thêm ID người nhận để gửi thông báo cho đúng người
       });
 
       if (state is FriendSearchLoaded) {
