@@ -7,8 +7,13 @@ import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_u
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/hide_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/mark_thread_deleted_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/archive_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/leave_group_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/join_group_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_archived_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repository.dart';
 
 // Fake classes for testing
@@ -143,6 +148,115 @@ class FakeHideChatThreadUseCase implements HideChatThreadUseCase {
   }
 }
 
+class FakeMarkThreadDeletedUseCase implements MarkThreadDeletedUseCase {
+  final List<String> deletedThreadIds = [];
+  bool shouldThrowError;
+
+  FakeMarkThreadDeletedUseCase({this.shouldThrowError = false});
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Future<void> call({
+    required String threadId,
+    required String userId,
+    DateTime? lastMessageTime,
+  }) async {
+    if (shouldThrowError) {
+      throw Exception('Mark deleted error');
+    }
+
+    if (threadId.isEmpty) {
+      throw ArgumentError('Thread ID cannot be empty');
+    }
+
+    if (userId.isEmpty) {
+      throw ArgumentError('User ID cannot be empty');
+    }
+
+    deletedThreadIds.add(threadId);
+  }
+}
+
+class FakeArchiveThreadUseCase implements ArchiveThreadUseCase {
+  final List<String> archivedThreadIds = [];
+  bool shouldThrowError;
+
+  FakeArchiveThreadUseCase({this.shouldThrowError = false});
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Future<void> call({required String threadId, required String userId}) async {
+    if (shouldThrowError) {
+      throw Exception('Archive error');
+    }
+
+    if (threadId.isEmpty) {
+      throw ArgumentError('Thread ID cannot be empty');
+    }
+    if (userId.isEmpty) {
+      throw ArgumentError('User ID cannot be empty');
+    }
+
+    archivedThreadIds.add(threadId);
+  }
+}
+
+class FakeLeaveGroupUseCase implements LeaveGroupUseCase {
+  final List<String> leftGroupIds = [];
+  bool shouldThrowError;
+
+  FakeLeaveGroupUseCase({this.shouldThrowError = false});
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Future<void> call({required String threadId, required String userId}) async {
+    if (shouldThrowError) {
+      throw Exception('Leave group error');
+    }
+
+    if (threadId.isEmpty) {
+      throw ArgumentError('Thread ID cannot be empty');
+    }
+    if (userId.isEmpty) {
+      throw ArgumentError('User ID cannot be empty');
+    }
+
+    leftGroupIds.add(threadId);
+  }
+}
+
+class FakeJoinGroupUseCase implements JoinGroupUseCase {
+  final List<String> joinedGroupIds = [];
+  bool shouldThrowError;
+
+  FakeJoinGroupUseCase({this.shouldThrowError = false});
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Future<void> call({required String threadId, required String userId}) async {
+    if (shouldThrowError) {
+      throw Exception('Join group error');
+    }
+
+    if (threadId.isEmpty) {
+      throw ArgumentError('Thread ID cannot be empty');
+    }
+    if (userId.isEmpty) {
+      throw ArgumentError('User ID cannot be empty');
+    }
+
+    joinedGroupIds.add(threadId);
+  }
+}
+
 class FakeFindOrCreateChatThreadUseCase
     implements FindOrCreateChatThreadUseCase {
   bool shouldThrowError;
@@ -158,6 +272,7 @@ class FakeFindOrCreateChatThreadUseCase
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
+    bool forceCreateNew = false,
   }) async {
     if (shouldThrowError) {
       throw Exception('Find or create failed');
@@ -179,14 +294,159 @@ class FakeFindOrCreateChatThreadUseCase
   }
 }
 
+class FakeGetArchivedThreadsUseCase implements GetArchivedThreadsUseCase {
+  final ChatThreadRepository repository;
+
+  FakeGetArchivedThreadsUseCase(this.repository);
+
+  @override
+  Future<List<ChatThread>> call(String currentUserId) async {
+    // Return empty list for archived threads
+    return [];
+  }
+}
+
+class FakeChatThreadRepository implements ChatThreadRepository {
+  final List<ChatThread> threads;
+
+  FakeChatThreadRepository(this.threads);
+
+  @override
+  Future<List<ChatThread>> getAllChatThreads(String currentUserId) async =>
+      threads;
+
+  @override
+  Future<void> createChatThread(ChatThread chatThread) async {}
+
+  @override
+  Future<void> updateChatThreadMembers(
+    String chatThreadId,
+    List<String> members,
+  ) async {}
+
+  @override
+  Future<void> updateChatThreadName(String chatThreadId, String name) async {}
+
+  @override
+  Future<void> updateLastMessage(
+    String chatThreadId,
+    String message,
+    DateTime timestamp,
+  ) async {}
+
+  @override
+  Future<void> incrementUnreadCount(String chatThreadId, String userId) async {}
+
+  @override
+  Future<void> resetUnreadCount(String chatThreadId, String userId) async {}
+
+  @override
+  Future<ChatThread?> getChatThreadById(String chatThreadId) async => null;
+
+  @override
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoffTime,
+  ) async {}
+
+  @override
+  Future<void> archiveThreadForUser(String threadId, String userId) async {}
+
+  @override
+  Future<void> reviveThreadForUser(String threadId, String userId) async {}
+
+  @override
+  Future<void> leaveGroup(String threadId, String userId) async {}
+
+  @override
+  Future<void> joinGroup(String threadId, String userId) async {}
+
+  @override
+  Future<ChatThread> findOrCreate1v1Thread(
+    String currentUserId,
+    String friendId, {
+    String? avatarUrl,
+    String? threadName,
+  }) async {
+    return ChatThread(
+      id: 'temp_${currentUserId}_$friendId',
+      name: threadName ?? 'Test Thread',
+      lastMessage: '',
+      lastMessageTime: DateTime.now(),
+      avatarUrl: avatarUrl ?? '',
+      members: [currentUserId, friendId],
+      isGroup: false,
+      unreadCounts: {},
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> updateChatThreadDescription(
+    String threadId,
+    String description,
+  ) async {}
+
+  @override
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoffTime,
+  ) async {}
+
+  @override
+  Future<List<ChatThread>> getArchivedChatThreads(String currentUserId) async =>
+      [];
+
+  @override
+  Future<void> deleteChatThread(String chatThreadId) async {}
+
+  @override
+  Future<List<ChatThread>> getChatThreads(String currentUserId) async => [];
+
+  @override
+  Future<void> hideChatThread(String chatThreadId, String userId) async {}
+
+  @override
+  Future<void> resetThreadForUser(String chatThreadId, String userId) async {}
+
+  @override
+  Future<List<ChatThread>> searchChatThreads(
+    String currentUserId,
+    String query,
+  ) async => [];
+
+  @override
+  Future<void> unhideChatThread(String chatThreadId, String userId) async {}
+
+  @override
+  Future<void> updateChatThreadAvatar(
+    String chatThreadId,
+    String avatarUrl,
+  ) async {}
+
+  @override
+  Future<void> updateLastRecreatedAt(
+    String chatThreadId,
+    DateTime timestamp,
+  ) async {}
+}
+
 void main() {
   group('ChatThreadListCubit', () {
     late ChatThreadListCubit cubit;
     late FakeGetChatThreadsUseCase fakeGetChatThreadsUseCase;
+    late FakeGetArchivedThreadsUseCase fakeGetArchivedThreadsUseCase;
     late FakeCreateChatThreadUseCase fakeCreateChatThreadUseCase;
     late FakeSearchChatThreadsUseCase fakeSearchChatThreadsUseCase;
     late FakeDeleteChatThreadUseCase fakeDeleteChatThreadUseCase;
     late FakeHideChatThreadUseCase fakeHideChatThreadUseCase;
+    late FakeMarkThreadDeletedUseCase fakeMarkThreadDeletedUseCase;
+    late FakeArchiveThreadUseCase fakeArchiveThreadUseCase;
+    late FakeLeaveGroupUseCase fakeLeaveGroupUseCase;
+    late FakeJoinGroupUseCase fakeJoinGroupUseCase;
     late FakeFindOrCreateChatThreadUseCase fakeFindOrCreateChatThreadUseCase;
 
     final now = DateTime.now();
@@ -219,20 +479,32 @@ void main() {
 
     setUp(() {
       fakeGetChatThreadsUseCase = FakeGetChatThreadsUseCase(testChatThreads);
+      fakeGetArchivedThreadsUseCase = FakeGetArchivedThreadsUseCase(
+        FakeChatThreadRepository([]),
+      );
       fakeCreateChatThreadUseCase = FakeCreateChatThreadUseCase();
       fakeSearchChatThreadsUseCase = FakeSearchChatThreadsUseCase(
         testChatThreads,
       );
       fakeDeleteChatThreadUseCase = FakeDeleteChatThreadUseCase();
       fakeHideChatThreadUseCase = FakeHideChatThreadUseCase();
+      fakeMarkThreadDeletedUseCase = FakeMarkThreadDeletedUseCase();
+      fakeArchiveThreadUseCase = FakeArchiveThreadUseCase();
+      fakeLeaveGroupUseCase = FakeLeaveGroupUseCase();
+      fakeJoinGroupUseCase = FakeJoinGroupUseCase();
       fakeFindOrCreateChatThreadUseCase = FakeFindOrCreateChatThreadUseCase();
 
       cubit = ChatThreadListCubit(
         getChatThreadsUseCase: fakeGetChatThreadsUseCase,
+        getArchivedThreadsUseCase: fakeGetArchivedThreadsUseCase,
         createChatThreadUseCase: fakeCreateChatThreadUseCase,
         searchChatThreadsUseCase: fakeSearchChatThreadsUseCase,
         deleteChatThreadUseCase: fakeDeleteChatThreadUseCase,
         hideChatThreadUseCase: fakeHideChatThreadUseCase,
+        markThreadDeletedUseCase: fakeMarkThreadDeletedUseCase,
+        archiveThreadUseCase: fakeArchiveThreadUseCase,
+        leaveGroupUseCase: fakeLeaveGroupUseCase,
+        joinGroupUseCase: fakeJoinGroupUseCase,
         findOrCreateChatThreadUseCase: fakeFindOrCreateChatThreadUseCase,
       );
     });

@@ -11,6 +11,7 @@ import '../../../../shared/widgets/app_bar.dart';
 import '../../domain/usecases/create_group_chat_usecase.dart';
 import '../../domain/usecases/find_or_create_chat_thread_usecase.dart';
 import '../../data/repositories/chat_thread_repository_impl.dart';
+
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_route_constants.dart';
 
@@ -176,12 +177,46 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
         final parts = friendId.split('_');
         final actualFriendId = parts.length == 2 ? parts[1] : friendId;
 
+        // Get the friend's name from the friends list
+        String friendName = 'Bạn bè'; // Default fallback
+        print(
+          '🔍 Looking for friend name for ID: $actualFriendId (original: $friendId)',
+        );
+
+        if (_friendsCubit.state is FriendsLoaded) {
+          final friendsState = _friendsCubit.state as FriendsLoaded;
+          print(
+            '🔍 Available friends: ${friendsState.friends.map((f) => '${f.friendId}:${f.nickName}').toList()}',
+          );
+
+          try {
+            final friend = friendsState.friends.firstWhere(
+              (f) => f.friendId == friendId || f.friendId == actualFriendId,
+            );
+            friendName = friend.nickName.isNotEmpty
+                ? friend.nickName
+                : 'Người dùng';
+            print('✅ Found friend name: $friendName');
+          } catch (e) {
+            // Friend not found, use default name
+            print('❌ Friend not found in list: $actualFriendId');
+          }
+        } else {
+          print(
+            '❌ Friends list not loaded: ${_friendsCubit.state.runtimeType}',
+          );
+        }
+
         // Use existing use case for 1-on-1 chat
+        // This will find existing hidden threads and reuse them
+        // The actual thread creation/unhiding happens when first message is sent
         final chatThread = await _findOrCreateChatThreadUseCase.call(
           currentUserId: currentUserId,
           friendId: actualFriendId,
-          friendName: 'Bạn bè', // Default name, will be updated from profile
+          friendName: friendName, // Use actual friend name
           friendAvatarUrl: '',
+          forceCreateNew:
+              false, // Don't force create new - reuse existing if available
         );
 
         ScaffoldMessenger.of(
@@ -388,7 +423,7 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
                           selected: isSelected,
                           selectedTileColor: Theme.of(
                             context,
-                          ).colorScheme.primaryContainer.withOpacity(0.3),
+                          ).colorScheme.primaryContainer.withValues(alpha: 0.3),
                         );
                       },
                     );

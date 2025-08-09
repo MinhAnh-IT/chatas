@@ -1,28 +1,41 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import '../../domain/entities/chat_thread.dart';
-import '../../domain/repositories/chat_thread_repository.dart';
 import '../../domain/usecases/get_chat_threads_usecase.dart';
+import '../../domain/usecases/get_archived_threads_usecase.dart';
 import '../../domain/usecases/create_chat_thread_usecase.dart';
+import '../../domain/usecases/search_chat_threads_usecase.dart';
 import '../../domain/usecases/delete_chat_thread_usecase.dart';
 import '../../domain/usecases/hide_chat_thread_usecase.dart';
+import '../../domain/usecases/mark_thread_deleted_usecase.dart';
+import '../../domain/usecases/archive_thread_usecase.dart';
+import '../../domain/usecases/leave_group_usecase.dart';
+import '../../domain/usecases/join_group_usecase.dart';
 import '../../domain/usecases/find_or_create_chat_thread_usecase.dart';
-import '../../domain/usecases/search_chat_threads_usecase.dart';
 import 'chat_thread_list_state.dart';
 
 class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   final GetChatThreadsUseCase getChatThreadsUseCase;
+  final GetArchivedThreadsUseCase getArchivedThreadsUseCase;
   final CreateChatThreadUseCase createChatThreadUseCase;
   final DeleteChatThreadUseCase deleteChatThreadUseCase;
   final HideChatThreadUseCase hideChatThreadUseCase;
+  final MarkThreadDeletedUseCase markThreadDeletedUseCase;
+  final ArchiveThreadUseCase archiveThreadUseCase;
+  final LeaveGroupUseCase leaveGroupUseCase;
+  final JoinGroupUseCase joinGroupUseCase;
   final FindOrCreateChatThreadUseCase findOrCreateChatThreadUseCase;
   final SearchChatThreadsUseCase searchChatThreadsUseCase;
 
   ChatThreadListCubit({
     required this.getChatThreadsUseCase,
+    required this.getArchivedThreadsUseCase,
     required this.createChatThreadUseCase,
     required this.deleteChatThreadUseCase,
     required this.hideChatThreadUseCase,
+    required this.markThreadDeletedUseCase,
+    required this.archiveThreadUseCase,
+    required this.leaveGroupUseCase,
+    required this.joinGroupUseCase,
     required this.findOrCreateChatThreadUseCase,
     required this.searchChatThreadsUseCase,
   }) : super(ChatThreadListInitial());
@@ -122,6 +135,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
+    bool forceCreateNew = false,
   }) async {
     try {
       return await findOrCreateChatThreadUseCase(
@@ -129,6 +143,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
         friendId: friendId,
         friendName: friendName,
         friendAvatarUrl: friendAvatarUrl,
+        forceCreateNew: forceCreateNew,
       );
     } catch (e) {
       // If error occurs, return a temporary thread to allow messaging
@@ -144,6 +159,138 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
         unreadCounts: {},
         createdAt: now,
         updatedAt: now,
+      );
+    }
+  }
+
+  /// Marks a 1-1 chat thread as deleted for the current user.
+  /// Sets visibility cutoff to hide old messages.
+  Future<void> markThreadDeleted(
+    String threadId,
+    String currentUserId, {
+    DateTime? lastMessageTime,
+  }) async {
+    if (threadId.isEmpty) {
+      emit(const ChatThreadListError('Invalid thread ID'));
+      return;
+    }
+
+    emit(ChatThreadDeleting(threadId));
+
+    try {
+      await markThreadDeletedUseCase(
+        threadId: threadId,
+        userId: currentUserId,
+        lastMessageTime: lastMessageTime,
+      );
+
+      // Refresh the list after successful deletion
+      await fetchChatThreads(currentUserId);
+    } catch (e) {
+      emit(ChatThreadListError('Failed to delete chat: ${e.toString()}'));
+    }
+  }
+
+  /// Archives a chat thread for the current user.
+  /// Hides the thread from inbox but doesn't set visibility cutoff.
+  Future<void> archiveThread(String threadId, String currentUserId) async {
+    if (threadId.isEmpty) {
+      emit(const ChatThreadListError('Invalid thread ID'));
+      return;
+    }
+
+    emit(ChatThreadDeleting(threadId));
+
+    try {
+      await archiveThreadUseCase(threadId: threadId, userId: currentUserId);
+
+      // Refresh the list after successful archiving
+      await fetchChatThreads(currentUserId);
+    } catch (e) {
+      emit(ChatThreadListError('Failed to archive chat: ${e.toString()}'));
+    }
+  }
+
+  /// Makes the current user leave a group chat.
+  Future<void> leaveGroup(String threadId, String currentUserId) async {
+    if (threadId.isEmpty) {
+      emit(const ChatThreadListError('Invalid thread ID'));
+      return;
+    }
+
+    emit(ChatThreadDeleting(threadId));
+
+    try {
+      await leaveGroupUseCase(threadId: threadId, userId: currentUserId);
+
+      // Refresh the list after successful leaving
+      await fetchChatThreads(currentUserId);
+    } catch (e) {
+      emit(ChatThreadListError('Failed to leave group: ${e.toString()}'));
+    }
+  }
+
+  /// Makes the current user join a group chat.
+  Future<void> joinGroup(String threadId, String currentUserId) async {
+    if (threadId.isEmpty) {
+      emit(const ChatThreadListError('Invalid thread ID'));
+      return;
+    }
+
+    emit(ChatThreadDeleting(threadId));
+
+    try {
+      await joinGroupUseCase(threadId: threadId, userId: currentUserId);
+
+      // Refresh the list after successful joining
+      await fetchChatThreads(currentUserId);
+    } catch (e) {
+      emit(ChatThreadListError('Failed to join group: ${e.toString()}'));
+    }
+  }
+
+  /// Unarchives (revives) a chat thread for the current user.
+  /// Removes the user from hiddenFor list to make the thread visible again.
+  Future<void> unarchiveThread(String threadId, String currentUserId) async {
+    if (threadId.isEmpty) {
+      emit(const ChatThreadListError('Invalid thread ID'));
+      return;
+    }
+
+    if (currentUserId.isEmpty) {
+      emit(const ChatThreadListError('Invalid user ID'));
+      return;
+    }
+
+    try {
+      // Use the existing reviveThreadForUser method in repository
+      await getChatThreadsUseCase.repository.reviveThreadForUser(
+        threadId,
+        currentUserId,
+      );
+
+      // Refresh the list after successful unarchiving
+      await fetchChatThreads(currentUserId);
+    } catch (e) {
+      emit(ChatThreadListError('Failed to unarchive thread: ${e.toString()}'));
+    }
+  }
+
+  /// Fetches archived chat threads for the current user.
+  Future<void> fetchArchivedThreads(String currentUserId) async {
+    if (currentUserId.isEmpty) {
+      emit(const ChatThreadListError('User ID cannot be empty'));
+      return;
+    }
+
+    emit(ChatThreadListLoading());
+
+    try {
+      final threads = await getArchivedThreadsUseCase(currentUserId);
+      emit(ChatThreadListLoaded(threads));
+    } catch (e) {
+      emit(
+        ChatThreadListError('Failed to load archived threads: ${e.toString()}'),
       );
     }
   }

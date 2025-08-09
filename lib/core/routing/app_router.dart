@@ -14,7 +14,20 @@ import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream
 import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:chatas/features/chat_message/data/repositories/chat_message_repository_impl.dart';
 import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_page.dart';
+import 'package:chatas/features/chat_thread/presentation/pages/archived_threads_page.dart';
+import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_cubit.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_archived_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/hide_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/mark_thread_deleted_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/archive_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/leave_group_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/join_group_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/data/repositories/chat_thread_repository_impl.dart';
 import 'package:chatas/features/friends/presentation/pages/friends_list_page.dart';
 import 'package:chatas/features/friends/presentation/pages/friend_search_page.dart';
@@ -77,6 +90,46 @@ class AppRouter {
         path: '/profile',
         name: AppRouteConstants.profilePathName,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/archived',
+        name: 'archived',
+        builder: (context, state) {
+          // Create repository and use cases for archived page
+          final repository = ChatThreadRepositoryImpl();
+          final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+          final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(
+            repository,
+          );
+          final createChatThreadUseCase = CreateChatThreadUseCase(repository);
+          final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
+          final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
+          final hideChatThreadUseCase = HideChatThreadUseCase(repository);
+          final markThreadDeletedUseCase = MarkThreadDeletedUseCase(repository);
+          final archiveThreadUseCase = ArchiveThreadUseCase(repository);
+          final leaveGroupUseCase = LeaveGroupUseCase(repository);
+          final joinGroupUseCase = JoinGroupUseCase(repository);
+          final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(
+            repository,
+          );
+
+          return BlocProvider(
+            create: (context) => ChatThreadListCubit(
+              getChatThreadsUseCase: getChatThreadsUseCase,
+              getArchivedThreadsUseCase: getArchivedThreadsUseCase,
+              createChatThreadUseCase: createChatThreadUseCase,
+              searchChatThreadsUseCase: searchChatThreadsUseCase,
+              deleteChatThreadUseCase: deleteChatThreadUseCase,
+              hideChatThreadUseCase: hideChatThreadUseCase,
+              markThreadDeletedUseCase: markThreadDeletedUseCase,
+              archiveThreadUseCase: archiveThreadUseCase,
+              leaveGroupUseCase: leaveGroupUseCase,
+              joinGroupUseCase: joinGroupUseCase,
+              findOrCreateChatThreadUseCase: findOrCreateChatThreadUseCase,
+            ),
+            child: const ArchivedThreadsPage(),
+          );
+        },
       ),
       GoRoute(
         path: AppRouteConstants.friendsPath,
@@ -163,7 +216,9 @@ class AppRouter {
           final deleteMessageUseCase = DeleteMessageUseCase(
             repository: repository,
           );
-          final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
+          final getMessagesStreamUseCase = GetMessagesStreamUseCase(
+            repository: repository,
+          );
           final markMessagesAsReadUseCase = MarkMessagesAsReadUseCase(
             repository,
           );

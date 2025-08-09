@@ -16,6 +16,9 @@ class ChatThreadModel extends Equatable {
   final String? groupAdminId;
   final String? groupDescription;
   final List<String> hiddenFor;
+  final DateTime? lastRecreatedAt;
+  final Map<String, DateTime> visibilityCutoff;
+  final Map<String, DateTime> joinedAt;
 
   const ChatThreadModel({
     required this.id,
@@ -31,60 +34,31 @@ class ChatThreadModel extends Equatable {
     this.groupAdminId,
     this.groupDescription,
     this.hiddenFor = const [],
+    this.lastRecreatedAt,
+    this.visibilityCutoff = const {},
+    this.joinedAt = const {},
   });
 
-  @override
-  List<Object?> get props => [
-    id,
-    name,
-    lastMessage,
-    lastMessageTime,
-    avatarUrl,
-    members,
-    isGroup,
-    unreadCounts,
-    createdAt,
-    updatedAt,
-    groupAdminId,
-    groupDescription,
-    hiddenFor,
-  ];
-
   factory ChatThreadModel.fromJson(Map<String, dynamic> map) {
-    DateTime parseDate(dynamic value) {
-      if (value is Timestamp) {
-        return value.toDate();
-      } else if (value is DateTime) {
-        return value;
-      } else if (value is String) {
-        try {
-          return DateTime.parse(value);
-        } catch (e) {
-          print('ChatThreadModel: Error parsing date string "$value": $e');
-          return DateTime.now();
-        }
-      } else {
-        print(
-          'ChatThreadModel: Unexpected date type: ${value.runtimeType}, value: $value',
-        );
-        return DateTime.now();
-      }
-    }
-
     return ChatThreadModel(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       lastMessage: map['lastMessage'] ?? '',
-      lastMessageTime: parseDate(map['lastMessageTime']),
+      lastMessageTime: _parseDate(map['lastMessageTime']),
       avatarUrl: map['avatarUrl'] ?? '',
       members: List<String>.from(map['members'] ?? []),
       isGroup: map['isGroup'] ?? false,
       unreadCounts: Map<String, int>.from(map['unreadCounts'] ?? {}),
-      createdAt: parseDate(map['createdAt']),
-      updatedAt: parseDate(map['updatedAt']),
+      createdAt: _parseDate(map['createdAt']),
+      updatedAt: _parseDate(map['updatedAt']),
       groupAdminId: map['groupAdminId'],
       groupDescription: map['groupDescription'],
       hiddenFor: List<String>.from(map['hiddenFor'] ?? []),
+      lastRecreatedAt: map['lastRecreatedAt'] != null
+          ? _parseDate(map['lastRecreatedAt'])
+          : null,
+      visibilityCutoff: _parseDateTimeMap(map['visibilityCutoff'] ?? {}),
+      joinedAt: _parseDateTimeMap(map['joinedAt'] ?? {}),
     );
   }
 
@@ -93,35 +67,20 @@ class ChatThreadModel extends Equatable {
       'id': id,
       'name': name,
       'lastMessage': lastMessage,
-      'lastMessageTime': lastMessageTime,
+      'lastMessageTime': lastMessageTime.toIso8601String(),
       'avatarUrl': avatarUrl,
       'members': members,
       'isGroup': isGroup,
       'unreadCounts': unreadCounts,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'groupAdminId': groupAdminId,
       'groupDescription': groupDescription,
       'hiddenFor': hiddenFor,
+      'lastRecreatedAt': lastRecreatedAt?.toIso8601String(),
+      'visibilityCutoff': _serializeDateTimeMap(visibilityCutoff),
+      'joinedAt': _serializeDateTimeMap(joinedAt),
     };
-  }
-
-  ChatThread toEntity() {
-    return ChatThread(
-      id: id,
-      name: name,
-      lastMessage: lastMessage,
-      lastMessageTime: lastMessageTime,
-      avatarUrl: avatarUrl,
-      members: members,
-      isGroup: isGroup,
-      unreadCounts: unreadCounts,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      groupAdminId: groupAdminId,
-      groupDescription: groupDescription,
-      hiddenFor: hiddenFor,
-    );
   }
 
   factory ChatThreadModel.fromEntity(ChatThread entity) {
@@ -139,6 +98,82 @@ class ChatThreadModel extends Equatable {
       groupAdminId: entity.groupAdminId,
       groupDescription: entity.groupDescription,
       hiddenFor: entity.hiddenFor,
+      lastRecreatedAt: entity.lastRecreatedAt,
+      visibilityCutoff: entity.visibilityCutoff,
+      joinedAt: entity.joinedAt,
     );
   }
+
+  ChatThread toEntity() {
+    return ChatThread(
+      id: id,
+      name: name,
+      lastMessage: lastMessage,
+      lastMessageTime: lastMessageTime,
+      avatarUrl: avatarUrl,
+      members: members,
+      isGroup: isGroup,
+      unreadCounts: unreadCounts,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      groupAdminId: groupAdminId,
+      groupDescription: groupDescription,
+      hiddenFor: hiddenFor,
+      lastRecreatedAt: lastRecreatedAt,
+      visibilityCutoff: visibilityCutoff,
+      joinedAt: joinedAt,
+    );
+  }
+
+  static DateTime _parseDate(dynamic date) {
+    if (date is Timestamp) {
+      return date.toDate();
+    } else if (date is String) {
+      return DateTime.parse(date);
+    } else if (date is DateTime) {
+      return date;
+    }
+    return DateTime.now();
+  }
+
+  static Map<String, DateTime> _parseDateTimeMap(dynamic map) {
+    if (map is! Map) return {};
+
+    final result = <String, DateTime>{};
+    for (final entry in map.entries) {
+      if (entry.key is String) {
+        final date = _parseDate(entry.value);
+        result[entry.key as String] = date;
+      }
+    }
+    return result;
+  }
+
+  static Map<String, String> _serializeDateTimeMap(Map<String, DateTime> map) {
+    final result = <String, String>{};
+    for (final entry in map.entries) {
+      result[entry.key] = entry.value.toIso8601String();
+    }
+    return result;
+  }
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    lastMessage,
+    lastMessageTime,
+    avatarUrl,
+    members,
+    isGroup,
+    unreadCounts,
+    createdAt,
+    updatedAt,
+    groupAdminId,
+    groupDescription,
+    hiddenFor,
+    lastRecreatedAt,
+    visibilityCutoff,
+    joinedAt,
+  ];
 }

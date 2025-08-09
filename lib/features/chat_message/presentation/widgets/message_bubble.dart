@@ -7,6 +7,7 @@ import '../../../../shared/utils/date_utils.dart' as app_date_utils;
 import 'message_context_menu.dart';
 import '../../../../shared/widgets/smart_image.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
+import '../../../auth/constants/auth_remote_constants.dart';
 
 /// Widget for displaying a single chat message bubble.
 /// Handles different message types, reactions, and selection states.
@@ -166,7 +167,7 @@ class MessageBubble extends StatelessWidget {
         try {
           final firestore = FirebaseFirestore.instance;
           final userDoc = await firestore
-              .collection('users')
+              .collection(AuthRemoteConstants.usersCollectionName)
               .doc(message.senderId)
               .get();
           print(
@@ -175,7 +176,8 @@ class MessageBubble extends StatelessWidget {
 
           if (userDoc.exists) {
             final data = userDoc.data()!;
-            final avatarUrl = data['avatarUrl'] as String? ?? '';
+            final avatarUrl =
+                data[AuthRemoteConstants.avatarUrlField] as String? ?? '';
             print('MessageBubble: Direct Firestore - avatarUrl: "$avatarUrl"');
 
             if (avatarUrl.isNotEmpty) {

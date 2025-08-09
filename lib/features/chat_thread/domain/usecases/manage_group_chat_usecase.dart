@@ -155,7 +155,10 @@ class ManageGroupChatUseCase {
       throw Exception('Chỉ admin mới có thể đổi mô tả nhóm');
     }
 
-    await repository.updateChatThreadDescription(chatThreadId, newDescription);
+    await repository.updateChatThreadDescription(
+      chatThreadId,
+      newDescription.trim(),
+    );
   }
 
   /// Leave group (for non-admin users)
@@ -178,10 +181,7 @@ class ManageGroupChatUseCase {
       );
     }
 
-    // Remove current user from members
-    final updatedMembers = List<String>.from(chatThread.members);
-    updatedMembers.remove(currentUserId);
-
-    await repository.updateChatThreadMembers(chatThreadId, updatedMembers);
+    // Use the new leaveGroup method
+    await repository.leaveGroup(chatThreadId, currentUserId);
   }
 }

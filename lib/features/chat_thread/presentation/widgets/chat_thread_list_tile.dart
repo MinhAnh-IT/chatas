@@ -10,6 +10,7 @@ import 'package:chatas/features/chat_thread/presentation/widgets/delete_chat_thr
 import 'package:chatas/shared/utils/date_utils.dart' as app_date_utils;
 import 'package:chatas/shared/widgets/smart_image.dart';
 import 'package:chatas/features/auth/di/auth_dependency_injection.dart';
+import 'package:chatas/features/auth/constants/auth_remote_constants.dart';
 
 /// A custom list tile widget for displaying chat threads with delete functionality.
 class ChatThreadListTile extends StatelessWidget {
@@ -77,7 +78,7 @@ class ChatThreadListTile extends StatelessWidget {
             try {
               final firestore = FirebaseFirestore.instance;
               final userDoc = await firestore
-                  .collection('users')
+                  .collection(AuthRemoteConstants.usersCollectionName)
                   .doc(friendId)
                   .get();
               print(
@@ -86,7 +87,8 @@ class ChatThreadListTile extends StatelessWidget {
 
               if (userDoc.exists) {
                 final data = userDoc.data()!;
-                final avatarUrl = data['avatarUrl'] as String? ?? '';
+                final avatarUrl =
+                    data[AuthRemoteConstants.avatarUrlField] as String? ?? '';
                 print(
                   'ChatThreadListTile: Direct Firestore - avatarUrl: "$avatarUrl"',
                 );
@@ -173,7 +175,7 @@ class ChatThreadListTile extends StatelessWidget {
             try {
               final firestore = FirebaseFirestore.instance;
               final userDoc = await firestore
-                  .collection('users')
+                  .collection(AuthRemoteConstants.usersCollectionName)
                   .doc(friendId)
                   .get();
               print(
@@ -182,8 +184,10 @@ class ChatThreadListTile extends StatelessWidget {
 
               if (userDoc.exists) {
                 final data = userDoc.data()!;
-                final fullName = data['fullName'] as String? ?? '';
-                final username = data['username'] as String? ?? '';
+                final fullName =
+                    data[AuthRemoteConstants.fullNameField] as String? ?? '';
+                final username =
+                    data[AuthRemoteConstants.usernameField] as String? ?? '';
                 final displayName = fullName.isNotEmpty
                     ? fullName
                     : username.isNotEmpty
@@ -214,29 +218,202 @@ class ChatThreadListTile extends StatelessWidget {
     return thread.name; // Fallback to original
   }
 
-  /// Handles the long press gesture to show delete options.
+  /// Handles the long press gesture to show action options.
   void _handleLongPress(BuildContext context) {
-    DeleteChatThreadDialog.show(
+    if (thread.isGroup) {
+      _showGroupChatActions(context);
+    } else {
+      DeleteChatThreadDialog.show(
+        context: context,
+        threadName: thread.name,
+        onConfirmDelete: () => _deleteChatThread(context),
+      );
+    }
+  }
+
+  /// Shows action options for group chats (Archive/Leave).
+  void _showGroupChatActions(BuildContext context) {
+    // Store the original context that has access to ChatThreadListCubit
+    final originalContext = context;
+
+    showModalBottomSheet(
       context: context,
-      threadName: thread.name,
-      onConfirmDelete: () => _deleteChatThread(context),
+      builder: (BuildContext bottomSheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.archive_outlined),
+                title: const Text('Lưu trữ nhóm'),
+                subtitle: const Text(
+                  'Ẩn khỏi danh sách nhưng vẫn nhận tin nhắn mới',
+                ),
+                onTap: () {
+                  Navigator.pop(bottomSheetContext);
+                  // Use original context that has access to Provider
+                  _archiveGroupChat(originalContext);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.exit_to_app, color: Colors.red),
+                title: const Text(
+                  'Rời nhóm',
+                  style: TextStyle(color: Colors.red),
+                ),
+                subtitle: const Text('Không thể đọc hoặc gửi tin nhắn mới'),
+                onTap: () {
+                  Navigator.pop(bottomSheetContext);
+                  // Use original context that has access to Provider
+                  _showLeaveGroupConfirmation(originalContext);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel),
+                title: const Text('Hủy'),
+                onTap: () => Navigator.pop(bottomSheetContext),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  /// Hides the chat thread for the current user and shows appropriate feedback.
-  void _deleteChatThread(BuildContext context) {
-    final cubit = context.read<ChatThreadListCubit>();
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    cubit.hideChatThread(thread.id, currentUserId);
+  /// Shows confirmation dialog for leaving group.
+  void _showLeaveGroupConfirmation(BuildContext context) {
+    // Store the original context that has access to ChatThreadListCubit
+    final originalContext = context;
 
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Đã ẩn đoạn chat "${thread.name}"'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Rời nhóm'),
+          content: Text(
+            'Bạn có chắc muốn rời khỏi nhóm "${thread.name}"? Bạn sẽ không thể đọc hoặc gửi tin nhắn mới.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                // Use original context that has access to Provider
+                _leaveGroupChat(originalContext);
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Rời nhóm'),
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  /// Deletes/hides the chat thread based on type (1-1 vs group).
+  void _deleteChatThread(BuildContext context) {
+    try {
+      final cubit = context.read<ChatThreadListCubit>();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+      if (thread.isGroup) {
+        // For group chats: hide/archive (user choice can be added later)
+        cubit.hideChatThread(thread.id, currentUserId);
+
+        // Show success message for group
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã ẩn nhóm chat "${thread.name}"'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // For 1-1 chats: mark as deleted with visibility cutoff
+        cubit.markThreadDeleted(
+          thread.id,
+          currentUserId,
+          lastMessageTime: thread.lastMessageTime,
+        );
+
+        // Show success message for 1-1 chat
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã xóa đoạn chat "${thread.name}"'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error accessing ChatThreadListCubit: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Có lỗi xảy ra khi xóa chat'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Archives a group chat for the current user.
+  void _archiveGroupChat(BuildContext context) {
+    try {
+      final cubit = context.read<ChatThreadListCubit>();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+      cubit.archiveThread(thread.id, currentUserId);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã lưu trữ nhóm "${thread.name}"'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      print('Error accessing ChatThreadListCubit: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Có lỗi xảy ra khi lưu trữ nhóm'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Makes the current user leave a group chat.
+  void _leaveGroupChat(BuildContext context) {
+    try {
+      final cubit = context.read<ChatThreadListCubit>();
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+      cubit.leaveGroup(thread.id, currentUserId);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã rời khỏi nhóm "${thread.name}"'),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      print('Error accessing ChatThreadListCubit: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Có lỗi xảy ra khi rời nhóm'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   /// Shows error message when deletion fails.
