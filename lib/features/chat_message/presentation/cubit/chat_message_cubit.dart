@@ -89,38 +89,32 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     }
   }
 
-  /// Loads messages for a specific chat thread and sets up real-time updates.
-  /// Subscribes to the message stream for automatic updates.
+  /// Loads messages for a specific chat thread.
   Future<void> loadMessages(String chatThreadId) async {
-    try {
-      emit(const ChatMessageLoading());
-      _currentChatThreadId = chatThreadId;
-      _currentThread = null; // Clear any temporary thread
-      _isTemporaryThread = false;
-
-      // Cancel any existing subscription
-      await _messagesSubscription?.cancel();
-
-      // Subscribe to real-time message updates
-      _messagesSubscription = _getMessagesStreamUseCase(chatThreadId).listen(
-        (messages) {
-          emit(
-            ChatMessageLoaded(
-              messages: messages,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            ),
-          );
-        },
-        onError: (error) {
-          emit(ChatMessageError(message: error.toString()));
-        },
+    if (_currentUserId == null) {
+      emit(
+        const ChatMessageError(
+          message: ChatMessagePageConstants.userInfoUnknown,
+        ),
       );
+      return;
+    }
 
-      // Mark messages as read when opening the chat
-      // Add a small delay to ensure the subscription is established
-      Future.delayed(const Duration(milliseconds: 100), () {
-        markMessagesAsRead();
-      });
+    emit(ChatMessageLoading());
+
+    try {
+      _currentChatThreadId = chatThreadId;
+      _messagesSubscription?.cancel();
+
+      _messagesSubscription =
+          _getMessagesStreamUseCase(chatThreadId, _currentUserId!).listen(
+            (messages) {
+              emit(ChatMessageLoaded(messages: messages));
+            },
+            onError: (error) {
+              emit(ChatMessageError(message: error.toString()));
+            },
+          );
     } catch (e) {
       emit(ChatMessageError(message: e.toString()));
     }

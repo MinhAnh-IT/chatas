@@ -30,6 +30,16 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   }
 
   @override
+  Future<void> unhideChatThread(String threadId, String userId) async {
+    // Implementation for testing
+  }
+
+  @override
+  Future<List<ChatThread>> getAllChatThreads(String currentUserId) async {
+    return _threads;
+  }
+
+  @override
   Future<void> createChatThread(ChatThread chatThread) async {
     _threads.add(chatThread);
   }

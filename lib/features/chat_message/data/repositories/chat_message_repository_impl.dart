@@ -12,20 +12,29 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
     : _remoteDataSource = remoteDataSource ?? ChatMessageRemoteDataSource();
 
   @override
-  Future<List<ChatMessage>> getMessages(String chatThreadId) async {
+  Future<List<ChatMessage>> getMessages(
+    String chatThreadId,
+    String currentUserId,
+  ) async {
     try {
-      final models = await _remoteDataSource.fetchMessages(chatThreadId);
+      final models = await _remoteDataSource.fetchMessages(
+        chatThreadId,
+        currentUserId,
+      );
       return models.map((model) => model.toEntity()).toList();
     } catch (e) {
-      throw Exception('Failed to fetch messages: $e');
+      throw Exception('Failed to get messages: $e');
     }
   }
 
   @override
-  Stream<List<ChatMessage>> messagesStream(String chatThreadId) {
+  Stream<List<ChatMessage>> messagesStream(
+    String chatThreadId,
+    String currentUserId,
+  ) {
     try {
       return _remoteDataSource
-          .messagesStream(chatThreadId)
+          .messagesStream(chatThreadId, currentUserId)
           .map((models) => models.map((model) => model.toEntity()).toList());
     } catch (e) {
       throw Exception('Failed to get messages stream: $e');

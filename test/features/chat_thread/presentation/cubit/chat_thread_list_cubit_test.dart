@@ -158,6 +158,7 @@ class FakeFindOrCreateChatThreadUseCase
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
+    bool forceCreateNew = false,
   }) async {
     if (shouldThrowError) {
       throw Exception('Find or create failed');

@@ -16,7 +16,7 @@ void main() {
 
     setUp(() {
       mockRepository = MockChatMessageRepository();
-      useCase = GetMessagesStreamUseCase(mockRepository);
+      useCase = GetMessagesStreamUseCase(repository: mockRepository);
     });
 
     final tDateTime = DateTime(2024, 1, 1, 12, 0);
@@ -42,40 +42,43 @@ void main() {
     test('should get messages stream from repository', () async {
       // arrange
       when(
-        mockRepository.messagesStream('thread_456'),
+        mockRepository.messagesStream('thread_456', 'user_123'),
       ).thenAnswer((_) => Stream.value([tChatMessage]));
 
       // act
-      final result = useCase('thread_456');
+      final result = useCase('thread_456', 'user_123');
 
       // assert
       expect(result, emits([tChatMessage]));
-      verify(mockRepository.messagesStream('thread_456')).called(1);
+      verify(mockRepository.messagesStream('thread_456', 'user_123')).called(1);
     });
 
     test('should throw exception when repository fails', () async {
       // arrange
       when(
-        mockRepository.messagesStream('thread_456'),
+        mockRepository.messagesStream('thread_456', 'user_123'),
       ).thenThrow(Exception('Failed to get messages stream'));
 
       // act & assert
-      expect(() => useCase('thread_456'), throwsA(isA<Exception>()));
-      verify(mockRepository.messagesStream('thread_456')).called(1);
+      expect(
+        () => useCase('thread_456', 'user_123'),
+        throwsA(isA<Exception>()),
+      );
+      verify(mockRepository.messagesStream('thread_456', 'user_123')).called(1);
     });
 
     test('should return empty list stream when no messages exist', () async {
       // arrange
       when(
-        mockRepository.messagesStream('thread_456'),
+        mockRepository.messagesStream('thread_456', 'user_123'),
       ).thenAnswer((_) => Stream.value(<ChatMessage>[]));
 
       // act
-      final result = useCase('thread_456');
+      final result = useCase('thread_456', 'user_123');
 
       // assert
       expect(result, emits(isEmpty));
-      verify(mockRepository.messagesStream('thread_456')).called(1);
+      verify(mockRepository.messagesStream('thread_456', 'user_123')).called(1);
     });
 
     test('should handle multiple messages in stream', () async {
@@ -99,15 +102,15 @@ void main() {
       ).toEntity();
 
       when(
-        mockRepository.messagesStream('thread_456'),
+        mockRepository.messagesStream('thread_456', 'user_123'),
       ).thenAnswer((_) => Stream.value([message1, message2]));
 
       // act
-      final result = useCase('thread_456');
+      final result = useCase('thread_456', 'user_123');
 
       // assert
       expect(result, emits([message1, message2]));
-      verify(mockRepository.messagesStream('thread_456')).called(1);
+      verify(mockRepository.messagesStream('thread_456', 'user_123')).called(1);
     });
 
     test('should handle multiple stream emissions', () async {
@@ -130,7 +133,7 @@ void main() {
         updatedAt: tDateTime,
       ).toEntity();
 
-      when(mockRepository.messagesStream('thread_456')).thenAnswer(
+      when(mockRepository.messagesStream('thread_456', 'user_123')).thenAnswer(
         (_) => Stream.fromIterable([
           [message1],
           [message1, message2],
@@ -138,7 +141,7 @@ void main() {
       );
 
       // act
-      final result = useCase('thread_456');
+      final result = useCase('thread_456', 'user_123');
 
       // assert
       expect(
@@ -148,7 +151,7 @@ void main() {
           [message1, message2],
         ]),
       );
-      verify(mockRepository.messagesStream('thread_456')).called(1);
+      verify(mockRepository.messagesStream('thread_456', 'user_123')).called(1);
     });
   });
 }

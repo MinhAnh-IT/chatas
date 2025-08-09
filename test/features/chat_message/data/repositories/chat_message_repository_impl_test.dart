@@ -47,30 +47,34 @@ void main() {
         () async {
           // arrange
           when(
-            mockRemoteDataSource.fetchMessages('thread_456'),
+            mockRemoteDataSource.fetchMessages('thread_456', 'user_123'),
           ).thenAnswer((_) async => [tChatMessageModel]);
 
           // act
-          final result = await repository.getMessages('thread_456');
+          final result = await repository.getMessages('thread_456', 'user_123');
 
           // assert
           expect(result, [tChatMessage]);
-          verify(mockRemoteDataSource.fetchMessages('thread_456')).called(1);
+          verify(
+            mockRemoteDataSource.fetchMessages('thread_456', 'user_123'),
+          ).called(1);
         },
       );
 
       test('should throw exception when remote data source fails', () async {
         // arrange
         when(
-          mockRemoteDataSource.fetchMessages('thread_456'),
+          mockRemoteDataSource.fetchMessages('thread_456', 'user_123'),
         ).thenThrow(Exception('Failed to fetch messages'));
 
         // act & assert
         expect(
-          () => repository.getMessages('thread_456'),
+          () => repository.getMessages('thread_456', 'user_123'),
           throwsA(isA<Exception>()),
         );
-        verify(mockRemoteDataSource.fetchMessages('thread_456')).called(1);
+        verify(
+          mockRemoteDataSource.fetchMessages('thread_456', 'user_123'),
+        ).called(1);
       });
     });
 
@@ -80,30 +84,34 @@ void main() {
         () async {
           // arrange
           when(
-            mockRemoteDataSource.messagesStream('thread_456'),
+            mockRemoteDataSource.messagesStream('thread_456', 'user_123'),
           ).thenAnswer((_) => Stream.value([tChatMessageModel]));
 
           // act
-          final result = repository.messagesStream('thread_456');
+          final result = repository.messagesStream('thread_456', 'user_123');
 
           // assert
           expect(result, emits([tChatMessage]));
-          verify(mockRemoteDataSource.messagesStream('thread_456')).called(1);
+          verify(
+            mockRemoteDataSource.messagesStream('thread_456', 'user_123'),
+          ).called(1);
         },
       );
 
       test('should throw exception when remote data source fails', () async {
         // arrange
         when(
-          mockRemoteDataSource.messagesStream('thread_456'),
+          mockRemoteDataSource.messagesStream('thread_456', 'user_123'),
         ).thenThrow(Exception('Failed to get messages stream'));
 
         // act & assert
         expect(
-          () => repository.messagesStream('thread_456'),
+          () => repository.messagesStream('thread_456', 'user_123'),
           throwsA(isA<Exception>()),
         );
-        verify(mockRemoteDataSource.messagesStream('thread_456')).called(1);
+        verify(
+          mockRemoteDataSource.messagesStream('thread_456', 'user_123'),
+        ).called(1);
       });
     });
 
