@@ -43,6 +43,40 @@ class ChatThreadRemoteDataSource {
     return threads;
   }
 
+  Future<List<ChatThreadModel>> fetchAllChatThreads(
+    String currentUserId,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Fetching ALL threads (including hidden) for user: $currentUserId',
+    );
+    final snapshot = await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .where(
+          'members',
+          arrayContains: currentUserId,
+        ) // Only threads where user is a member
+        .get();
+    print(
+      'ChatThreadRemoteDataSource: Found ${snapshot.docs.length} total threads for user $currentUserId',
+    );
+
+    // Return all threads without filtering hidden ones
+    final threads = snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id; // Set document ID from Firestore
+      print(
+        'ChatThreadRemoteDataSource: ALL Thread ${doc.id} - Members: ${data['members']}, Name: ${data['name']}, HiddenFor: ${data['hiddenFor'] ?? []}',
+      );
+      return ChatThreadModel.fromJson(data);
+    }).toList();
+
+    print(
+      'ChatThreadRemoteDataSource: Returning ${threads.length} total threads for user $currentUserId',
+    );
+
+    return threads;
+  }
+
   Future<void> addChatThread(ChatThreadModel model) async {
     print(
       'ChatThreadRemoteDataSource: Adding chat thread with ID: ${model.id}',
@@ -106,6 +140,41 @@ class ChatThreadRemoteDataSource {
 
     print(
       'ChatThreadRemoteDataSource: Successfully hidden thread $threadId for user $userId',
+    );
+  }
+
+  Future<void> unhideChatThread(String threadId, String userId) async {
+    print(
+      'ChatThreadRemoteDataSource: Unhiding chat thread $threadId for user $userId',
+    );
+
+    // Get current thread data
+    final threadDoc = await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(threadId)
+        .get();
+
+    if (!threadDoc.exists) {
+      throw Exception('Chat thread not found');
+    }
+
+    final data = threadDoc.data()!;
+    final currentHiddenFor = List<String>.from(data['hiddenFor'] ?? []);
+
+    // Remove user from hiddenFor list
+    currentHiddenFor.remove(userId);
+
+    // Update the thread with new hiddenFor list
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(threadId)
+        .update({
+          'hiddenFor': currentHiddenFor,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+    print(
+      'ChatThreadRemoteDataSource: Successfully unhidden thread $threadId for user $userId',
     );
   }
 

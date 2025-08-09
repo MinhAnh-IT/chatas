@@ -68,20 +68,12 @@ class MockGetMessagesStreamUseCase extends _i1.Mock
   }
 
   @override
-  _i2.ChatMessageRepository get repository =>
+  _i5.Stream<List<_i6.ChatMessage>> call(
+    String? chatThreadId,
+    String? currentUserId,
+  ) =>
       (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeChatMessageRepository_0(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i2.ChatMessageRepository);
-
-  @override
-  _i5.Stream<List<_i6.ChatMessage>> call(String? chatThreadId) =>
-      (super.noSuchMethod(
-            Invocation.method(#call, [chatThreadId]),
+            Invocation.method(#call, [chatThreadId, currentUserId]),
             returnValue: _i5.Stream<List<_i6.ChatMessage>>.empty(),
           )
           as _i5.Stream<List<_i6.ChatMessage>>);

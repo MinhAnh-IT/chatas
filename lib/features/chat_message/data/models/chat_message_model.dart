@@ -20,13 +20,12 @@ class ChatMessageModel extends Equatable {
   final String? replyToMessageId;
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  // File attachment properties
   final String? fileUrl;
   final String? fileName;
   final String? fileType;
   final int? fileSize;
   final String? thumbnailUrl;
+  final List<String> deletedFor;
 
   const ChatMessageModel({
     required this.id,
@@ -39,17 +38,17 @@ class ChatMessageModel extends Equatable {
     required this.status,
     required this.sentAt,
     this.editedAt,
-    this.isDeleted = false,
-    this.reactions = const {},
+    required this.isDeleted,
+    required this.reactions,
     this.replyToMessageId,
     required this.createdAt,
     required this.updatedAt,
-    // File attachment properties
     this.fileUrl,
     this.fileName,
     this.fileType,
     this.fileSize,
     this.thumbnailUrl,
+    this.deletedFor = const [],
   });
 
   /// Creates a [ChatMessageModel] from Firestore document data.
@@ -59,7 +58,17 @@ class ChatMessageModel extends Equatable {
         return value.toDate();
       } else if (value is DateTime) {
         return value;
+      } else if (value is String) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          print('ChatMessageModel: Error parsing date string "$value": $e');
+          return DateTime.now();
+        }
       } else {
+        print(
+          'ChatMessageModel: Unexpected date type: ${value.runtimeType}, value: $value',
+        );
         return DateTime.now();
       }
     }
@@ -80,12 +89,12 @@ class ChatMessageModel extends Equatable {
       replyToMessageId: json['replyToMessageId'],
       createdAt: parseDate(json['createdAt']),
       updatedAt: parseDate(json['updatedAt']),
-      // File attachment properties
       fileUrl: json['fileUrl'],
       fileName: json['fileName'],
       fileType: json['fileType'],
       fileSize: json['fileSize'],
       thumbnailUrl: json['thumbnailUrl'],
+      deletedFor: List<String>.from(json['deletedFor'] ?? []),
     );
   }
 
@@ -100,19 +109,19 @@ class ChatMessageModel extends Equatable {
       'content': content,
       'type': type,
       'status': status,
-      'sentAt': sentAt,
-      'editedAt': editedAt,
+      'sentAt': sentAt.toIso8601String(),
+      'editedAt': editedAt?.toIso8601String(),
       'isDeleted': isDeleted,
       'reactions': reactions,
       'replyToMessageId': replyToMessageId,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-      // File attachment properties
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'fileUrl': fileUrl,
       'fileName': fileName,
       'fileType': fileType,
       'fileSize': fileSize,
       'thumbnailUrl': thumbnailUrl,
+      'deletedFor': deletedFor,
     };
   }
 
@@ -134,12 +143,12 @@ class ChatMessageModel extends Equatable {
       replyToMessageId: replyToMessageId,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      // File attachment properties
       fileUrl: fileUrl,
       fileName: fileName,
       fileType: fileType,
       fileSize: fileSize,
       thumbnailUrl: thumbnailUrl,
+      deletedFor: deletedFor,
     );
   }
 
@@ -161,12 +170,12 @@ class ChatMessageModel extends Equatable {
       replyToMessageId: entity.replyToMessageId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-      // File attachment properties
       fileUrl: entity.fileUrl,
       fileName: entity.fileName,
       fileType: entity.fileType,
       fileSize: entity.fileSize,
       thumbnailUrl: entity.thumbnailUrl,
+      deletedFor: entity.deletedFor,
     );
   }
 
@@ -323,5 +332,6 @@ class ChatMessageModel extends Equatable {
     fileType,
     fileSize,
     thumbnailUrl,
+    deletedFor,
   ];
 }

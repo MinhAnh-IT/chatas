@@ -13,9 +13,12 @@ class ChatMessageRemoteDataSource {
 
   /// Fetches all messages for a specific chat thread from Firestore.
   /// Returns messages sorted by creation time in ascending order.
-  Future<List<ChatMessageModel>> fetchMessages(String chatThreadId) async {
+  Future<List<ChatMessageModel>> fetchMessages(
+    String chatThreadId,
+    String currentUserId,
+  ) async {
     print(
-      'ChatMessageRemoteDataSource: Fetching messages for thread: $chatThreadId',
+      'ChatMessageRemoteDataSource: Fetching messages for thread: $chatThreadId, user: $currentUserId',
     );
 
     final snapshot = await firestore
@@ -45,18 +48,34 @@ class ChatMessageRemoteDataSource {
       );
     }
 
-    // Filter out deleted messages in code instead of query
-    return snapshot.docs
-        .map((doc) => ChatMessageModel.fromJson(doc.data()))
-        .where((message) => !message.isDeleted)
+    // Filter out deleted messages and messages deleted for current user
+    final messages = snapshot.docs
+        .map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return ChatMessageModel.fromJson(data);
+        })
+        .where(
+          (message) =>
+              !message.isDeleted && !message.deletedFor.contains(currentUserId),
+        )
         .toList();
+
+    print(
+      'ChatMessageRemoteDataSource: After filtering, returning ${messages.length} messages for user $currentUserId',
+    );
+
+    return messages;
   }
 
   /// Provides a real-time stream of messages for a specific chat thread.
   /// Automatically updates when new messages are added or existing ones are modified.
-  Stream<List<ChatMessageModel>> messagesStream(String chatThreadId) {
+  Stream<List<ChatMessageModel>> messagesStream(
+    String chatThreadId,
+    String currentUserId,
+  ) {
     print(
-      'ChatMessageRemoteDataSource: Setting up messages stream for thread: $chatThreadId',
+      'ChatMessageRemoteDataSource: Setting up messages stream for thread: $chatThreadId, user: $currentUserId',
     );
     return firestore
         .collection(ChatMessageRemoteConstants.collectionName)
@@ -72,11 +91,19 @@ class ChatMessageRemoteDataSource {
             'ChatMessageRemoteDataSource: Stream received ${snapshot.docs.length} documents for thread $chatThreadId',
           );
           final messages = snapshot.docs
-              .map((doc) => ChatMessageModel.fromJson(doc.data()))
-              .where((message) => !message.isDeleted)
+              .map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id;
+                return ChatMessageModel.fromJson(data);
+              })
+              .where(
+                (message) =>
+                    !message.isDeleted &&
+                    !message.deletedFor.contains(currentUserId),
+              )
               .toList();
           print(
-            'ChatMessageRemoteDataSource: After filtering, ${messages.length} messages for thread $chatThreadId',
+            'ChatMessageRemoteDataSource: After filtering, ${messages.length} messages for thread $chatThreadId, user $currentUserId',
           );
           return messages;
         });
@@ -343,12 +370,22 @@ class ChatMessageRemoteDataSource {
     final chatThreadId =
         messageData[ChatMessageRemoteConstants.chatThreadIdField];
 
-    // Soft delete the message
+    // Get current deletedFor list
+    final currentDeletedFor = List<String>.from(
+      messageData['deletedFor'] ?? [],
+    );
+
+    // Add user to deletedFor list if not already there
+    if (!currentDeletedFor.contains(userId)) {
+      currentDeletedFor.add(userId);
+    }
+
+    // Update the message with new deletedFor list
     await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(messageId)
         .update({
-          ChatMessageRemoteConstants.isDeletedField: true,
+          'deletedFor': currentDeletedFor,
           ChatMessageRemoteConstants.updatedAtField:
               FieldValue.serverTimestamp(),
         });

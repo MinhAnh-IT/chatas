@@ -17,6 +17,12 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
+  Future<List<ChatThread>> getAllChatThreads(String currentUserId) async {
+    final models = await _remoteDataSource.fetchAllChatThreads(currentUserId);
+    return models.map((model) => model.toEntity()).toList();
+  }
+
+  @override
   Future<void> addChatThread(ChatThread chatThread) async {
     final model = ChatThreadModel.fromEntity(chatThread);
     return await _remoteDataSource.addChatThread(model);
@@ -30,6 +36,11 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   @override
   Future<void> hideChatThread(String threadId, String userId) async {
     return await _remoteDataSource.hideChatThread(threadId, userId);
+  }
+
+  @override
+  Future<void> unhideChatThread(String threadId, String userId) async {
+    return await _remoteDataSource.unhideChatThread(threadId, userId);
   }
 
   @override

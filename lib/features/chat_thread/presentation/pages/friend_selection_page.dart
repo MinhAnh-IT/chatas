@@ -176,12 +176,14 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
         final parts = friendId.split('_');
         final actualFriendId = parts.length == 2 ? parts[1] : friendId;
 
-        // Use existing use case for 1-on-1 chat
+        // Use existing use case for 1-on-1 chat with forceCreateNew = true
+        // This ensures we create a new thread even if a hidden one exists
         final chatThread = await _findOrCreateChatThreadUseCase.call(
           currentUserId: currentUserId,
           friendId: actualFriendId,
           friendName: 'Bạn bè', // Default name, will be updated from profile
           friendAvatarUrl: '',
+          forceCreateNew: true, // Always create new thread
         );
 
         ScaffoldMessenger.of(

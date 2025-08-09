@@ -163,7 +163,9 @@ class AppRouter {
           final deleteMessageUseCase = DeleteMessageUseCase(
             repository: repository,
           );
-          final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
+          final getMessagesStreamUseCase = GetMessagesStreamUseCase(
+            repository: repository,
+          );
           final markMessagesAsReadUseCase = MarkMessagesAsReadUseCase(
             repository,
           );
