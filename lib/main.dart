@@ -9,6 +9,7 @@ import 'features/friends/services/fcm_push_service.dart';
 import 'features/notifications/notification_injection.dart';
 import 'features/notifications/background_message_handler.dart';
 import 'core/services/credentials_loader.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
