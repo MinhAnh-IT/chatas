@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/usecases/getReceivedFriendRequests.dart';
 import '../../domain/usecases/getSentFriendRequests.dart';
 import '../../domain/usecases/acceptFriendRequest.dart';
@@ -74,8 +75,24 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
       // Gửi thông báo cho người gửi lời mời rằng lời mời đã được chấp nhận
       final notificationService =
           FriendsDependencyInjection.friendNotificationService;
+      
+      // Lấy tên thực của người chấp nhận từ Firestore
+      String accepterName = 'Bạn'; // Default fallback
+      try {
+        final accepterDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(receiverId)
+            .get();
+        if (accepterDoc.exists) {
+          final userData = accepterDoc.data() as Map<String, dynamic>;
+          accepterName = userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
+        }
+      } catch (e) {
+        // Sử dụng default name nếu có lỗi
+      }
+      
       await notificationService['sendFriendAcceptedNotification']({
-        'accepterName': 'Bạn', // TODO: Lấy tên người chấp nhận thực tế
+        'accepterName': accepterName,
         'accepterId': receiverId,
         'toUserId': senderId, // Gửi thông báo cho người gửi lời mời
       });
@@ -105,8 +122,24 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
       // Gửi thông báo cho người gửi lời mời rằng lời mời đã bị từ chối
       final notificationService =
           FriendsDependencyInjection.friendNotificationService;
+      
+      // Lấy tên thực của người từ chối từ Firestore
+      String rejecterName = 'Bạn'; // Default fallback
+      try {
+        final rejecterDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .get();
+        if (rejecterDoc.exists) {
+          final userData = rejecterDoc.data() as Map<String, dynamic>;
+          rejecterName = userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
+        }
+      } catch (e) {
+        // Sử dụng default name nếu có lỗi
+      }
+      
       await notificationService['sendFriendRejectedNotification']({
-        'rejecterName': 'Người dùng', // TODO: Lấy tên người từ chối thực tế
+        'rejecterName': rejecterName,
         'rejecterId': currentUserId,
         'toUserId': senderId, // Gửi thông báo cho người gửi lời mời
       });
