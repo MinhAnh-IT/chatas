@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/usecases/search_users_usecase.dart';
 import '../../domain/usecases/send_friend_request_usecase.dart';
 import '../../domain/entities/friendRequest.dart';
+import '../../injection/friends_injection.dart';
 import 'friend_search_state.dart';
 
 class FriendSearchCubit extends Cubit<FriendSearchState> {
@@ -27,7 +29,11 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
     }
   }
 
-  Future<void> sendFriendRequest(String currentUserId, String toUserId) async {
+  Future<void> sendFriendRequest(
+    String currentUserId,
+    String toUserId,
+    String toUserName,
+  ) async {
     try {
       final friendRequest = FriendRequest(
         id: '${currentUserId}_$toUserId',
@@ -37,6 +43,34 @@ class FriendSearchCubit extends Cubit<FriendSearchState> {
         status: 'pending',
       );
       await sendFriendRequestUseCase.call(friendRequest);
+
+      // Gửi thông báo cho người nhận lời mời
+      final notificationService =
+          FriendsDependencyInjection.friendNotificationService;
+
+      // Lấy tên thực của người gửi từ Firestore
+      String fromUserName = 'Người dùng'; // Default fallback
+      try {
+        final currentUserDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .get();
+        if (currentUserDoc.exists) {
+          final userData = currentUserDoc.data() as Map<String, dynamic>;
+          fromUserName =
+              userData['fullName'] ?? userData['displayName'] ?? 'Người dùng';
+        }
+      } catch (e) {
+        // Sử dụng default name nếu có lỗi
+      }
+
+      await notificationService['sendFriendRequestNotification']({
+        'fromUserName': fromUserName,
+        'fromUserId': currentUserId,
+        'toUserId':
+            toUserId, // Thêm ID người nhận để gửi thông báo cho đúng người
+      });
+
       if (state is FriendSearchLoaded) {
         final currentUsers = (state as FriendSearchLoaded).users;
         final updatedUsers = currentUsers
