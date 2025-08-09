@@ -64,7 +64,9 @@ class ChatThreadModel extends Equatable {
           return DateTime.now();
         }
       } else {
-        print('ChatThreadModel: Unexpected date type: ${value.runtimeType}, value: $value');
+        print(
+          'ChatThreadModel: Unexpected date type: ${value.runtimeType}, value: $value',
+        );
         return DateTime.now();
       }
     }

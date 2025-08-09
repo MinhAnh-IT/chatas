@@ -156,11 +156,11 @@ class ChatThreadListTile extends StatelessWidget {
           );
 
           if (friendUser != null) {
-            final friendName = friendUser.fullName.isNotEmpty 
-                ? friendUser.fullName 
-                : friendUser.username.isNotEmpty 
-                    ? friendUser.username 
-                    : 'Người dùng';
+            final friendName = friendUser.fullName.isNotEmpty
+                ? friendUser.fullName
+                : friendUser.username.isNotEmpty
+                ? friendUser.username
+                : 'Người dùng';
             print(
               'ChatThreadListTile: SUCCESS - Got friend name for $friendId: $friendName',
             );
@@ -184,11 +184,11 @@ class ChatThreadListTile extends StatelessWidget {
                 final data = userDoc.data()!;
                 final fullName = data['fullName'] as String? ?? '';
                 final username = data['username'] as String? ?? '';
-                final displayName = fullName.isNotEmpty 
-                    ? fullName 
-                    : username.isNotEmpty 
-                        ? username 
-                        : 'Người dùng';
+                final displayName = fullName.isNotEmpty
+                    ? fullName
+                    : username.isNotEmpty
+                    ? username
+                    : 'Người dùng';
                 print(
                   'ChatThreadListTile: SUCCESS via direct Firestore - Got friend name: $displayName',
                 );
@@ -291,7 +291,8 @@ class ChatThreadListTile extends StatelessWidget {
                         return FutureBuilder<String>(
                           future: _getDisplayName(),
                           builder: (context, nameSnapshot) {
-                            final displayName = nameSnapshot.data ?? thread.name;
+                            final displayName =
+                                nameSnapshot.data ?? thread.name;
                             return SmartAvatar(
                               imageUrl: avatarUrl,
                               radius: ChatThreadListPageConstants.avatarRadius,
