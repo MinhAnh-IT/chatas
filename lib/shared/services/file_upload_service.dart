@@ -100,7 +100,7 @@ class FileUploadService {
     try {
       // Upload to Cloudinary
       final cloudinaryUrl = Uri.parse(
-        'https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/${resourceType}/upload',
+        'https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/$resourceType/upload',
       );
 
       final publicId =
@@ -324,8 +324,9 @@ class FileUploadService {
   static String formatFileSize(int bytes) {
     if (bytes < 1024) return '${bytes}B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    if (bytes < 1024 * 1024 * 1024)
+    if (bytes < 1024 * 1024 * 1024) {
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 
