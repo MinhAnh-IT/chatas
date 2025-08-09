@@ -6,6 +6,11 @@ import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repo
 
 // Fake repository for testing
 class FakeChatThreadRepository implements ChatThreadRepository {
+  @override
+  Future<List<ChatThread>> getArchivedChatThreads(String currentUserId) async {
+    return [];
+  }
+
   final List<ChatThread> _threads;
 
   FakeChatThreadRepository(this._threads);
@@ -108,8 +113,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         unreadCounts: thread.unreadCounts,
         createdAt: thread.createdAt,
         updatedAt: DateTime.now(),
-        groupAdminId: thread.groupAdminId,
-        groupDescription: thread.groupDescription,
       );
     }
   }
@@ -130,8 +133,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         unreadCounts: thread.unreadCounts,
         createdAt: thread.createdAt,
         updatedAt: DateTime.now(),
-        groupAdminId: thread.groupAdminId,
-        groupDescription: thread.groupDescription,
       );
     }
   }
@@ -155,8 +156,6 @@ class FakeChatThreadRepository implements ChatThreadRepository {
         unreadCounts: thread.unreadCounts,
         createdAt: thread.createdAt,
         updatedAt: DateTime.now(),
-        groupAdminId: thread.groupAdminId,
-        groupDescription: thread.groupDescription,
       );
     }
   }
