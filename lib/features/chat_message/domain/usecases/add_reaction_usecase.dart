@@ -1,6 +1,5 @@
 import '../entities/chat_message.dart';
 import '../repositories/chat_message_repository.dart';
-import '../../constants/chat_message_page_constants.dart';
 
 /// Use case for adding reactions to chat messages.
 /// Handles the business logic for message reactions.
@@ -14,12 +13,8 @@ class AddReactionUseCase {
   Future<void> call({
     required String messageId,
     required ReactionType reaction,
+    required String userId,
   }) async {
-    // TODO: Get actual current user ID from auth service
-    await repository.addReaction(
-      messageId,
-      ChatMessagePageConstants.temporaryUserId,
-      reaction,
-    );
+    await repository.addReaction(messageId, userId, reaction);
   }
 }

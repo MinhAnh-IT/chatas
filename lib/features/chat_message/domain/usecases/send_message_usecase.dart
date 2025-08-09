@@ -11,21 +11,32 @@ class SendMessageUseCase {
 
   /// Executes the use case to send a new message.
   /// Creates a [ChatMessage] entity with the provided parameters and sends it.
+  /// Supports reply functionality through [replyToMessageId].
+  /// Supports file attachments through file-related parameters.
   Future<void> call({
     required String chatThreadId,
     required String content,
+    required String senderId,
+    required String senderName,
+    String? senderAvatarUrl,
     MessageType type = MessageType.text,
     String? replyToMessageId,
+    // File attachment properties
+    String? fileUrl,
+    String? fileName,
+    String? fileType,
+    int? fileSize,
+    String? thumbnailUrl,
   }) async {
     final now = DateTime.now();
 
-    // TODO: Get actual user information from auth service
     final message = ChatMessage(
       id: 'msg_${now.millisecondsSinceEpoch}',
       chatThreadId: chatThreadId,
-      senderId: ChatMessagePageConstants.temporaryUserId,
-      senderName: ChatMessagePageConstants.temporaryUserName,
-      senderAvatarUrl: ChatMessagePageConstants.temporaryAvatarUrl,
+      senderId: senderId,
+      senderName: senderName,
+      senderAvatarUrl:
+          senderAvatarUrl ?? ChatMessagePageConstants.temporaryAvatarUrl,
       content: content,
       type: type,
       status: MessageStatus.sending,
@@ -33,6 +44,12 @@ class SendMessageUseCase {
       replyToMessageId: replyToMessageId,
       createdAt: now,
       updatedAt: now,
+      // File attachment properties
+      fileUrl: fileUrl,
+      fileName: fileName,
+      fileType: fileType,
+      fileSize: fileSize,
+      thumbnailUrl: thumbnailUrl,
     );
 
     await repository.sendMessage(message);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/chat_thread_list_page_constants.dart';
 import '../../domain/entities/chat_thread.dart';
 import '../../presentation/cubit/chat_thread_list_cubit.dart';
@@ -42,7 +43,8 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
       _isSearching = true;
     });
 
-    final results = await widget.cubit.searchChatThreads(query);
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final results = await widget.cubit.searchChatThreads(query, currentUserId);
 
     if (mounted) {
       setState(() {
@@ -54,9 +56,10 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
 
   /// Navigates to chat message page when a thread is selected.
   void _onThreadSelected(ChatThread thread) {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final route = AppRouteConstants.chatMessageRoute(
       thread.id,
-      currentUserId: ChatThreadListPageConstants.temporaryUserId,
+      currentUserId: currentUserId,
       otherUserName: thread.name,
     );
 
@@ -136,6 +139,8 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
             imageUrl: thread.avatarUrl,
             radius: ChatThreadListPageConstants.avatarRadius,
             fallbackText: thread.name,
+            showBorder: true,
+            showShadow: true,
           ),
           title: Text(thread.name),
           subtitle: Text(

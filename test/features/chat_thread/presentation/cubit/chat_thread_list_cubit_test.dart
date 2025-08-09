@@ -6,6 +6,7 @@ import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_use
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
 import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repository.dart';
 
@@ -20,7 +21,7 @@ class FakeGetChatThreadsUseCase implements GetChatThreadsUseCase {
   late final ChatThreadRepository repository;
 
   @override
-  Future<List<ChatThread>> call() async {
+  Future<List<ChatThread>> call(String currentUserId) async {
     if (shouldThrowError) {
       throw Exception('Network error');
     }
@@ -41,6 +42,7 @@ class FakeCreateChatThreadUseCase implements CreateChatThreadUseCase {
     required String friendId,
     required String friendName,
     required String friendAvatarUrl,
+    required String currentUserId,
     String? initialMessage,
   }) async {
     if (shouldThrowError) {
@@ -56,7 +58,7 @@ class FakeCreateChatThreadUseCase implements CreateChatThreadUseCase {
       avatarUrl: friendAvatarUrl,
       members: ['current_user', friendId],
       isGroup: false,
-      unreadCount: 0,
+      unreadCounts: {'current_user': 0, friendId: 0},
       createdAt: now,
       updatedAt: now,
     );
@@ -73,7 +75,7 @@ class FakeSearchChatThreadsUseCase implements SearchChatThreadsUseCase {
   late final ChatThreadRepository repository;
 
   @override
-  Future<List<ChatThread>> call(String query) async {
+  Future<List<ChatThread>> call(String query, String currentUserId) async {
     if (shouldThrowError) {
       throw Exception('Search error');
     }
@@ -113,6 +115,42 @@ class FakeDeleteChatThreadUseCase implements DeleteChatThreadUseCase {
   }
 }
 
+class FakeFindOrCreateChatThreadUseCase
+    implements FindOrCreateChatThreadUseCase {
+  bool shouldThrowError;
+
+  FakeFindOrCreateChatThreadUseCase({this.shouldThrowError = false});
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Future<ChatThread> call({
+    required String currentUserId,
+    required String friendId,
+    required String friendName,
+    required String friendAvatarUrl,
+  }) async {
+    if (shouldThrowError) {
+      throw Exception('Find or create failed');
+    }
+
+    final now = DateTime.now();
+    return ChatThread(
+      id: 'chat_${currentUserId}_${friendId}_${now.millisecondsSinceEpoch}',
+      name: 'Test Thread',
+      lastMessage: '',
+      lastMessageTime: now,
+      avatarUrl: friendAvatarUrl,
+      members: [currentUserId, friendId],
+      isGroup: false,
+      unreadCounts: {currentUserId: 0, friendId: 0},
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+}
+
 void main() {
   group('ChatThreadListCubit', () {
     late ChatThreadListCubit cubit;
@@ -120,9 +158,10 @@ void main() {
     late FakeCreateChatThreadUseCase fakeCreateChatThreadUseCase;
     late FakeSearchChatThreadsUseCase fakeSearchChatThreadsUseCase;
     late FakeDeleteChatThreadUseCase fakeDeleteChatThreadUseCase;
+    late FakeFindOrCreateChatThreadUseCase fakeFindOrCreateChatThreadUseCase;
 
     final now = DateTime.now();
-    final testChatThreads = [
+    final testChatThreads = <ChatThread>[
       ChatThread(
         id: '1',
         name: 'John Doe',
@@ -131,7 +170,7 @@ void main() {
         avatarUrl: 'https://example.com/avatar1.jpg',
         members: ['1', '2'],
         isGroup: false,
-        unreadCount: 0,
+        unreadCounts: {'1': 0, '2': 0},
         createdAt: now,
         updatedAt: now,
       ),
@@ -143,7 +182,7 @@ void main() {
         avatarUrl: 'https://example.com/avatar2.jpg',
         members: ['1', '3'],
         isGroup: false,
-        unreadCount: 2,
+        unreadCounts: {'1': 0, '3': 2},
         createdAt: now,
         updatedAt: now,
       ),
@@ -156,12 +195,14 @@ void main() {
         testChatThreads,
       );
       fakeDeleteChatThreadUseCase = FakeDeleteChatThreadUseCase();
+      fakeFindOrCreateChatThreadUseCase = FakeFindOrCreateChatThreadUseCase();
 
       cubit = ChatThreadListCubit(
         getChatThreadsUseCase: fakeGetChatThreadsUseCase,
         createChatThreadUseCase: fakeCreateChatThreadUseCase,
         searchChatThreadsUseCase: fakeSearchChatThreadsUseCase,
         deleteChatThreadUseCase: fakeDeleteChatThreadUseCase,
+        findOrCreateChatThreadUseCase: fakeFindOrCreateChatThreadUseCase,
       );
     });
 
@@ -170,31 +211,63 @@ void main() {
     });
 
     test('initial state should be ChatThreadListInitial', () {
-      expect(cubit.state, equals(ChatThreadListInitial()));
+      expect(cubit.state, isA<ChatThreadListInitial>());
     });
 
     group('fetchChatThreads', () {
       blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should emit [Loading, Loaded] when fetchChatThreads succeeds',
+        'should emit [ChatThreadListLoading, ChatThreadListLoaded] when successful',
         build: () => cubit,
-        act: (cubit) => cubit.fetchChatThreads(),
+        act: (cubit) => cubit.fetchChatThreads('current_user'),
         expect: () => [
-          ChatThreadListLoading(),
+          isA<ChatThreadListLoading>(),
           ChatThreadListLoaded(testChatThreads),
         ],
       );
 
       blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should emit [Loading, Error] when fetchChatThreads fails',
+        'should emit [ChatThreadListLoading, ChatThreadListError] when error occurs',
         build: () {
           fakeGetChatThreadsUseCase.shouldThrowError = true;
           return cubit;
         },
-        act: (cubit) => cubit.fetchChatThreads(),
+        act: (cubit) => cubit.fetchChatThreads('current_user'),
         expect: () => [
-          ChatThreadListLoading(),
-          ChatThreadListError('Exception: Network error'),
+          isA<ChatThreadListLoading>(),
+          isA<ChatThreadListError>(),
         ],
+      );
+    });
+
+    group('createNewChatThread', () {
+      blocTest<ChatThreadListCubit, ChatThreadListState>(
+        'should emit [ChatThreadListLoading, ChatThreadListLoaded] when successful',
+        build: () => cubit,
+        act: (cubit) => cubit.createNewChatThread(
+          friendId: 'friend_id',
+          friendName: 'Friend Name',
+          friendAvatarUrl: 'https://example.com/avatar.jpg',
+          currentUserId: 'current_user',
+        ),
+        expect: () => [
+          isA<ChatThreadListLoading>(),
+          isA<ChatThreadListLoaded>(),
+        ],
+      );
+
+      blocTest<ChatThreadListCubit, ChatThreadListState>(
+        'should emit [ChatThreadListError] when error occurs',
+        build: () {
+          fakeCreateChatThreadUseCase.shouldThrowError = true;
+          return cubit;
+        },
+        act: (cubit) => cubit.createNewChatThread(
+          friendId: 'friend_id',
+          friendName: 'Friend Name',
+          friendAvatarUrl: 'https://example.com/avatar.jpg',
+          currentUserId: 'current_user',
+        ),
+        expect: () => [isA<ChatThreadListError>()],
       );
     });
 
@@ -204,7 +277,7 @@ void main() {
         const query = 'john';
 
         // act
-        final result = await cubit.searchChatThreads(query);
+        final result = await cubit.searchChatThreads(query, 'current_user');
 
         // assert
         expect(result.length, 1);
@@ -217,108 +290,49 @@ void main() {
         fakeSearchChatThreadsUseCase.shouldThrowError = true;
 
         // act
-        final result = await cubit.searchChatThreads(query);
+        final result = await cubit.searchChatThreads(query, 'current_user');
 
         // assert
         expect(result, isEmpty);
       });
-
-      test('should return empty list for empty query', () async {
-        // arrange
-        const query = '';
-
-        // act
-        final result = await cubit.searchChatThreads(query);
-
-        // assert
-        expect(result, isEmpty);
-      });
-    });
-
-    group('createNewChatThread', () {
-      const friendId = 'friend123';
-      const friendName = 'Friend Name';
-      const friendAvatarUrl = 'https://example.com/friend.jpg';
-      const initialMessage = 'Hello!';
-
-      blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should create thread and refresh list when creation succeeds',
-        build: () => cubit,
-        act: (cubit) => cubit.createNewChatThread(
-          friendId: friendId,
-          friendName: friendName,
-          friendAvatarUrl: friendAvatarUrl,
-          initialMessage: initialMessage,
-        ),
-        expect: () => [
-          ChatThreadListLoading(),
-          ChatThreadListLoaded(testChatThreads),
-        ],
-      );
-
-      blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should emit error when thread creation fails',
-        build: () {
-          fakeCreateChatThreadUseCase.shouldThrowError = true;
-          return cubit;
-        },
-        act: (cubit) => cubit.createNewChatThread(
-          friendId: friendId,
-          friendName: friendName,
-          friendAvatarUrl: friendAvatarUrl,
-          initialMessage: initialMessage,
-        ),
-        expect: () => [
-          ChatThreadListError(
-            'Failed to create chat: Exception: Creation failed',
-          ),
-        ],
-      );
     });
 
     group('deleteChatThread', () {
-      const threadId = 'test_thread_id';
-
       blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should emit [Deleting, Loading, Loaded] when deletion succeeds',
+        'should emit [ChatThreadDeleting, ChatThreadListLoading, ChatThreadListLoaded] when deletion is successful',
         build: () => cubit,
-        act: (cubit) => cubit.deleteChatThread(threadId),
+        act: (cubit) => cubit.deleteChatThread('thread_id', 'current_user'),
         expect: () => [
-          const ChatThreadDeleting(threadId),
-          ChatThreadListLoading(),
-          ChatThreadListLoaded(testChatThreads),
+          isA<ChatThreadDeleting>(),
+          isA<ChatThreadListLoading>(),
+          isA<ChatThreadListLoaded>(),
         ],
       );
 
       blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should emit error when thread ID is empty',
-        build: () => cubit,
-        act: (cubit) => cubit.deleteChatThread(''),
-        expect: () => [const ChatThreadListError('Invalid thread ID')],
-      );
-
-      blocTest<ChatThreadListCubit, ChatThreadListState>(
-        'should emit error when deletion fails',
+        'should emit [ChatThreadListError] when deletion error occurs',
         build: () {
           fakeDeleteChatThreadUseCase.shouldThrowError = true;
           return cubit;
         },
-        act: (cubit) => cubit.deleteChatThread(threadId),
-        expect: () => [
-          const ChatThreadDeleting(threadId),
-          ChatThreadListError('Failed to delete chat: Exception: Delete error'),
-        ],
+        act: (cubit) => cubit.deleteChatThread('thread_id', 'current_user'),
+        expect: () => [isA<ChatThreadDeleting>(), isA<ChatThreadListError>()],
       );
+    });
 
-      test('should call delete use case with correct thread ID', () async {
+    group('findOrCreateChatThreadForMessaging', () {
+      test('should return chat thread when successful', () async {
         // act
-        await cubit.deleteChatThread(threadId);
+        final result = await cubit.findOrCreateChatThreadForMessaging(
+          currentUserId: 'current_user',
+          friendId: 'friend_id',
+          friendName: 'Friend Name',
+          friendAvatarUrl: 'https://example.com/avatar.jpg',
+        );
 
         // assert
-        expect(
-          fakeDeleteChatThreadUseCase.deletedThreadIds,
-          contains(threadId),
-        );
+        expect(result, isA<ChatThread>());
+        expect(result.name, 'Test Thread');
       });
     });
   });

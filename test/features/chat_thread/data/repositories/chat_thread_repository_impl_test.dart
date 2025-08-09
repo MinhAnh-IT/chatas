@@ -32,7 +32,7 @@ void main() {
       avatarUrl: 'https://example.com/avatar.png',
       members: const ['user1', 'user2'],
       isGroup: false,
-      unreadCount: 5,
+      unreadCounts: {'user1': 0, 'user2': 5},
       createdAt: tCreatedAt,
       updatedAt: tDateTime,
     );
@@ -45,7 +45,7 @@ void main() {
       avatarUrl: 'https://example.com/avatar.png',
       members: const ['user1', 'user2'],
       isGroup: false,
-      unreadCount: 5,
+      unreadCounts: {'user1': 0, 'user2': 5},
       createdAt: tCreatedAt,
       updatedAt: tDateTime,
     );
@@ -59,14 +59,14 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRemoteDataSource.fetchChatThreads(),
+            mockRemoteDataSource.fetchChatThreads('test_user'),
           ).thenAnswer((_) async => tChatThreadModelList);
 
           // Act
-          final result = await repository.getChatThreads();
+          final result = await repository.getChatThreads('test_user');
 
           // Assert
-          verify(mockRemoteDataSource.fetchChatThreads());
+          verify(mockRemoteDataSource.fetchChatThreads('test_user'));
           expect(result, equals(tChatThreadEntityList));
         },
       );
@@ -76,14 +76,14 @@ void main() {
         () async {
           // Arrange
           when(
-            mockRemoteDataSource.fetchChatThreads(),
+            mockRemoteDataSource.fetchChatThreads('test_user'),
           ).thenAnswer((_) async => []);
 
           // Act
-          final result = await repository.getChatThreads();
+          final result = await repository.getChatThreads('test_user');
 
           // Assert
-          verify(mockRemoteDataSource.fetchChatThreads());
+          verify(mockRemoteDataSource.fetchChatThreads('test_user'));
           expect(result, equals([]));
         },
       );
@@ -98,21 +98,21 @@ void main() {
           avatarUrl: 'https://example.com/jane.png',
           members: const ['user1', 'jane_id'],
           isGroup: false,
-          unreadCount: 3,
+          unreadCounts: {'user1': 0, 'jane_id': 3},
           createdAt: tCreatedAt,
           updatedAt: tDateTime,
         );
 
         final multipleModels = [tChatThreadModel, secondModel];
         when(
-          mockRemoteDataSource.fetchChatThreads(),
+          mockRemoteDataSource.fetchChatThreads('test_user'),
         ).thenAnswer((_) async => multipleModels);
 
         // Act
-        final result = await repository.getChatThreads();
+        final result = await repository.getChatThreads('test_user');
 
         // Assert
-        verify(mockRemoteDataSource.fetchChatThreads());
+        verify(mockRemoteDataSource.fetchChatThreads('test_user'));
         expect(result.length, 2);
         expect(result[0].id, '1');
         expect(result[1].id, '2');
@@ -121,11 +121,11 @@ void main() {
       test('should propagate exceptions from remote data source', () async {
         // Arrange
         when(
-          mockRemoteDataSource.fetchChatThreads(),
+          mockRemoteDataSource.fetchChatThreads('test_user'),
         ).thenThrow(Exception('Server error'));
 
         // Act & Assert
-        expect(() => repository.getChatThreads(), throwsException);
+        expect(() => repository.getChatThreads('test_user'), throwsException);
       });
     });
 
@@ -160,7 +160,7 @@ void main() {
           avatarUrl: 'https://example.com/group_avatar.png',
           members: const ['user1', 'user2', 'user3', 'user4'],
           isGroup: true,
-          unreadCount: 0,
+          unreadCounts: {},
           createdAt: tCreatedAt,
           updatedAt: tDateTime,
         );
@@ -249,7 +249,10 @@ void main() {
         expect(capturedModel.avatarUrl, tChatThreadEntity.avatarUrl);
         expect(capturedModel.members, tChatThreadEntity.members);
         expect(capturedModel.isGroup, tChatThreadEntity.isGroup);
-        expect(capturedModel.unreadCount, tChatThreadEntity.unreadCount);
+        expect(
+          capturedModel.unreadCounts["user1"],
+          tChatThreadEntity.getUnreadCount("user1"),
+        );
         expect(capturedModel.createdAt, tChatThreadEntity.createdAt);
         expect(capturedModel.updatedAt, tChatThreadEntity.updatedAt);
       });
@@ -259,11 +262,11 @@ void main() {
       test('should convert model to entity preserving all fields', () async {
         // Arrange
         when(
-          mockRemoteDataSource.fetchChatThreads(),
+          mockRemoteDataSource.fetchChatThreads('test_user'),
         ).thenAnswer((_) async => [tChatThreadModel]);
 
         // Act
-        final result = await repository.getChatThreads();
+        final result = await repository.getChatThreads('test_user');
 
         // Assert
         final entity = result.first;
@@ -274,7 +277,10 @@ void main() {
         expect(entity.avatarUrl, tChatThreadModel.avatarUrl);
         expect(entity.members, tChatThreadModel.members);
         expect(entity.isGroup, tChatThreadModel.isGroup);
-        expect(entity.unreadCount, tChatThreadModel.unreadCount);
+        expect(
+          entity.getUnreadCount("user1"),
+          tChatThreadModel.unreadCounts["user1"],
+        );
         expect(entity.createdAt, tChatThreadModel.createdAt);
         expect(entity.updatedAt, tChatThreadModel.updatedAt);
       });

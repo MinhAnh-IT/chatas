@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/chat_message_model.dart';
 import '../../constants/chat_message_remote_constants.dart';
@@ -13,6 +14,10 @@ class ChatMessageRemoteDataSource {
   /// Fetches all messages for a specific chat thread from Firestore.
   /// Returns messages sorted by creation time in ascending order.
   Future<List<ChatMessageModel>> fetchMessages(String chatThreadId) async {
+    print(
+      'ChatMessageRemoteDataSource: Fetching messages for thread: $chatThreadId',
+    );
+
     final snapshot = await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .where(
@@ -22,6 +27,23 @@ class ChatMessageRemoteDataSource {
         .orderBy(ChatMessageRemoteConstants.createdAtField, descending: false)
         .limit(ChatMessageRemoteConstants.defaultMessageLimit)
         .get();
+
+    print(
+      'ChatMessageRemoteDataSource: Fetched ${snapshot.docs.length} documents',
+    );
+
+    // Debug: print all thread IDs in the collection
+    final allDocsSnapshot = await firestore
+        .collection(ChatMessageRemoteConstants.collectionName)
+        .limit(10)
+        .get();
+    print('ChatMessageRemoteDataSource: All thread IDs in collection:');
+    for (final doc in allDocsSnapshot.docs) {
+      final data = doc.data();
+      print(
+        '  - Thread ID: ${data['chatThreadId']}, Message: ${data['content']?.toString().substring(0, math.min(20, data['content']?.toString().length ?? 0))}...',
+      );
+    }
 
     // Filter out deleted messages in code instead of query
     return snapshot.docs
@@ -33,6 +55,9 @@ class ChatMessageRemoteDataSource {
   /// Provides a real-time stream of messages for a specific chat thread.
   /// Automatically updates when new messages are added or existing ones are modified.
   Stream<List<ChatMessageModel>> messagesStream(String chatThreadId) {
+    print(
+      'ChatMessageRemoteDataSource: Setting up messages stream for thread: $chatThreadId',
+    );
     return firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .where(
@@ -42,21 +67,78 @@ class ChatMessageRemoteDataSource {
         .orderBy(ChatMessageRemoteConstants.createdAtField, descending: false)
         .limit(ChatMessageRemoteConstants.defaultMessageLimit)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
+        .map((snapshot) {
+          print(
+            'ChatMessageRemoteDataSource: Stream received ${snapshot.docs.length} documents for thread $chatThreadId',
+          );
+          final messages = snapshot.docs
               .map((doc) => ChatMessageModel.fromJson(doc.data()))
               .where((message) => !message.isDeleted)
-              .toList(),
-        );
+              .toList();
+          print(
+            'ChatMessageRemoteDataSource: After filtering, ${messages.length} messages for thread $chatThreadId',
+          );
+          return messages;
+        });
   }
 
   /// Adds a new message to Firestore.
   /// Creates a new document in the messages collection.
+  /// Also updates the lastMessage, lastMessageTime, and increments unread count in the chat thread.
   Future<void> addMessage(ChatMessageModel model) async {
+    print(
+      'ChatMessageRemoteDataSource: Adding message to Firestore - ID: ${model.id}, ThreadID: ${model.chatThreadId}',
+    );
+
+    // Add the message
     await firestore
         .collection(ChatMessageRemoteConstants.collectionName)
         .doc(model.id)
         .set(model.toJson());
+    print('ChatMessageRemoteDataSource: Message added successfully');
+
+    // Update the chat thread's lastMessage, lastMessageTime, and increment unread count for other users
+    try {
+      // Get chat thread to find other members
+      final threadDoc = await firestore
+          .collection('chat_threads')
+          .doc(model.chatThreadId)
+          .get();
+
+      if (threadDoc.exists) {
+        final threadData = threadDoc.data()!;
+        final members = List<String>.from(threadData['members'] ?? []);
+        final currentUnreadCounts = Map<String, int>.from(
+          threadData['unreadCounts'] ?? {},
+        );
+
+        // Increment unread count for all members EXCEPT the sender
+        for (final memberId in members) {
+          if (memberId != model.senderId) {
+            currentUnreadCounts[memberId] =
+                (currentUnreadCounts[memberId] ?? 0) + 1;
+          }
+        }
+
+        await firestore
+            .collection('chat_threads')
+            .doc(model.chatThreadId)
+            .update({
+              'lastMessage': model.content,
+              'lastMessageTime': model.sentAt.toIso8601String(),
+              'unreadCounts': currentUnreadCounts,
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
+      }
+      print(
+        'ChatMessageRemoteDataSource: Updated chat thread lastMessage for thread: ${model.chatThreadId}',
+      );
+    } catch (e) {
+      print(
+        'ChatMessageRemoteDataSource: Error updating chat thread lastMessage: $e',
+      );
+      // Don't throw error, message was already sent successfully
+    }
   }
 
   /// Updates an existing message in Firestore.
@@ -123,6 +205,210 @@ class ChatMessageRemoteDataSource {
           ChatMessageRemoteConstants.updatedAtField:
               FieldValue.serverTimestamp(),
         });
+  }
+
+  /// Marks all messages in a chat thread as read for a specific user.
+  /// Updates the chat thread's unread count and message read status.
+  Future<void> markMessagesAsRead(String chatThreadId, String userId) async {
+    try {
+      print(
+        'ChatMessageRemoteDataSource: markMessagesAsRead called for thread: $chatThreadId, user: $userId',
+      );
+
+      // Get all messages in this thread that are not deleted
+      // We'll filter in code to avoid Firestore's limit on != queries
+      final allMessagesQuery = await firestore
+          .collection(ChatMessageRemoteConstants.collectionName)
+          .where(
+            ChatMessageRemoteConstants.chatThreadIdField,
+            isEqualTo: chatThreadId,
+          )
+          .where(ChatMessageRemoteConstants.isDeletedField, isEqualTo: false)
+          .get();
+
+      // Filter in code: messages NOT from current user AND status != 'read'
+      final unreadMessagesDocs = allMessagesQuery.docs.where((doc) {
+        final data = doc.data();
+        final senderId =
+            data[ChatMessageRemoteConstants.senderIdField] as String?;
+        final status = data[ChatMessageRemoteConstants.statusField] as String?;
+        return senderId != userId && status != 'read';
+      }).toList();
+
+      print(
+        'ChatMessageRemoteDataSource: Found ${unreadMessagesDocs.length} unread messages from others',
+      );
+
+      if (unreadMessagesDocs.isNotEmpty) {
+        // Mark all messages as read
+        final batch = firestore.batch();
+        for (final doc in unreadMessagesDocs) {
+          final data = doc.data();
+          print(
+            'ChatMessageRemoteDataSource: Marking message as read - ID: ${doc.id}, from: ${data['senderId']}, status: ${data['status']}',
+          );
+          batch.update(doc.reference, {
+            ChatMessageRemoteConstants.statusField: 'read',
+            ChatMessageRemoteConstants.updatedAtField:
+                FieldValue.serverTimestamp(),
+          });
+        }
+        await batch.commit();
+        print(
+          'ChatMessageRemoteDataSource: Batch commit completed for ${unreadMessagesDocs.length} messages',
+        );
+
+        // Reset unread count for this specific user
+        await firestore.collection('chat_threads').doc(chatThreadId).update({
+          'unreadCounts.$userId': 0,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+        print(
+          'ChatMessageRemoteDataSource: Reset unread count to 0 for user: $userId in thread: $chatThreadId',
+        );
+      } else {
+        print(
+          'ChatMessageRemoteDataSource: No unread messages found to mark as read',
+        );
+      }
+    } catch (e) {
+      print('ChatMessageRemoteDataSource: Error marking messages as read: $e');
+      // Don't throw - this is not critical
+    }
+  }
+
+  /// Edits the content of an existing message with ownership validation.
+  /// Validates that the user owns the message before allowing edit.
+  Future<void> editMessage({
+    required String messageId,
+    required String newContent,
+    required String userId,
+  }) async {
+    // First, get the message to validate ownership
+    final messageDoc = await firestore
+        .collection(ChatMessageRemoteConstants.collectionName)
+        .doc(messageId)
+        .get();
+
+    if (!messageDoc.exists) {
+      throw Exception('Message not found');
+    }
+
+    final messageData = messageDoc.data()!;
+    final messageSenderId =
+        messageData[ChatMessageRemoteConstants.senderIdField];
+
+    if (messageSenderId != userId) {
+      throw Exception('You can only edit your own messages');
+    }
+
+    // Update the message content and editedAt timestamp
+    await firestore
+        .collection(ChatMessageRemoteConstants.collectionName)
+        .doc(messageId)
+        .update({
+          ChatMessageRemoteConstants.contentField: newContent,
+          ChatMessageRemoteConstants.editedAtField:
+              FieldValue.serverTimestamp(),
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
+        });
+  }
+
+  /// Deletes a message with ownership validation.
+  /// Validates that the user owns the message before allowing deletion.
+  Future<void> deleteMessageWithValidation({
+    required String messageId,
+    required String userId,
+  }) async {
+    // First, get the message to validate ownership
+    final messageDoc = await firestore
+        .collection(ChatMessageRemoteConstants.collectionName)
+        .doc(messageId)
+        .get();
+
+    if (!messageDoc.exists) {
+      throw Exception('Message not found');
+    }
+
+    final messageData = messageDoc.data()!;
+    final messageSenderId =
+        messageData[ChatMessageRemoteConstants.senderIdField];
+
+    if (messageSenderId != userId) {
+      throw Exception('You can only delete your own messages');
+    }
+
+    final chatThreadId =
+        messageData[ChatMessageRemoteConstants.chatThreadIdField];
+
+    // Soft delete the message
+    await firestore
+        .collection(ChatMessageRemoteConstants.collectionName)
+        .doc(messageId)
+        .update({
+          ChatMessageRemoteConstants.isDeletedField: true,
+          ChatMessageRemoteConstants.updatedAtField:
+              FieldValue.serverTimestamp(),
+        });
+
+    // Update chat thread lastMessage if this was the last message
+    await _updateLastMessageAfterDelete(chatThreadId, messageId);
+  }
+
+  /// Updates the chat thread's lastMessage after a message is deleted.
+  /// Finds the most recent non-deleted message and updates the thread.
+  Future<void> _updateLastMessageAfterDelete(
+    String chatThreadId,
+    String deletedMessageId,
+  ) async {
+    try {
+      // Get the most recent non-deleted message
+      final recentMessagesQuery = await firestore
+          .collection(ChatMessageRemoteConstants.collectionName)
+          .where(
+            ChatMessageRemoteConstants.chatThreadIdField,
+            isEqualTo: chatThreadId,
+          )
+          .where(ChatMessageRemoteConstants.isDeletedField, isEqualTo: false)
+          .orderBy(ChatMessageRemoteConstants.createdAtField, descending: true)
+          .limit(1)
+          .get();
+
+      if (recentMessagesQuery.docs.isNotEmpty) {
+        // There's still a non-deleted message
+        final latestMessage = ChatMessageModel.fromJson(
+          recentMessagesQuery.docs.first.data(),
+        );
+
+        await firestore.collection('chat_threads').doc(chatThreadId).update({
+          'lastMessage': latestMessage.content,
+          'lastMessageTime': latestMessage.sentAt.toIso8601String(),
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+        print(
+          'ChatMessageRemoteDataSource: Updated lastMessage after deletion for thread: $chatThreadId',
+        );
+      } else {
+        // No non-deleted messages left
+        await firestore.collection('chat_threads').doc(chatThreadId).update({
+          'lastMessage': '',
+          'lastMessageTime': DateTime.now().toIso8601String(),
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+        print(
+          'ChatMessageRemoteDataSource: Cleared lastMessage (no messages left) for thread: $chatThreadId',
+        );
+      }
+    } catch (e) {
+      print(
+        'ChatMessageRemoteDataSource: Error updating lastMessage after delete: $e',
+      );
+      // Don't throw - message deletion was successful
+    }
   }
 
   /// Fetches messages with pagination support.
