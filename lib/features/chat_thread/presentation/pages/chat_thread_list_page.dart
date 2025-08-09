@@ -2,6 +2,7 @@ import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_use
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/hide_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,6 +50,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
     final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
     final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
+    final hideChatThreadUseCase = HideChatThreadUseCase(repository);
     final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(
       repository,
     );
@@ -58,6 +60,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
       createChatThreadUseCase: createChatThreadUseCase,
       searchChatThreadsUseCase: searchChatThreadsUseCase,
       deleteChatThreadUseCase: deleteChatThreadUseCase,
+      hideChatThreadUseCase: hideChatThreadUseCase,
       findOrCreateChatThreadUseCase: findOrCreateChatThreadUseCase,
     );
 

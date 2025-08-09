@@ -15,6 +15,7 @@ class ChatThreadModel extends Equatable {
   final DateTime updatedAt;
   final String? groupAdminId;
   final String? groupDescription;
+  final List<String> hiddenFor;
 
   const ChatThreadModel({
     required this.id,
@@ -29,6 +30,7 @@ class ChatThreadModel extends Equatable {
     required this.updatedAt,
     this.groupAdminId,
     this.groupDescription,
+    this.hiddenFor = const [],
   });
 
   @override
@@ -45,6 +47,7 @@ class ChatThreadModel extends Equatable {
     updatedAt,
     groupAdminId,
     groupDescription,
+    hiddenFor,
   ];
 
   factory ChatThreadModel.fromJson(Map<String, dynamic> map) {
@@ -81,6 +84,7 @@ class ChatThreadModel extends Equatable {
       updatedAt: parseDate(map['updatedAt']),
       groupAdminId: map['groupAdminId'],
       groupDescription: map['groupDescription'],
+      hiddenFor: List<String>.from(map['hiddenFor'] ?? []),
     );
   }
 
@@ -98,6 +102,7 @@ class ChatThreadModel extends Equatable {
       'updatedAt': updatedAt,
       'groupAdminId': groupAdminId,
       'groupDescription': groupDescription,
+      'hiddenFor': hiddenFor,
     };
   }
 
@@ -115,6 +120,7 @@ class ChatThreadModel extends Equatable {
       updatedAt: updatedAt,
       groupAdminId: groupAdminId,
       groupDescription: groupDescription,
+      hiddenFor: hiddenFor,
     );
   }
 
@@ -132,6 +138,7 @@ class ChatThreadModel extends Equatable {
       updatedAt: entity.updatedAt,
       groupAdminId: entity.groupAdminId,
       groupDescription: entity.groupDescription,
+      hiddenFor: entity.hiddenFor,
     );
   }
 }

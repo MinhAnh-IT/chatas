@@ -6,6 +6,7 @@ import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_use
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/hide_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
 import 'package:chatas/features/chat_thread/domain/repositories/chat_thread_repository.dart';
@@ -115,6 +116,33 @@ class FakeDeleteChatThreadUseCase implements DeleteChatThreadUseCase {
   }
 }
 
+class FakeHideChatThreadUseCase implements HideChatThreadUseCase {
+  final List<String> hiddenThreadIds = [];
+  bool shouldThrowError;
+
+  FakeHideChatThreadUseCase({this.shouldThrowError = false});
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Future<void> call(String threadId, String userId) async {
+    if (shouldThrowError) {
+      throw Exception('Hide error');
+    }
+
+    if (threadId.isEmpty) {
+      throw ArgumentError('Thread ID cannot be empty');
+    }
+
+    if (userId.isEmpty) {
+      throw ArgumentError('User ID cannot be empty');
+    }
+
+    hiddenThreadIds.add(threadId);
+  }
+}
+
 class FakeFindOrCreateChatThreadUseCase
     implements FindOrCreateChatThreadUseCase {
   bool shouldThrowError;
@@ -158,6 +186,7 @@ void main() {
     late FakeCreateChatThreadUseCase fakeCreateChatThreadUseCase;
     late FakeSearchChatThreadsUseCase fakeSearchChatThreadsUseCase;
     late FakeDeleteChatThreadUseCase fakeDeleteChatThreadUseCase;
+    late FakeHideChatThreadUseCase fakeHideChatThreadUseCase;
     late FakeFindOrCreateChatThreadUseCase fakeFindOrCreateChatThreadUseCase;
 
     final now = DateTime.now();
@@ -195,6 +224,7 @@ void main() {
         testChatThreads,
       );
       fakeDeleteChatThreadUseCase = FakeDeleteChatThreadUseCase();
+      fakeHideChatThreadUseCase = FakeHideChatThreadUseCase();
       fakeFindOrCreateChatThreadUseCase = FakeFindOrCreateChatThreadUseCase();
 
       cubit = ChatThreadListCubit(
@@ -202,6 +232,7 @@ void main() {
         createChatThreadUseCase: fakeCreateChatThreadUseCase,
         searchChatThreadsUseCase: fakeSearchChatThreadsUseCase,
         deleteChatThreadUseCase: fakeDeleteChatThreadUseCase,
+        hideChatThreadUseCase: fakeHideChatThreadUseCase,
         findOrCreateChatThreadUseCase: fakeFindOrCreateChatThreadUseCase,
       );
     });
