@@ -10,6 +10,8 @@ import '../../domain/usecases/delete_message_usecase.dart';
 import '../../domain/usecases/mark_messages_as_read_usecase.dart';
 import '../../../chat_thread/domain/entities/chat_thread.dart';
 import '../../../chat_thread/domain/usecases/send_first_message_usecase.dart';
+import '../../../chat_thread/data/repositories/chat_thread_repository_impl.dart';
+import '../../../chat_thread/data/datasources/chat_thread_remote_data_source.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../constants/chat_message_page_constants.dart';
@@ -210,7 +212,9 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         // No messages visible might indicate a hidden thread
         // Try to get thread info to check if user is in hiddenFor
         try {
-          final repository = ChatThreadRepositoryImpl();
+          final repository = ChatThreadRepositoryImpl(
+            remoteDataSource: ChatThreadRemoteDataSource(),
+          );
           final thread = await repository.getChatThreadById(
             _currentChatThreadId!,
           );
