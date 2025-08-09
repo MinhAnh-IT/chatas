@@ -24,7 +24,9 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
 
   @override
   Future<List<ChatThread>> getArchivedChatThreads(String currentUserId) async {
-    final models = await _remoteDataSource.getArchivedChatThreads(currentUserId);
+    final models = await _remoteDataSource.getArchivedChatThreads(
+      currentUserId,
+    );
     return models.map((model) => model.toEntity()).toList();
   }
 
@@ -46,7 +48,10 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
-  Future<void> updateChatThreadMembers(String threadId, List<String> members) async {
+  Future<void> updateChatThreadMembers(
+    String threadId,
+    List<String> members,
+  ) async {
     return await _remoteDataSource.updateChatThreadMembers(threadId, members);
   }
 
@@ -61,13 +66,27 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
-  Future<void> updateChatThreadDescription(String threadId, String description) async {
-    return await _remoteDataSource.updateChatThreadDescription(threadId, description);
+  Future<void> updateChatThreadDescription(
+    String threadId,
+    String description,
+  ) async {
+    return await _remoteDataSource.updateChatThreadDescription(
+      threadId,
+      description,
+    );
   }
 
   @override
-  Future<void> updateLastMessage(String threadId, String message, DateTime timestamp) async {
-    return await _remoteDataSource.updateLastMessage(threadId, message, timestamp);
+  Future<void> updateLastMessage(
+    String threadId,
+    String message,
+    DateTime timestamp,
+  ) async {
+    return await _remoteDataSource.updateLastMessage(
+      threadId,
+      message,
+      timestamp,
+    );
   }
 
   @override
@@ -96,7 +115,10 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
-  Future<void> updateLastRecreatedAt(String threadId, DateTime timestamp) async {
+  Future<void> updateLastRecreatedAt(
+    String threadId,
+    DateTime timestamp,
+  ) async {
     return await _remoteDataSource.updateLastRecreatedAt(threadId, timestamp);
   }
 
@@ -106,8 +128,16 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
-  Future<void> markThreadDeletedForUser(String threadId, String userId, DateTime cutoff) async {
-    return await _remoteDataSource.markThreadDeletedForUser(threadId, userId, cutoff);
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
+    return await _remoteDataSource.markThreadDeletedForUser(
+      threadId,
+      userId,
+      cutoff,
+    );
   }
 
   @override
@@ -131,21 +161,42 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   }
 
   @override
-  Future<ChatThread> findOrCreate1v1Thread(String user1, String user2, {
+  Future<ChatThread> findOrCreate1v1Thread(
+    String user1,
+    String user2, {
     String? threadName,
     String? avatarUrl,
   }) async {
-    return await _remoteDataSource.findOrCreate1v1Thread(user1, user2, threadName, avatarUrl);
+    return await _remoteDataSource.findOrCreate1v1Thread(
+      user1,
+      user2,
+      threadName,
+      avatarUrl,
+    );
   }
 
   @override
-  Future<void> updateVisibilityCutoff(String threadId, String userId, DateTime cutoff) async {
-    return await _remoteDataSource.updateVisibilityCutoff(threadId, userId, cutoff);
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
+    return await _remoteDataSource.updateVisibilityCutoff(
+      threadId,
+      userId,
+      cutoff,
+    );
   }
 
   @override
-  Future<List<ChatThread>> searchChatThreads(String query, String currentUserId) async {
-    final models = await _remoteDataSource.searchChatThreads(query, currentUserId);
+  Future<List<ChatThread>> searchChatThreads(
+    String query,
+    String currentUserId,
+  ) async {
+    final models = await _remoteDataSource.searchChatThreads(
+      query,
+      currentUserId,
+    );
     return models.map((model) => model.toEntity()).toList();
   }
 }

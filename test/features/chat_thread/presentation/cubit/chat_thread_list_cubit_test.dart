@@ -188,10 +188,7 @@ class FakeArchiveThreadUseCase implements ArchiveThreadUseCase {
   late final ChatThreadRepository repository;
 
   @override
-  Future<void> call({
-    required String threadId,
-    required String userId,
-  }) async {
+  Future<void> call({required String threadId, required String userId}) async {
     if (shouldThrowError) {
       throw Exception('Archive error');
     }
@@ -217,10 +214,7 @@ class FakeLeaveGroupUseCase implements LeaveGroupUseCase {
   late final ChatThreadRepository repository;
 
   @override
-  Future<void> call({
-    required String threadId,
-    required String userId,
-  }) async {
+  Future<void> call({required String threadId, required String userId}) async {
     if (shouldThrowError) {
       throw Exception('Leave group error');
     }
@@ -246,10 +240,7 @@ class FakeJoinGroupUseCase implements JoinGroupUseCase {
   late final ChatThreadRepository repository;
 
   @override
-  Future<void> call({
-    required String threadId,
-    required String userId,
-  }) async {
+  Future<void> call({required String threadId, required String userId}) async {
     if (shouldThrowError) {
       throw Exception('Join group error');
     }

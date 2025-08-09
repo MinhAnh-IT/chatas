@@ -42,7 +42,8 @@ class SendFirstMessageUseCase {
       await chatThreadRepository.updateVisibilityCutoff(
         chatThread.id,
         message.senderId,
-        chatThread.lastRecreatedAt!, // Use the timestamp from the temporary thread
+        chatThread
+            .lastRecreatedAt!, // Use the timestamp from the temporary thread
       );
       await chatThreadRepository.resetUnreadCount(
         chatThread.id,
@@ -57,26 +58,30 @@ class SendFirstMessageUseCase {
     }
     // Check if this is a temporary thread (starts with 'temp_') - for completely new chats
     else if (chatThread.id.startsWith('temp_')) {
-      print('SendFirstMessageUseCase: Processing completely new temporary thread');
-      
+      print(
+        'SendFirstMessageUseCase: Processing completely new temporary thread',
+      );
+
       // This is a completely new temporary thread
       print(
         'SendFirstMessageUseCase: Creating real thread from temporary thread',
       );
-      print(
-        'SendFirstMessageUseCase: Temporary thread ID: ${chatThread.id}',
-      );
+      print('SendFirstMessageUseCase: Temporary thread ID: ${chatThread.id}');
       // Create the actual thread in database
       final now = DateTime.now();
       final realChatThread = ChatThread(
-        id: ChatThread.generate1v1ThreadId(chatThread.members[0], chatThread.members[1]),
+        id: ChatThread.generate1v1ThreadId(
+          chatThread.members[0],
+          chatThread.members[1],
+        ),
         name: chatThread.name,
         lastMessage: message.content,
         lastMessageTime: now,
         avatarUrl: chatThread.avatarUrl,
         members: chatThread.members,
         isGroup: chatThread.isGroup,
-        unreadCounts: {}, // Start with empty unread counts, will be updated when message is added
+        unreadCounts:
+            {}, // Start with empty unread counts, will be updated when message is added
         createdAt: now,
         updatedAt: now,
       );

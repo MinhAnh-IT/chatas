@@ -95,46 +95,60 @@ class ChatThreadRemoteDataSource {
   }
 
   /// Gets archived (hidden) chat threads for a specific user
-  Future<List<ChatThreadModel>> getArchivedChatThreads(String currentUserId) async {
-    print('🔍 ChatThreadRemoteDataSource: FETCHING ARCHIVED THREADS for user: $currentUserId');
-    
+  Future<List<ChatThreadModel>> getArchivedChatThreads(
+    String currentUserId,
+  ) async {
+    print(
+      '🔍 ChatThreadRemoteDataSource: FETCHING ARCHIVED THREADS for user: $currentUserId',
+    );
+
     final snapshot = await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .where('members', arrayContains: currentUserId)
         // .orderBy('updatedAt', descending: true) // Temporarily removed due to missing index
         .get();
-        
-    print('🔍 ChatThreadRemoteDataSource: Found ${snapshot.docs.length} total threads for user $currentUserId');
+
+    print(
+      '🔍 ChatThreadRemoteDataSource: Found ${snapshot.docs.length} total threads for user $currentUserId',
+    );
 
     // Get all threads and filter only the hidden ones
     final allThreads = snapshot.docs.map((doc) {
       final data = doc.data();
       data['id'] = doc.id;
       final model = ChatThreadModel.fromJson(data);
-      
-      print('🔍 Thread ${doc.id}: name="${model.name}", hiddenFor=${model.hiddenFor}, isHidden=${model.hiddenFor.contains(currentUserId)}');
-      
+
+      print(
+        '🔍 Thread ${doc.id}: name="${model.name}", hiddenFor=${model.hiddenFor}, isHidden=${model.hiddenFor.contains(currentUserId)}',
+      );
+
       return model;
     }).toList();
-    
+
     // Filter only threads that are hidden for this user
-    final archivedThreads = allThreads.where((thread) => 
-      thread.hiddenFor.contains(currentUserId)
-    ).toList();
-    
+    final archivedThreads = allThreads
+        .where((thread) => thread.hiddenFor.contains(currentUserId))
+        .toList();
+
     // Sort by updatedAt since we removed orderBy from query
     archivedThreads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-    print('🎯 ChatThreadRemoteDataSource: RESULT = ${archivedThreads.length} archived threads for user $currentUserId');
-    
+    print(
+      '🎯 ChatThreadRemoteDataSource: RESULT = ${archivedThreads.length} archived threads for user $currentUserId',
+    );
+
     for (final thread in archivedThreads) {
-      print('✅ ARCHIVED: ${thread.id} - Name: "${thread.name}", HiddenFor: ${thread.hiddenFor}');
+      print(
+        '✅ ARCHIVED: ${thread.id} - Name: "${thread.name}", HiddenFor: ${thread.hiddenFor}',
+      );
     }
 
     if (archivedThreads.isEmpty) {
       print('❌ NO ARCHIVED THREADS FOUND! All threads hiddenFor status:');
       for (final thread in allThreads) {
-        print('   - ${thread.name}: hiddenFor=${thread.hiddenFor}, contains($currentUserId)=${thread.hiddenFor.contains(currentUserId)}');
+        print(
+          '   - ${thread.name}: hiddenFor=${thread.hiddenFor}, contains($currentUserId)=${thread.hiddenFor.contains(currentUserId)}',
+        );
       }
     }
 
@@ -163,7 +177,10 @@ class ChatThreadRemoteDataSource {
         .update(data);
   }
 
-  Future<void> updateChatThreadMembers(String threadId, List<String> members) async {
+  Future<void> updateChatThreadMembers(
+    String threadId,
+    List<String> members,
+  ) async {
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)
@@ -177,10 +194,7 @@ class ChatThreadRemoteDataSource {
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)
-        .update({
-          'name': name,
-          'updatedAt': DateTime.now().toIso8601String(),
-        });
+        .update({'name': name, 'updatedAt': DateTime.now().toIso8601String()});
   }
 
   Future<void> updateChatThreadAvatar(String threadId, String avatarUrl) async {
@@ -193,9 +207,11 @@ class ChatThreadRemoteDataSource {
         });
   }
 
-
-
-  Future<void> updateLastMessage(String threadId, String message, DateTime timestamp) async {
+  Future<void> updateLastMessage(
+    String threadId,
+    String message,
+    DateTime timestamp,
+  ) async {
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)
@@ -231,9 +247,9 @@ class ChatThreadRemoteDataSource {
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)
         .get();
-    
+
     if (!doc.exists) return null;
-    
+
     final data = doc.data()!;
     data['id'] = doc.id;
     return ChatThreadModel.fromJson(data);
@@ -317,7 +333,10 @@ class ChatThreadRemoteDataSource {
     }
   }
 
-  Future<void> updateLastRecreatedAt(String threadId, DateTime timestamp) async {
+  Future<void> updateLastRecreatedAt(
+    String threadId,
+    DateTime timestamp,
+  ) async {
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)
@@ -327,7 +346,11 @@ class ChatThreadRemoteDataSource {
         });
   }
 
-  Future<void> markThreadDeletedForUser(String threadId, String userId, DateTime cutoff) async {
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)
@@ -381,16 +404,21 @@ class ChatThreadRemoteDataSource {
         });
   }
 
-  Future<ChatThread> findOrCreate1v1Thread(String user1, String user2, String? threadName, String? avatarUrl) async {
+  Future<ChatThread> findOrCreate1v1Thread(
+    String user1,
+    String user2,
+    String? threadName,
+    String? avatarUrl,
+  ) async {
     // Generate consistent thread ID for 1-1 chats
     final threadId = ChatThread.generate1v1ThreadId(user1, user2);
-    
+
     // Try to find existing thread
     final existingThread = await getChatThreadById(threadId);
     if (existingThread != null) {
       return existingThread.toEntity();
     }
-    
+
     // Create new thread if not found
     final now = DateTime.now();
     final newThread = ChatThread(
@@ -406,7 +434,7 @@ class ChatThreadRemoteDataSource {
       updatedAt: now,
       visibilityCutoff: {},
     );
-    
+
     final model = ChatThreadModel.fromEntity(newThread);
     await addChatThread(model);
     return newThread;
@@ -532,7 +560,11 @@ class ChatThreadRemoteDataSource {
         });
   }
 
-  Future<void> updateVisibilityCutoff(String threadId, String userId, DateTime cutoff) async {
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
         .doc(threadId)

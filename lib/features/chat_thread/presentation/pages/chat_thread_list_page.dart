@@ -210,7 +210,9 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
     final archiveThreadUseCase = ArchiveThreadUseCase(repository);
     final leaveGroupUseCase = LeaveGroupUseCase(repository);
     final joinGroupUseCase = JoinGroupUseCase(repository);
-    final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(repository);
+    final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(
+      repository,
+    );
 
     final cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,

@@ -79,18 +79,27 @@ class ChatThread extends Equatable {
 
   /// Mark thread as deleted for a specific user (1-1 chats only)
   /// This sets the visibility cutoff to hide old messages
-  ChatThread markDeletedFor(String userId, DateTime now, {DateTime? lastMsgTime}) {
+  ChatThread markDeletedFor(
+    String userId,
+    DateTime now, {
+    DateTime? lastMsgTime,
+  }) {
     assert(!isGroup, 'markDeletedFor only applies to 1-1 chats');
-    
+
     // Set cutoff to max of now and last message time to avoid exposing recent messages
-    final cutoff = (lastMsgTime != null && lastMsgTime.isAfter(now)) ? lastMsgTime : now;
-    
+    final cutoff = (lastMsgTime != null && lastMsgTime.isAfter(now))
+        ? lastMsgTime
+        : now;
+
     // Add user to hiddenFor if not already there
-    final newHidden = hiddenFor.contains(userId) ? hiddenFor : [...hiddenFor, userId];
-    
+    final newHidden = hiddenFor.contains(userId)
+        ? hiddenFor
+        : [...hiddenFor, userId];
+
     // Set visibility cutoff for this user
-    final newCutoff = Map<String, DateTime>.from(visibilityCutoff)..[userId] = cutoff;
-    
+    final newCutoff = Map<String, DateTime>.from(visibilityCutoff)
+      ..[userId] = cutoff;
+
     return copyWith(
       hiddenFor: newHidden,
       visibilityCutoff: newCutoff,
@@ -101,21 +110,17 @@ class ChatThread extends Equatable {
   /// Archive thread for a specific user (applies to both 1-1 and group chats)
   /// This only hides from inbox, doesn't set cutoff
   ChatThread archiveFor(String userId, DateTime now) {
-    final newHidden = hiddenFor.contains(userId) ? hiddenFor : [...hiddenFor, userId];
-    return copyWith(
-      hiddenFor: newHidden,
-      updatedAt: now,
-    );
+    final newHidden = hiddenFor.contains(userId)
+        ? hiddenFor
+        : [...hiddenFor, userId];
+    return copyWith(hiddenFor: newHidden, updatedAt: now);
   }
 
   /// Revive thread for a specific user (show in inbox again)
   /// Keeps cutoff (1-1) or joinedAt (group) intact
   ChatThread reviveFor(String userId, DateTime now) {
     final newHidden = hiddenFor.where((u) => u != userId).toList();
-    return copyWith(
-      hiddenFor: newHidden,
-      updatedAt: now,
-    );
+    return copyWith(hiddenFor: newHidden, updatedAt: now);
   }
 
   /// Leave group for a specific user (group chats only)
@@ -124,24 +129,18 @@ class ChatThread extends Equatable {
     assert(isGroup, 'leaveGroupFor only applies to group chats');
     final newMembers = members.where((u) => u != userId).toList();
     final newJoinedAt = Map<String, DateTime>.from(joinedAt)..remove(userId);
-    return copyWith(
-      members: newMembers,
-      joinedAt: newJoinedAt,
-      updatedAt: now,
-    );
+    return copyWith(members: newMembers, joinedAt: newJoinedAt, updatedAt: now);
   }
 
   /// Join group for a specific user (group chats only)
   /// Adds user to members and sets joinedAt timestamp
   ChatThread joinGroupFor(String userId, DateTime now) {
     assert(isGroup, 'joinGroupFor only applies to group chats');
-    final newMembers = members.contains(userId) ? members : [...members, userId];
+    final newMembers = members.contains(userId)
+        ? members
+        : [...members, userId];
     final newJoinedAt = Map<String, DateTime>.from(joinedAt)..[userId] = now;
-    return copyWith(
-      members: newMembers,
-      joinedAt: newJoinedAt,
-      updatedAt: now,
-    );
+    return copyWith(members: newMembers, joinedAt: newJoinedAt, updatedAt: now);
   }
 
   /// Check if user is a member of this thread

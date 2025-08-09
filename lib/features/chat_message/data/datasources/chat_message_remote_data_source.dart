@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/chat_message_model.dart';
 import '../../constants/chat_message_remote_constants.dart';
@@ -33,7 +32,7 @@ class ChatMessageRemoteDataSource {
       if (threadDoc.exists) {
         final threadData = threadDoc.data()!;
         final isGroup = threadData['isGroup'] ?? false;
-        
+
         if (isGroup) {
           // For group chats: check joinedAt timestamp
           final joinedAtData = threadData['joinedAt'] as Map<String, dynamic>?;
@@ -46,8 +45,10 @@ class ChatMessageRemoteDataSource {
           }
         } else {
           // For 1-1 chats: check visibilityCutoff timestamp
-          final visibilityCutoffData = threadData['visibilityCutoff'] as Map<String, dynamic>?;
-          if (visibilityCutoffData != null && visibilityCutoffData[currentUserId] != null) {
+          final visibilityCutoffData =
+              threadData['visibilityCutoff'] as Map<String, dynamic>?;
+          if (visibilityCutoffData != null &&
+              visibilityCutoffData[currentUserId] != null) {
             final cutoffString = visibilityCutoffData[currentUserId] as String;
             visibilityCutoff = DateTime.parse(cutoffString);
             print(
@@ -179,19 +180,23 @@ class ChatMessageRemoteDataSource {
           if (threadDoc.exists) {
             final threadData = threadDoc.data()!;
             final isGroup = threadData['isGroup'] ?? false;
-            
+
             if (isGroup) {
               // For group chats: check joinedAt timestamp
-              final joinedAtData = threadData['joinedAt'] as Map<String, dynamic>?;
+              final joinedAtData =
+                  threadData['joinedAt'] as Map<String, dynamic>?;
               if (joinedAtData != null && joinedAtData[currentUserId] != null) {
                 final joinedAtString = joinedAtData[currentUserId] as String;
                 visibilityCutoff = DateTime.parse(joinedAtString);
               }
             } else {
               // For 1-1 chats: check visibilityCutoff timestamp
-              final visibilityCutoffData = threadData['visibilityCutoff'] as Map<String, dynamic>?;
-              if (visibilityCutoffData != null && visibilityCutoffData[currentUserId] != null) {
-                final cutoffString = visibilityCutoffData[currentUserId] as String;
+              final visibilityCutoffData =
+                  threadData['visibilityCutoff'] as Map<String, dynamic>?;
+              if (visibilityCutoffData != null &&
+                  visibilityCutoffData[currentUserId] != null) {
+                final cutoffString =
+                    visibilityCutoffData[currentUserId] as String;
                 visibilityCutoff = DateTime.parse(cutoffString);
               }
             }
@@ -246,16 +251,17 @@ class ChatMessageRemoteDataSource {
       final hiddenFor = List<String>.from(threadData['hiddenFor'] ?? []);
       final members = List<String>.from(threadData['members'] ?? []);
       final isGroup = threadData['isGroup'] ?? false;
-      final visibilityCutoffData = threadData['visibilityCutoff'] as Map<String, dynamic>?;
+      final visibilityCutoffData =
+          threadData['visibilityCutoff'] as Map<String, dynamic>?;
       final joinedAtData = threadData['joinedAt'] as Map<String, dynamic>?;
-      
+
       bool needsUpdate = false;
       final usersToRevive = <String>[];
-      
+
       // Check each member in hiddenFor to see if they should see this new message
       for (final userId in List<String>.from(hiddenFor)) {
         bool shouldRevive = false;
-        
+
         if (userId == model.senderId) {
           // Always revive for sender
           shouldRevive = true;
@@ -266,7 +272,8 @@ class ChatMessageRemoteDataSource {
             if (joinedAtData != null && joinedAtData[userId] != null) {
               final joinedAtString = joinedAtData[userId] as String;
               final joinedAt = DateTime.parse(joinedAtString);
-              if (model.createdAt.isAfter(joinedAt) || model.createdAt.isAtSameMomentAs(joinedAt)) {
+              if (model.createdAt.isAfter(joinedAt) ||
+                  model.createdAt.isAtSameMomentAs(joinedAt)) {
                 shouldRevive = true;
               }
             } else {
@@ -275,10 +282,12 @@ class ChatMessageRemoteDataSource {
             }
           } else {
             // For 1-1 chats: check visibilityCutoff
-            if (visibilityCutoffData != null && visibilityCutoffData[userId] != null) {
+            if (visibilityCutoffData != null &&
+                visibilityCutoffData[userId] != null) {
               final cutoffString = visibilityCutoffData[userId] as String;
               final visibilityCutoff = DateTime.parse(cutoffString);
-              if (model.createdAt.isAfter(visibilityCutoff) || model.createdAt.isAtSameMomentAs(visibilityCutoff)) {
+              if (model.createdAt.isAfter(visibilityCutoff) ||
+                  model.createdAt.isAtSameMomentAs(visibilityCutoff)) {
                 shouldRevive = true;
               }
             } else {
@@ -287,12 +296,12 @@ class ChatMessageRemoteDataSource {
             }
           }
         }
-        
+
         if (shouldRevive) {
           usersToRevive.add(userId);
         }
       }
-      
+
       // Remove users who should be revived from hiddenFor
       for (final userId in usersToRevive) {
         if (hiddenFor.contains(userId)) {
@@ -303,7 +312,7 @@ class ChatMessageRemoteDataSource {
           );
         }
       }
-      
+
       // Update hiddenFor if needed
       if (needsUpdate) {
         await firestore
@@ -313,7 +322,7 @@ class ChatMessageRemoteDataSource {
               'hiddenFor': hiddenFor,
               'updatedAt': DateTime.now().toIso8601String(),
             });
-            
+
         print(
           'ChatMessageRemoteDataSource: Successfully revived thread ${model.chatThreadId} for users: $usersToRevive',
         );
@@ -342,16 +351,17 @@ class ChatMessageRemoteDataSource {
           threadData['unreadCounts'] ?? {},
         );
 
-        // Increment unread count for members EXCEPT the sender, 
+        // Increment unread count for members EXCEPT the sender,
         // but only if the message is visible to them (respecting visibilityCutoff/joinedAt)
         final isGroup = threadData['isGroup'] ?? false;
-        final visibilityCutoffData = threadData['visibilityCutoff'] as Map<String, dynamic>?;
+        final visibilityCutoffData =
+            threadData['visibilityCutoff'] as Map<String, dynamic>?;
         final joinedAtData = threadData['joinedAt'] as Map<String, dynamic>?;
-        
+
         for (final memberId in members) {
           if (memberId != model.senderId) {
             bool shouldIncrementUnread = true;
-            
+
             // Check if this message is visible to the member
             if (isGroup) {
               // For group chats: check if member joined before this message
@@ -364,7 +374,8 @@ class ChatMessageRemoteDataSource {
               }
             } else {
               // For 1-1 chats: check visibilityCutoff
-              if (visibilityCutoffData != null && visibilityCutoffData[memberId] != null) {
+              if (visibilityCutoffData != null &&
+                  visibilityCutoffData[memberId] != null) {
                 final cutoffString = visibilityCutoffData[memberId] as String;
                 final visibilityCutoff = DateTime.parse(cutoffString);
                 if (model.createdAt.isBefore(visibilityCutoff)) {
@@ -372,9 +383,10 @@ class ChatMessageRemoteDataSource {
                 }
               }
             }
-            
+
             if (shouldIncrementUnread) {
-              currentUnreadCounts[memberId] = (currentUnreadCounts[memberId] ?? 0) + 1;
+              currentUnreadCounts[memberId] =
+                  (currentUnreadCounts[memberId] ?? 0) + 1;
             }
           }
         }
@@ -518,10 +530,13 @@ class ChatMessageRemoteDataSource {
         );
 
         // Reset unread count for this specific user
-        await firestore.collection(ChatThreadRemoteConstants.collectionName).doc(chatThreadId).update({
-          'unreadCounts.$userId': 0,
-          'updatedAt': DateTime.now().toIso8601String(),
-        });
+        await firestore
+            .collection(ChatThreadRemoteConstants.collectionName)
+            .doc(chatThreadId)
+            .update({
+              'unreadCounts.$userId': 0,
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
 
         print(
           'ChatMessageRemoteDataSource: Reset unread count to 0 for user: $userId in thread: $chatThreadId',
@@ -677,22 +692,28 @@ class ChatMessageRemoteDataSource {
         // There's still a valid message
         final latestMessage = validMessages.first;
 
-        await firestore.collection(ChatThreadRemoteConstants.collectionName).doc(chatThreadId).update({
-          'lastMessage': latestMessage.content,
-          'lastMessageTime': latestMessage.sentAt.toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
-        });
+        await firestore
+            .collection(ChatThreadRemoteConstants.collectionName)
+            .doc(chatThreadId)
+            .update({
+              'lastMessage': latestMessage.content,
+              'lastMessageTime': latestMessage.sentAt.toIso8601String(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
 
         print(
           'ChatMessageRemoteDataSource: Updated lastMessage after deletion for thread: $chatThreadId',
         );
       } else {
         // No non-deleted messages left
-        await firestore.collection(ChatThreadRemoteConstants.collectionName).doc(chatThreadId).update({
-          'lastMessage': '',
-          'lastMessageTime': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
-        });
+        await firestore
+            .collection(ChatThreadRemoteConstants.collectionName)
+            .doc(chatThreadId)
+            .update({
+              'lastMessage': '',
+              'lastMessageTime': DateTime.now().toIso8601String(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
 
         print(
           'ChatMessageRemoteDataSource: Cleared lastMessage (no messages left) for thread: $chatThreadId',

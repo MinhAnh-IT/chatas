@@ -211,11 +211,17 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         // Try to get thread info to check if user is in hiddenFor
         try {
           final repository = ChatThreadRepositoryImpl();
-          final thread = await repository.getChatThreadById(_currentChatThreadId!);
-          
-          if (thread != null && thread.isHiddenFor(_currentUserId!) && !thread.isGroup) {
-            print('ChatMessageCubit: Detected first message to hidden 1-1 thread, using SendFirstMessageUseCase');
-            
+          final thread = await repository.getChatThreadById(
+            _currentChatThreadId!,
+          );
+
+          if (thread != null &&
+              thread.isHiddenFor(_currentUserId!) &&
+              !thread.isGroup) {
+            print(
+              'ChatMessageCubit: Detected first message to hidden 1-1 thread, using SendFirstMessageUseCase',
+            );
+
             // Create the first message
             final now = DateTime.now();
             final firstMessage = ChatMessage(

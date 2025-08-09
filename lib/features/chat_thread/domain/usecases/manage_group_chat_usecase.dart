@@ -155,7 +155,10 @@ class ManageGroupChatUseCase {
       throw Exception('Chỉ admin mới có thể đổi mô tả nhóm');
     }
 
-    await repository.updateChatThreadDescription(chatThreadId, newDescription.trim());
+    await repository.updateChatThreadDescription(
+      chatThreadId,
+      newDescription.trim(),
+    );
   }
 
   /// Leave group (for non-admin users)

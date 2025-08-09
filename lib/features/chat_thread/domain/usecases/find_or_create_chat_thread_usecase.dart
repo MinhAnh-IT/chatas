@@ -43,7 +43,7 @@ class FindOrCreateChatThreadUseCase {
       print(
         'FindOrCreateChatThreadUseCase: Checking thread ${thread.id} - Members: ${thread.members}, IsGroup: ${thread.isGroup}, HiddenFor: ${thread.hiddenFor}',
       );
-      
+
       if (!thread.isGroup &&
           thread.members.length == 2 &&
           thread.members.contains(currentUserId) &&
@@ -51,7 +51,7 @@ class FindOrCreateChatThreadUseCase {
         print(
           'FindOrCreateChatThreadUseCase: Found matching 1-1 thread ${thread.id} between $currentUserId and $friendId',
         );
-        
+
         // Check if thread is hidden for current user (whether or not other user has also hidden it)
         if (thread.isHiddenFor(currentUserId)) {
           // For 1-1 chats: Return the original hidden thread with lastRecreatedAt set
@@ -63,7 +63,8 @@ class FindOrCreateChatThreadUseCase {
           final now = DateTime.now();
           // Return the original thread with lastRecreatedAt set
           return thread.copyWith(
-            lastRecreatedAt: now, // Set lastRecreatedAt to indicate this is a recreation
+            lastRecreatedAt:
+                now, // Set lastRecreatedAt to indicate this is a recreation
           );
         }
 
