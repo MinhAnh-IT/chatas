@@ -112,7 +112,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
         avatarUrl: friendAvatarUrl,
         members: [currentUserId, friendId],
         isGroup: false,
-        unreadCount: 0,
+        unreadCounts: {},
         createdAt: now,
         updatedAt: now,
       );

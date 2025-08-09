@@ -26,10 +26,6 @@ class ChatThreadListPageConstants {
   static const String deleteError = 'Không thể xóa đoạn chat';
   static const String deleteTooltip = 'Xóa đoạn chat';
 
-  /// Temporary constants for development
-  static const String temporaryUserId =
-      'current_user'; // TODO: Get from auth service - keep consistent with ChatMessagePageConstants
-
   /// UI dimensions
   static const double avatarRadius = 20.0;
   static const double dividerHeight = 1.0;

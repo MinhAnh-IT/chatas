@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 /// Enum representing different types of messages.
-enum MessageType { text, image, file, system }
+enum MessageType { text, image, video, file, system }
 
 /// Enum representing message status.
 enum MessageStatus { sending, sent, delivered, read, failed }
@@ -28,6 +28,14 @@ class ChatMessage extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // File attachment properties
+  final String? fileUrl; // Cloudinary URL for file/image/video
+  final String? fileName; // Original file name
+  final String?
+  fileType; // MIME type (image/jpeg, video/mp4, application/pdf, etc.)
+  final int? fileSize; // File size in bytes
+  final String? thumbnailUrl; // Thumbnail URL for videos/documents
+
   const ChatMessage({
     required this.id,
     required this.chatThreadId,
@@ -44,6 +52,12 @@ class ChatMessage extends Equatable {
     this.replyToMessageId,
     required this.createdAt,
     required this.updatedAt,
+    // File attachment properties
+    this.fileUrl,
+    this.fileName,
+    this.fileType,
+    this.fileSize,
+    this.thumbnailUrl,
   });
 
   /// Checks if this message is from the specified user.
@@ -67,6 +81,29 @@ class ChatMessage extends Equatable {
     return reactions[userId];
   }
 
+  /// Checks if this message has a file attachment.
+  bool get hasFileAttachment => fileUrl != null && fileUrl!.isNotEmpty;
+
+  /// Checks if this message is an image.
+  bool get isImage => type == MessageType.image;
+
+  /// Checks if this message is a video.
+  bool get isVideo => type == MessageType.video;
+
+  /// Checks if this message is a file.
+  bool get isFile => type == MessageType.file;
+
+  /// Gets formatted file size string.
+  String get fileSizeString {
+    if (fileSize == null) return '';
+    final bytes = fileSize!;
+    if (bytes < 1024) return '${bytes}B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
+  }
+
   /// Creates a copy of this message with updated fields.
   ChatMessage copyWith({
     String? id,
@@ -84,6 +121,11 @@ class ChatMessage extends Equatable {
     String? replyToMessageId,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? fileUrl,
+    String? fileName,
+    String? fileType,
+    int? fileSize,
+    String? thumbnailUrl,
   }) {
     return ChatMessage(
       id: id ?? this.id,
@@ -101,6 +143,11 @@ class ChatMessage extends Equatable {
       replyToMessageId: replyToMessageId ?? this.replyToMessageId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      fileUrl: fileUrl ?? this.fileUrl,
+      fileName: fileName ?? this.fileName,
+      fileType: fileType ?? this.fileType,
+      fileSize: fileSize ?? this.fileSize,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
     );
   }
 
@@ -121,5 +168,10 @@ class ChatMessage extends Equatable {
     replyToMessageId,
     createdAt,
     updatedAt,
+    fileUrl,
+    fileName,
+    fileType,
+    fileSize,
+    thumbnailUrl,
   ];
 }

@@ -85,11 +85,11 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
   }
 
   @override
-  Future<void> markAsRead(String messageId, String userId) async {
+  Future<void> markMessagesAsRead(String chatThreadId, String userId) async {
     try {
-      await _remoteDataSource.updateMessageStatus(messageId, 'read');
+      await _remoteDataSource.markMessagesAsRead(chatThreadId, userId);
     } catch (e) {
-      throw Exception('Failed to mark message as read: $e');
+      throw Exception('Failed to mark messages as read: $e');
     }
   }
 

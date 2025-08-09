@@ -32,7 +32,7 @@ void main() {
       avatarUrl: 'https://example.com/avatar.png',
       members: const ['user1', 'user2'],
       isGroup: false,
-      unreadCount: 5,
+      unreadCounts: {'user1': 0, 'user2': 5},
       createdAt: tCreatedAt,
       updatedAt: tDateTime,
     );
@@ -45,7 +45,7 @@ void main() {
       avatarUrl: 'https://example.com/avatar.png',
       members: const ['user1', 'user2'],
       isGroup: false,
-      unreadCount: 5,
+      unreadCounts: {'user1': 0, 'user2': 5},
       createdAt: tCreatedAt,
       updatedAt: tDateTime,
     );
@@ -98,7 +98,7 @@ void main() {
           avatarUrl: 'https://example.com/jane.png',
           members: const ['user1', 'jane_id'],
           isGroup: false,
-          unreadCount: 3,
+          unreadCounts: {'user1': 0, 'jane_id': 3},
           createdAt: tCreatedAt,
           updatedAt: tDateTime,
         );
@@ -160,7 +160,7 @@ void main() {
           avatarUrl: 'https://example.com/group_avatar.png',
           members: const ['user1', 'user2', 'user3', 'user4'],
           isGroup: true,
-          unreadCount: 0,
+          unreadCounts: {},
           createdAt: tCreatedAt,
           updatedAt: tDateTime,
         );
@@ -249,7 +249,10 @@ void main() {
         expect(capturedModel.avatarUrl, tChatThreadEntity.avatarUrl);
         expect(capturedModel.members, tChatThreadEntity.members);
         expect(capturedModel.isGroup, tChatThreadEntity.isGroup);
-        expect(capturedModel.unreadCount, tChatThreadEntity.unreadCount);
+        expect(
+          capturedModel.unreadCounts["user1"],
+          tChatThreadEntity.getUnreadCount("user1"),
+        );
         expect(capturedModel.createdAt, tChatThreadEntity.createdAt);
         expect(capturedModel.updatedAt, tChatThreadEntity.updatedAt);
       });
@@ -274,7 +277,10 @@ void main() {
         expect(entity.avatarUrl, tChatThreadModel.avatarUrl);
         expect(entity.members, tChatThreadModel.members);
         expect(entity.isGroup, tChatThreadModel.isGroup);
-        expect(entity.unreadCount, tChatThreadModel.unreadCount);
+        expect(
+          entity.getUnreadCount("user1"),
+          tChatThreadModel.unreadCounts["user1"],
+        );
         expect(entity.createdAt, tChatThreadModel.createdAt);
         expect(entity.updatedAt, tChatThreadModel.updatedAt);
       });
