@@ -24,26 +24,59 @@ class SendFirstMessageUseCase {
     required ChatMessage message,
   }) async {
     print('SendFirstMessageUseCase: Starting with thread ID: ${chatThread.id}');
+    print(
+      'SendFirstMessageUseCase: Thread lastRecreatedAt: ${chatThread.lastRecreatedAt}',
+    );
     String actualThreadId = chatThread.id;
 
-    // Check if this is a temporary thread (starts with 'temp_')
-    if (chatThread.id.startsWith('temp_')) {
+    // Check if this is a hidden thread being recreated (has lastRecreatedAt)
+    if (chatThread.lastRecreatedAt != null) {
+      print(
+        'SendFirstMessageUseCase: Reviving hidden thread: ${chatThread.id} for user: ${message.senderId}',
+      );
+      await chatThreadRepository.reviveThreadForUser(
+        chatThread.id,
+        message.senderId,
+      );
+      // Update lastRecreatedAt (now visibilityCutoff) for the user
+      await chatThreadRepository.updateVisibilityCutoff(
+        chatThread.id,
+        message.senderId,
+        chatThread.lastRecreatedAt!, // Use the timestamp from the temporary thread
+      );
+      await chatThreadRepository.resetUnreadCount(
+        chatThread.id,
+        message.senderId,
+      );
+
+      // Use the original thread ID
+      actualThreadId = chatThread.id;
+      print(
+        'SendFirstMessageUseCase: Successfully revived thread: $actualThreadId',
+      );
+    }
+    // Check if this is a temporary thread (starts with 'temp_') - for completely new chats
+    else if (chatThread.id.startsWith('temp_')) {
+      print('SendFirstMessageUseCase: Processing completely new temporary thread');
+      
+      // This is a completely new temporary thread
       print(
         'SendFirstMessageUseCase: Creating real thread from temporary thread',
+      );
+      print(
+        'SendFirstMessageUseCase: Temporary thread ID: ${chatThread.id}',
       );
       // Create the actual thread in database
       final now = DateTime.now();
       final realChatThread = ChatThread(
-        id: 'chat_${chatThread.members[1]}_${now.millisecondsSinceEpoch}',
+        id: ChatThread.generate1v1ThreadId(chatThread.members[0], chatThread.members[1]),
         name: chatThread.name,
         lastMessage: message.content,
         lastMessageTime: now,
         avatarUrl: chatThread.avatarUrl,
         members: chatThread.members,
         isGroup: chatThread.isGroup,
-        unreadCounts: {
-          chatThread.members[1]: 1,
-        }, // Recipient has 1 unread message
+        unreadCounts: {}, // Start with empty unread counts, will be updated when message is added
         createdAt: now,
         updatedAt: now,
       );
@@ -55,7 +88,7 @@ class SendFirstMessageUseCase {
         'SendFirstMessageUseCase: Thread members: ${realChatThread.members}',
       );
       // First, add the thread to database
-      await chatThreadRepository.addChatThread(realChatThread);
+      await chatThreadRepository.createChatThread(realChatThread);
       actualThreadId = realChatThread.id;
       print(
         'SendFirstMessageUseCase: Thread created successfully and added to database',
@@ -63,6 +96,10 @@ class SendFirstMessageUseCase {
 
       // Wait a bit to ensure thread is created before sending message
       await Future.delayed(const Duration(milliseconds: 100));
+    } else {
+      print(
+        'SendFirstMessageUseCase: Thread is not temporary, using existing thread ID: $actualThreadId',
+      );
     }
 
     // Send the message with the actual thread ID

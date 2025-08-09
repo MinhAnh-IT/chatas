@@ -1,14 +1,20 @@
 import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_archived_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/hide_chat_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/mark_thread_deleted_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/archive_thread_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/leave_group_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/join_group_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/find_or_create_chat_thread_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
 import 'package:chatas/shared/widgets/refreshable_list_view.dart';
+import 'archived_threads_page.dart';
 import 'package:chatas/core/constants/app_route_constants.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/chat_thread_list_page_constants.dart';
@@ -41,20 +47,30 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
     WidgetsBinding.instance.addObserver(this);
     final repository = ChatThreadRepositoryImpl();
     final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+    final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(repository);
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
     final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
     final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
     final hideChatThreadUseCase = HideChatThreadUseCase(repository);
+    final markThreadDeletedUseCase = MarkThreadDeletedUseCase(repository);
     final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(
       repository,
     );
+    final archiveThreadUseCase = ArchiveThreadUseCase(repository);
+    final leaveGroupUseCase = LeaveGroupUseCase(repository);
+    final joinGroupUseCase = JoinGroupUseCase(repository);
 
     _cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
+      getArchivedThreadsUseCase: getArchivedThreadsUseCase,
       createChatThreadUseCase: createChatThreadUseCase,
       searchChatThreadsUseCase: searchChatThreadsUseCase,
       deleteChatThreadUseCase: deleteChatThreadUseCase,
       hideChatThreadUseCase: hideChatThreadUseCase,
+      markThreadDeletedUseCase: markThreadDeletedUseCase,
+      archiveThreadUseCase: archiveThreadUseCase,
+      leaveGroupUseCase: leaveGroupUseCase,
+      joinGroupUseCase: joinGroupUseCase,
       findOrCreateChatThreadUseCase: findOrCreateChatThreadUseCase,
     );
     // Get current user ID and fetch threads
@@ -150,6 +166,46 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
             // Refresh the chat thread list after creating a new chat
             _handleRefresh();
           },
+        ),
+      ),
+    );
+  }
+
+  void _navigateToArchived() {
+    // Create repository and use cases for archived page
+    final repository = ChatThreadRepositoryImpl();
+    final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+    final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(repository);
+    final createChatThreadUseCase = CreateChatThreadUseCase(repository);
+    final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
+    final deleteChatThreadUseCase = DeleteChatThreadUseCase(repository);
+    final hideChatThreadUseCase = HideChatThreadUseCase(repository);
+    final markThreadDeletedUseCase = MarkThreadDeletedUseCase(repository);
+    final archiveThreadUseCase = ArchiveThreadUseCase(repository);
+    final leaveGroupUseCase = LeaveGroupUseCase(repository);
+    final joinGroupUseCase = JoinGroupUseCase(repository);
+    final findOrCreateChatThreadUseCase = FindOrCreateChatThreadUseCase(repository);
+
+    final cubit = ChatThreadListCubit(
+      getChatThreadsUseCase: getChatThreadsUseCase,
+      getArchivedThreadsUseCase: getArchivedThreadsUseCase,
+      createChatThreadUseCase: createChatThreadUseCase,
+      searchChatThreadsUseCase: searchChatThreadsUseCase,
+      deleteChatThreadUseCase: deleteChatThreadUseCase,
+      hideChatThreadUseCase: hideChatThreadUseCase,
+      markThreadDeletedUseCase: markThreadDeletedUseCase,
+      archiveThreadUseCase: archiveThreadUseCase,
+      leaveGroupUseCase: leaveGroupUseCase,
+      joinGroupUseCase: joinGroupUseCase,
+      findOrCreateChatThreadUseCase: findOrCreateChatThreadUseCase,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: cubit,
+          child: const ArchivedThreadsPage(),
         ),
       ),
     );
@@ -345,14 +401,41 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
           title: ChatThreadListPageConstants.title,
           actions: [
             IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: 'Tạo nhóm chat',
-              onPressed: _showCreateGroupDialog,
-            ),
-            IconButton(
               icon: const Icon(Icons.search),
               tooltip: ChatThreadListPageConstants.searchTooltip,
               onPressed: _toggleSearch,
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'Tùy chọn',
+              onSelected: (value) {
+                switch (value) {
+                  case 'create_group':
+                    _showCreateGroupDialog();
+                    break;
+                  case 'archived':
+                    _navigateToArchived();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'create_group',
+                  child: ListTile(
+                    leading: Icon(Icons.group_add),
+                    title: Text('Tạo nhóm chat'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'archived',
+                  child: ListTile(
+                    leading: Icon(Icons.archive),
+                    title: Text('Lưu trữ'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

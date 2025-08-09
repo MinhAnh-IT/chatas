@@ -48,6 +48,16 @@ class MockChatMessageRepository extends _i1.Mock
           as _i3.Future<List<_i4.ChatMessage>>);
 
   @override
+  _i3.Future<List<_i4.ChatMessage>> getAllMessages(String? chatThreadId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getAllMessages, [chatThreadId]),
+            returnValue: _i3.Future<List<_i4.ChatMessage>>.value(
+              <_i4.ChatMessage>[],
+            ),
+          )
+          as _i3.Future<List<_i4.ChatMessage>>);
+
+  @override
   _i3.Stream<List<_i4.ChatMessage>> messagesStream(
     String? chatThreadId,
     String? currentUserId,

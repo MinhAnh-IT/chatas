@@ -12,6 +12,7 @@ import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/update_profile_request.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:chatas/features/auth/constants/auth_remote_constants.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -39,17 +40,17 @@ class _ProfilePageState extends State<ProfilePage> {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
         final userDoc = await _firestore
-            .collection('users')
+            .collection(AuthRemoteConstants.usersCollectionName)
             .doc(user.uid)
             .get();
 
         if (userDoc.exists) {
           final data = userDoc.data()!;
           DateTime birthDate;
-          if (data['birthDate'] is Timestamp) {
-            birthDate = (data['birthDate'] as Timestamp).toDate();
-          } else if (data['birthDate'] is String) {
-            birthDate = DateTime.parse(data['birthDate']);
+          if (data[AuthRemoteConstants.birthDateField] is Timestamp) {
+            birthDate = (data[AuthRemoteConstants.birthDateField] as Timestamp).toDate();
+          } else if (data[AuthRemoteConstants.birthDateField] is String) {
+            birthDate = DateTime.parse(data[AuthRemoteConstants.birthDateField]);
           } else {
             birthDate = DateTime.now().subtract(const Duration(days: 6570));
           }
@@ -57,12 +58,12 @@ class _ProfilePageState extends State<ProfilePage> {
           setState(() {
             _profile = UserProfile(
               id: user.uid,
-              fullName: data['fullName'] ?? '',
-              email: data['email'] ?? '',
-              username: data['username'] ?? '',
-              gender: data['gender'] ?? '',
+              fullName: data[AuthRemoteConstants.fullNameField] ?? '',
+              email: data[AuthRemoteConstants.emailField] ?? '',
+              username: data[AuthRemoteConstants.usernameField] ?? '',
+              gender: data[AuthRemoteConstants.genderField] ?? '',
               birthDate: birthDate,
-              profileImageUrl: data['avatarUrl'] ?? '',
+              profileImageUrl: data[AuthRemoteConstants.avatarUrlField] ?? '',
             );
             _isLoading = false;
           });

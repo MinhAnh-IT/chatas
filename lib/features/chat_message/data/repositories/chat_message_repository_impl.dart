@@ -28,6 +28,16 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
   }
 
   @override
+  Future<List<ChatMessage>> getAllMessages(String chatThreadId) async {
+    try {
+      final models = await _remoteDataSource.fetchAllMessages(chatThreadId);
+      return models.map((model) => model.toEntity()).toList();
+    } catch (e) {
+      throw Exception('Failed to get all messages: $e');
+    }
+  }
+
+  @override
   Stream<List<ChatMessage>> messagesStream(
     String chatThreadId,
     String currentUserId,

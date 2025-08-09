@@ -20,7 +20,7 @@ void main() {
 
     test('should create chat thread successfully', () async {
       // arrange
-      when(mockRepository.addChatThread(any)).thenAnswer((_) async {});
+      when(mockRepository.createChatThread(any)).thenAnswer((_) async {});
 
       // act
       final result = await useCase(
@@ -37,12 +37,12 @@ void main() {
       expect(result.members, containsAll(['user1', 'user2']));
       expect(result.isGroup, false);
       expect(result.lastMessage, 'Đoạn chat mới được tạo');
-      verify(mockRepository.addChatThread(any)).called(1);
+      verify(mockRepository.createChatThread(any)).called(1);
     });
 
     test('should create chat thread with initial message', () async {
       // arrange
-      when(mockRepository.addChatThread(any)).thenAnswer((_) async {});
+      when(mockRepository.createChatThread(any)).thenAnswer((_) async {});
 
       // act
       final result = await useCase(
@@ -56,13 +56,13 @@ void main() {
       // assert
       expect(result, isA<ChatThread>());
       expect(result.lastMessage, 'Hello there!');
-      verify(mockRepository.addChatThread(any)).called(1);
+      verify(mockRepository.createChatThread(any)).called(1);
     });
 
     test('should throw exception when repository fails', () async {
       // arrange
       when(
-        mockRepository.addChatThread(any),
+        mockRepository.createChatThread(any),
       ).thenThrow(Exception('Failed to create chat thread'));
 
       // act & assert
@@ -75,12 +75,12 @@ void main() {
         ),
         throwsA(isA<Exception>()),
       );
-      verify(mockRepository.addChatThread(any)).called(1);
+      verify(mockRepository.createChatThread(any)).called(1);
     });
 
     test('should generate thread ID with correct format', () async {
       // arrange
-      when(mockRepository.addChatThread(any)).thenAnswer((_) async {});
+      when(mockRepository.createChatThread(any)).thenAnswer((_) async {});
 
       // act
       final result = await useCase(
@@ -97,7 +97,7 @@ void main() {
 
     test('should set correct properties for individual chat', () async {
       // arrange
-      when(mockRepository.addChatThread(any)).thenAnswer((_) async {});
+      when(mockRepository.createChatThread(any)).thenAnswer((_) async {});
 
       // act
       final result = await useCase(
