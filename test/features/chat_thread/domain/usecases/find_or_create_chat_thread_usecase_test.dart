@@ -197,7 +197,7 @@ void main() {
     );
 
     test(
-      'should create new temporary thread when both users have hidden the thread',
+      'should return hidden thread with lastRecreatedAt when both users have hidden the thread',
       () async {
         // arrange
         final hiddenThread = ChatThread(
@@ -226,16 +226,11 @@ void main() {
           friendAvatarUrl: friendAvatarUrl,
         );
 
-        // assert
-        expect(result.id, startsWith('temp_${friendId}_'));
-        expect(result.name, equals(friendName));
-        expect(result.avatarUrl, equals(friendAvatarUrl));
-        expect(result.members, equals([currentUserId, friendId]));
-        expect(result.isGroup, isFalse);
+        // assert - Now returns the hidden thread with lastRecreatedAt
+        expect(result.id, equals('hidden_thread'));
+        expect(result.lastRecreatedAt, isNotNull);
+        expect(result.isHiddenFor(currentUserId), isTrue);
         verify(mockRepository.getAllChatThreads(currentUserId)).called(1);
-        verifyNever(mockRepository.unhideChatThread(any, any));
-        verifyNever(mockRepository.updateLastRecreatedAt(any, any));
-        verifyNever(mockRepository.resetThreadForUser(any, any));
       },
     );
 
