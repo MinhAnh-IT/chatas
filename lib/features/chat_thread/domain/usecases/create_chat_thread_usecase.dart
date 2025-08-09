@@ -28,7 +28,7 @@ class CreateChatThreadUseCase {
       updatedAt: now,
     );
 
-    await repository.addChatThread(newChatThread);
+    await repository.createChatThread(newChatThread);
     return newChatThread;
   }
 }
