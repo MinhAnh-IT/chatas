@@ -14,6 +14,8 @@ class ChatThread extends Equatable {
   // Group specific fields
   final String? groupAdminId; // Admin user ID for group management
   final String? groupDescription; // Optional group description
+  // Soft delete fields
+  final List<String> hiddenFor; // List of user IDs who have hidden this thread
 
   const ChatThread({
     required this.id,
@@ -28,6 +30,7 @@ class ChatThread extends Equatable {
     required this.updatedAt,
     this.groupAdminId,
     this.groupDescription,
+    this.hiddenFor = const [],
   });
 
   /// Gets unread count for a specific user
@@ -45,6 +48,16 @@ class ChatThread extends Equatable {
     return isGroup && isUserAdmin(userId);
   }
 
+  /// Check if thread is hidden for a specific user
+  bool isHiddenFor(String userId) {
+    return hiddenFor.contains(userId);
+  }
+
+  /// Check if user can see this thread (is member and not hidden)
+  bool isVisibleFor(String userId) {
+    return members.contains(userId) && !isHiddenFor(userId);
+  }
+
   @override
   List<Object?> get props => [
     id,
@@ -59,5 +72,6 @@ class ChatThread extends Equatable {
     updatedAt,
     groupAdminId,
     groupDescription,
+    hiddenFor,
   ];
 }
