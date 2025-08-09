@@ -176,7 +176,8 @@ class MessageBubble extends StatelessWidget {
 
           if (userDoc.exists) {
             final data = userDoc.data()!;
-            final avatarUrl = data[AuthRemoteConstants.avatarUrlField] as String? ?? '';
+            final avatarUrl =
+                data[AuthRemoteConstants.avatarUrlField] as String? ?? '';
             print('MessageBubble: Direct Firestore - avatarUrl: "$avatarUrl"');
 
             if (avatarUrl.isNotEmpty) {

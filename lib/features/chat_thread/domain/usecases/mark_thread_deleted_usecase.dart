@@ -28,8 +28,8 @@ class MarkThreadDeletedUseCase {
     }
 
     final now = DateTime.now();
-    final cutoff = (lastMessageTime != null && lastMessageTime.isAfter(now)) 
-        ? lastMessageTime 
+    final cutoff = (lastMessageTime != null && lastMessageTime.isAfter(now))
+        ? lastMessageTime
         : now;
 
     await repository.markThreadDeletedForUser(threadId, userId, cutoff);

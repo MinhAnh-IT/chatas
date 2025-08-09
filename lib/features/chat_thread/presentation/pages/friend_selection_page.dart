@@ -179,24 +179,32 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
 
         // Get the friend's name from the friends list
         String friendName = 'Bạn bè'; // Default fallback
-        print('🔍 Looking for friend name for ID: $actualFriendId (original: $friendId)');
-        
+        print(
+          '🔍 Looking for friend name for ID: $actualFriendId (original: $friendId)',
+        );
+
         if (_friendsCubit.state is FriendsLoaded) {
           final friendsState = _friendsCubit.state as FriendsLoaded;
-          print('🔍 Available friends: ${friendsState.friends.map((f) => '${f.friendId}:${f.nickName}').toList()}');
-          
+          print(
+            '🔍 Available friends: ${friendsState.friends.map((f) => '${f.friendId}:${f.nickName}').toList()}',
+          );
+
           try {
             final friend = friendsState.friends.firstWhere(
               (f) => f.friendId == friendId || f.friendId == actualFriendId,
             );
-            friendName = friend.nickName.isNotEmpty ? friend.nickName : 'Người dùng';
+            friendName = friend.nickName.isNotEmpty
+                ? friend.nickName
+                : 'Người dùng';
             print('✅ Found friend name: $friendName');
           } catch (e) {
             // Friend not found, use default name
             print('❌ Friend not found in list: $actualFriendId');
           }
         } else {
-          print('❌ Friends list not loaded: ${_friendsCubit.state.runtimeType}');
+          print(
+            '❌ Friends list not loaded: ${_friendsCubit.state.runtimeType}',
+          );
         }
 
         // Use existing use case for 1-on-1 chat
@@ -207,7 +215,8 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
           friendId: actualFriendId,
           friendName: friendName, // Use actual friend name
           friendAvatarUrl: '',
-          forceCreateNew: false, // Don't force create new - reuse existing if available
+          forceCreateNew:
+              false, // Don't force create new - reuse existing if available
         );
 
         ScaffoldMessenger.of(

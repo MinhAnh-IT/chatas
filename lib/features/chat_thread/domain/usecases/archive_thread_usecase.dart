@@ -14,10 +14,7 @@ class ArchiveThreadUseCase {
   /// [userId] The ID of the user who is archiving the thread
   ///
   /// Throws an exception if the operation fails.
-  Future<void> call({
-    required String threadId,
-    required String userId,
-  }) async {
+  Future<void> call({required String threadId, required String userId}) async {
     if (threadId.isEmpty) {
       throw ArgumentError('Thread ID cannot be empty');
     }

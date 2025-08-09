@@ -30,7 +30,11 @@ abstract class ChatThreadRepository {
   Future<void> updateChatThreadDescription(String threadId, String description);
 
   /// Updates the last message of a chat thread.
-  Future<void> updateLastMessage(String threadId, String message, DateTime timestamp);
+  Future<void> updateLastMessage(
+    String threadId,
+    String message,
+    DateTime timestamp,
+  );
 
   /// Increments the unread count for a specific user in a chat thread.
   Future<void> incrementUnreadCount(String threadId, String userId);
@@ -55,7 +59,11 @@ abstract class ChatThreadRepository {
 
   /// Marks a 1-1 chat thread as deleted for a specific user.
   /// Sets visibility cutoff to hide old messages.
-  Future<void> markThreadDeletedForUser(String threadId, String userId, DateTime cutoff);
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  );
 
   /// Archives a chat thread for a specific user (hides from inbox).
   /// Applies to both 1-1 and group chats.
@@ -75,15 +83,24 @@ abstract class ChatThreadRepository {
 
   /// Finds or creates a 1-1 chat thread between two users.
   /// Only creates the thread when the first message is sent.
-  Future<ChatThread> findOrCreate1v1Thread(String user1, String user2, {
+  Future<ChatThread> findOrCreate1v1Thread(
+    String user1,
+    String user2, {
     String? threadName,
     String? avatarUrl,
   });
 
   /// Updates the visibility cutoff timestamp for a specific user in a 1-1 chat.
   /// Used when recreating deleted chats.
-  Future<void> updateVisibilityCutoff(String threadId, String userId, DateTime cutoff);
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  );
 
   /// Searches for chat threads based on a query.
-  Future<List<ChatThread>> searchChatThreads(String query, String currentUserId);
+  Future<List<ChatThread>> searchChatThreads(
+    String query,
+    String currentUserId,
+  );
 }

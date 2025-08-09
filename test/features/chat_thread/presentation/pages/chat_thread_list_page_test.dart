@@ -27,9 +27,13 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   Future<void> hideChatThread(String threadId, String userId) async {
     // Implementation for testing
   }
-  
+
   @override
-  Future<void> updateVisibilityCutoff(String threadId, String userId, DateTime cutoff) async {
+  Future<void> updateVisibilityCutoff(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
     // Implementation for testing
   }
 
@@ -185,7 +189,11 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   // Implementation for new methods
 
   @override
-  Future<void> updateLastMessage(String threadId, String message, DateTime timestamp) async {
+  Future<void> updateLastMessage(
+    String threadId,
+    String message,
+    DateTime timestamp,
+  ) async {
     // Implementation for testing
   }
 
@@ -200,7 +208,11 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   }
 
   @override
-  Future<void> markThreadDeletedForUser(String threadId, String userId, DateTime cutoff) async {
+  Future<void> markThreadDeletedForUser(
+    String threadId,
+    String userId,
+    DateTime cutoff,
+  ) async {
     // Implementation for testing
   }
 
@@ -225,7 +237,12 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   }
 
   @override
-  Future<ChatThread> findOrCreate1v1Thread(String user1, String user2, {String? threadName, String? avatarUrl}) async {
+  Future<ChatThread> findOrCreate1v1Thread(
+    String user1,
+    String user2, {
+    String? threadName,
+    String? avatarUrl,
+  }) async {
     // Implementation for testing
     final threadId = '${user1}_${user2}';
     return ChatThread(
