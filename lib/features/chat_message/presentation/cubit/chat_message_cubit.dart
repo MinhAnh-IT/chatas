@@ -7,6 +7,7 @@ import '../../domain/usecases/add_reaction_usecase.dart';
 import '../../domain/usecases/remove_reaction_usecase.dart';
 import '../../domain/usecases/edit_message_usecase.dart';
 import '../../domain/usecases/delete_message_usecase.dart';
+import '../../domain/usecases/mark_messages_as_read_usecase.dart';
 import '../../../chat_thread/domain/entities/chat_thread.dart';
 import '../../../chat_thread/domain/usecases/send_first_message_usecase.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
@@ -24,6 +25,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   final EditMessageUseCase _editMessageUseCase;
   final DeleteMessageUseCase _deleteMessageUseCase;
   final SendFirstMessageUseCase _sendFirstMessageUseCase;
+  final MarkMessagesAsReadUseCase _markMessagesAsReadUseCase;
 
   StreamSubscription<List<ChatMessage>>? _messagesSubscription;
   String? _currentChatThreadId;
@@ -33,6 +35,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   // Current user information
   String? _currentUserId;
   String? _currentUserName;
+  String? _currentUserAvatarUrl;
 
   // Reply state
   String? _replyToMessageId;
@@ -45,6 +48,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     required EditMessageUseCase editMessageUseCase,
     required DeleteMessageUseCase deleteMessageUseCase,
     required SendFirstMessageUseCase sendFirstMessageUseCase,
+    required MarkMessagesAsReadUseCase markMessagesAsReadUseCase,
   }) : _getMessagesStreamUseCase = getMessagesStreamUseCase,
        _sendMessageUseCase = sendMessageUseCase,
        _addReactionUseCase = addReactionUseCase,
@@ -52,15 +56,18 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
        _editMessageUseCase = editMessageUseCase,
        _deleteMessageUseCase = deleteMessageUseCase,
        _sendFirstMessageUseCase = sendFirstMessageUseCase,
+       _markMessagesAsReadUseCase = markMessagesAsReadUseCase,
        super(const ChatMessageInitial());
 
   /// Sets the current user information for message sending
-  void setCurrentUser({required String userId, required String userName}) {
-    print(
-      'ChatMessageCubit: Setting current user - ID: $userId, Name: $userName',
-    );
+  void setCurrentUser({
+    required String userId,
+    required String userName,
+    String? userAvatarUrl,
+  }) {
     _currentUserId = userId;
     _currentUserName = userName;
+    _currentUserAvatarUrl = userAvatarUrl;
   }
 
   /// Initializes current user from auth service
@@ -71,9 +78,14 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       if (currentUser != null) {
         _currentUserId = currentUser.userId;
         _currentUserName = currentUser.fullName;
+        _currentUserAvatarUrl = currentUser.avatarUrl;
       }
     } catch (e) {
-      print('ChatMessageCubit: Error getting current user: $e');
+      emit(
+        const ChatMessageError(
+          message: ChatMessagePageConstants.userInfoUnknown,
+        ),
+      );
     }
   }
 
@@ -81,7 +93,6 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   /// Subscribes to the message stream for automatic updates.
   Future<void> loadMessages(String chatThreadId) async {
     try {
-      print('ChatMessageCubit: Loading messages for thread: $chatThreadId');
       emit(const ChatMessageLoading());
       _currentChatThreadId = chatThreadId;
       _currentThread = null; // Clear any temporary thread
@@ -93,22 +104,24 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       // Subscribe to real-time message updates
       _messagesSubscription = _getMessagesStreamUseCase(chatThreadId).listen(
         (messages) {
-          print(
-            'ChatMessageCubit: Received ${messages.length} messages for thread $chatThreadId',
+          emit(
+            ChatMessageLoaded(
+              messages: messages,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            ),
           );
-          emit(ChatMessageLoaded(messages: messages));
         },
         onError: (error) {
-          print(
-            'ChatMessageCubit: Error loading messages for thread $chatThreadId: $error',
-          );
           emit(ChatMessageError(message: error.toString()));
         },
       );
+
+      // Mark messages as read when opening the chat
+      // Add a small delay to ensure the subscription is established
+      Future.delayed(const Duration(milliseconds: 100), () {
+        markMessagesAsRead();
+      });
     } catch (e) {
-      print(
-        'ChatMessageCubit: Exception loading messages for thread $chatThreadId: $e',
-      );
       emit(ChatMessageError(message: e.toString()));
     }
   }
@@ -141,14 +154,10 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     }
 
     // Ensure current user is set
-    print(
-      'ChatMessageCubit: Checking user info - ID: $_currentUserId, Name: $_currentUserName',
-    );
     if (_currentUserId == null || _currentUserName == null) {
-      print('ChatMessageCubit: User info is null, emitting error');
       emit(
         const ChatMessageError(
-          message: 'Không thể xác định thông tin người dùng',
+          message: ChatMessagePageConstants.userInfoUnknown,
         ),
       );
       return;
@@ -166,11 +175,14 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           chatThreadId: _currentThread!.id,
           senderId: _currentUserId!,
           senderName: _currentUserName!,
-          senderAvatarUrl: ChatMessagePageConstants.temporaryAvatarUrl,
+          senderAvatarUrl:
+              _currentUserAvatarUrl ??
+              ChatMessagePageConstants.temporaryAvatarUrl,
           content: content.trim(),
           type: MessageType.text,
           status: MessageStatus.sent,
           sentAt: now,
+          replyToMessageId: _replyToMessageId,
           createdAt: now,
           updatedAt: now,
         );
@@ -180,7 +192,10 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           message: firstMessage,
         );
 
-        print('ChatMessageCubit: Created real thread with ID: $realThreadId');
+        // Clear reply state after sending first message
+        if (_replyToMessageId != null) {
+          _replyToMessageId = null;
+        }
 
         // Update to real thread
         _currentChatThreadId = realThreadId;
@@ -189,10 +204,6 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
 
         // Wait a bit to ensure message is saved before subscribing to stream
         await Future.delayed(const Duration(milliseconds: 200));
-
-        print(
-          'ChatMessageCubit: Loading messages for real thread: $realThreadId',
-        );
 
         // Start listening to the real thread's messages
         await loadMessages(realThreadId);
@@ -208,11 +219,14 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           chatThreadId: _currentChatThreadId!,
           senderId: _currentUserId!,
           senderName: _currentUserName!,
-          senderAvatarUrl: ChatMessagePageConstants.temporaryAvatarUrl,
+          senderAvatarUrl:
+              _currentUserAvatarUrl ??
+              ChatMessagePageConstants.temporaryAvatarUrl,
           content: content.trim(),
           type: MessageType.text,
           status: MessageStatus.sending,
           sentAt: now,
+          replyToMessageId: _replyToMessageId,
           createdAt: now,
           updatedAt: now,
         );
@@ -226,28 +240,121 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         );
 
         // Send the actual message
-        print(
-          'ChatMessageCubit: Sending message to thread: $_currentChatThreadId',
-        );
         await _sendMessageUseCase(
           chatThreadId: _currentChatThreadId!,
           content: content.trim(),
           senderId: _currentUserId!,
           senderName: _currentUserName!,
+          senderAvatarUrl: _currentUserAvatarUrl,
           replyToMessageId: _replyToMessageId,
         );
 
         // Clear reply state after sending
         if (_replyToMessageId != null) {
           _replyToMessageId = null;
-        }
-        print('ChatMessageCubit: Message sent successfully');
 
-        // Note: The real message will be received through the stream
-        // so we don't need to manually update the state here
+          // Emit state to update UI and hide reply preview
+          final currentStateAfterSend = state;
+          if (currentStateAfterSend is ChatMessageLoaded) {
+            emit(
+              ChatMessageLoaded(
+                messages: currentStateAfterSend.messages,
+                selectedMessageId: currentStateAfterSend.selectedMessageId,
+                timestamp: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       emit(ChatMessageError(message: e.toString()));
+    }
+  }
+
+  /// Sends a file message (image, video, or document) to the current chat thread.
+  /// The file should already be uploaded to Cloudinary before calling this method.
+  Future<void> sendFileMessage(ChatMessage fileMessage) async {
+    if (_currentChatThreadId == null) {
+      return;
+    }
+
+    // Ensure current user is set
+    if (_currentUserId == null) {
+      emit(
+        const ChatMessageError(
+          message: ChatMessagePageConstants.userInfoUnknown,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await initializeCurrentUser();
+
+      // Update the file message with current user info
+      final updatedFileMessage = fileMessage.copyWith(
+        senderName: _currentUserName ?? 'Bạn',
+        senderAvatarUrl: _currentUserAvatarUrl ?? '',
+        chatThreadId: _currentChatThreadId!,
+        sentAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Add the pending message to current state
+      final currentState = state;
+      if (currentState is ChatMessageLoaded) {
+        final updatedMessages = [...currentState.messages, updatedFileMessage];
+
+        emit(
+          ChatMessageSending(
+            messages: updatedMessages,
+            pendingMessage: updatedFileMessage,
+          ),
+        );
+      } else if (currentState is ChatMessageTemporary) {
+        emit(
+          ChatMessageSending(
+            messages: [updatedFileMessage],
+            pendingMessage: updatedFileMessage,
+          ),
+        );
+      }
+
+      // Send the file message
+      await _sendMessageUseCase(
+        chatThreadId: _currentChatThreadId!,
+        content: updatedFileMessage.content,
+        senderId: _currentUserId!,
+        senderName: _currentUserName!,
+        senderAvatarUrl: _currentUserAvatarUrl,
+        type: updatedFileMessage.type,
+        replyToMessageId: _replyToMessageId,
+        fileUrl: updatedFileMessage.fileUrl,
+        fileName: updatedFileMessage.fileName,
+        fileType: updatedFileMessage.fileType,
+        fileSize: updatedFileMessage.fileSize,
+        thumbnailUrl: updatedFileMessage.thumbnailUrl,
+      );
+
+      // Clear reply state after sending
+      if (_replyToMessageId != null) {
+        _replyToMessageId = null;
+
+        // Emit state to update UI and hide reply preview
+        final currentStateAfterSend = state;
+        if (currentStateAfterSend is ChatMessageLoaded) {
+          emit(
+            ChatMessageLoaded(
+              messages: currentStateAfterSend.messages,
+              selectedMessageId: currentStateAfterSend.selectedMessageId,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('ChatMessageCubit: Error sending file message: $e');
+      emit(ChatMessageError(message: 'Lỗi gửi tệp: ${e.toString()}'));
     }
   }
 
@@ -261,6 +368,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         currentState.copyWith(
           selectedMessageId: isCurrentlySelected ? null : messageId,
           clearSelection: isCurrentlySelected,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
         ),
       );
     }
@@ -270,7 +378,12 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   void clearMessageSelection() {
     final currentState = state;
     if (currentState is ChatMessageLoaded) {
-      emit(currentState.copyWith(clearSelection: true));
+      emit(
+        currentState.copyWith(
+          clearSelection: true,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
     }
   }
 
@@ -282,7 +395,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       if (_currentUserId == null) {
         emit(
           const ChatMessageError(
-            message: 'Không thể xác định thông tin người dùng',
+            message: ChatMessagePageConstants.userInfoUnknown,
           ),
         );
         return;
@@ -320,7 +433,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       if (_currentUserId == null) {
         emit(
           const ChatMessageError(
-            message: 'Không thể xác định thông tin người dùng',
+            message: ChatMessagePageConstants.userInfoUnknown,
           ),
         );
         return;
@@ -349,7 +462,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       if (_currentUserId == null) {
         emit(
           const ChatMessageError(
-            message: 'Không thể xác định thông tin người dùng',
+            message: ChatMessagePageConstants.userInfoUnknown,
           ),
         );
         return;
@@ -376,7 +489,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
       if (_currentUserId == null) {
         emit(
           const ChatMessageError(
-            message: 'Không thể xác định thông tin người dùng',
+            message: ChatMessagePageConstants.userInfoUnknown,
           ),
         );
         return;
@@ -430,22 +543,84 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   /// Gets the current reply message ID
   String? get replyToMessageId => _replyToMessageId;
 
+  /// Marks all messages in the current chat thread as read for the current user.
+  /// This should be called when the user opens a chat thread.
+  Future<void> markMessagesAsRead() async {
+    print(
+      'ChatMessageCubit: markMessagesAsRead called - threadId: $_currentChatThreadId, userId: $_currentUserId',
+    );
+    if (_currentChatThreadId != null && _currentUserId != null) {
+      try {
+        print('ChatMessageCubit: Calling markMessagesAsReadUseCase...');
+        await _markMessagesAsReadUseCase(
+          chatThreadId: _currentChatThreadId!,
+          userId: _currentUserId!,
+        );
+        print(
+          'ChatMessageCubit: markMessagesAsReadUseCase completed successfully',
+        );
+      } catch (e) {
+        // Silent failure - this is not critical for the user experience
+        print('ChatMessageCubit: Error marking messages as read: $e');
+      }
+    } else {
+      print(
+        'ChatMessageCubit: Cannot mark messages as read - missing threadId or userId',
+      );
+    }
+  }
+
   /// Sets the message to reply to
   void setReplyToMessage(String? messageId) {
+    print(
+      'ChatMessageCubit: setReplyToMessage called with messageId: $messageId',
+    );
     _replyToMessageId = messageId;
-    // Emit current state to trigger UI update
+
+    // Force emit to trigger UI update
     final currentState = state;
+
     if (currentState is ChatMessageLoaded) {
-      emit(currentState.copyWith());
+      // Create completely new instance with different timestamp to force rebuild
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final newState = ChatMessageLoaded(
+        messages: List.from(currentState.messages), // Create new list
+        selectedMessageId: currentState.selectedMessageId,
+        timestamp: timestamp, // Force different state
+      );
+      emit(newState);
+    } else if (currentState is ChatMessageSending) {
+      // Also handle sending state
+      final newState = ChatMessageSending(
+        messages: List.from(currentState.messages),
+        pendingMessage: currentState.pendingMessage,
+      );
+      emit(newState);
     }
   }
 
   /// Clears the reply state
   void clearReply() {
+    print('ChatMessageCubit: clearReply called');
     _replyToMessageId = null;
+    print('ChatMessageCubit: _replyToMessageId cleared');
+
     final currentState = state;
     if (currentState is ChatMessageLoaded) {
-      emit(currentState.copyWith());
+      // Create completely new instance to force rebuild
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final newState = ChatMessageLoaded(
+        messages: List.from(currentState.messages), // Create new list
+        selectedMessageId: currentState.selectedMessageId,
+        timestamp: timestamp, // Force different state
+      );
+      emit(newState);
+    } else if (currentState is ChatMessageSending) {
+      final newState = ChatMessageSending(
+        messages: List.from(currentState.messages),
+        pendingMessage: currentState.pendingMessage,
+      );
+      emit(newState);
     }
   }
 

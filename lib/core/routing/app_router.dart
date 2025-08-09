@@ -11,6 +11,7 @@ import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_use
 import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:chatas/features/chat_message/data/repositories/chat_message_repository_impl.dart';
 import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_page.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
@@ -19,6 +20,11 @@ import 'package:chatas/features/friends/presentation/pages/friends_list_page.dar
 import 'package:chatas/features/friends/presentation/pages/friend_search_page.dart';
 import 'package:chatas/features/friends/presentation/pages/friend_requests_page.dart';
 import 'package:chatas/features/friends/injection/friends_injection.dart';
+import 'package:chatas/features/friends/services/notification_navigation_service.dart';
+import 'package:chatas/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
+import 'package:chatas/features/notifications/notification_injection.dart'
+    as notification_di;
 import 'package:chatas/features/friends/presentation/widgets/friends_with_chat_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +32,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
+    navigatorKey: NotificationNavigationService.navigatorKey,
     initialLocation: '/',
     redirect: (context, state) {
       final user = FirebaseAuth.instance.currentUser;
@@ -119,6 +126,23 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: AppRouteConstants.notificationsPath,
+        name: AppRouteConstants.notificationsPathName,
+        builder: (context, state) {
+          return BlocProvider(
+            create: (context) => NotificationCubit(
+              initializeNotifications: notification_di.sl(),
+              getNotifications: notification_di.sl(),
+              markAsRead: notification_di.sl(),
+              getUnreadCount: notification_di.sl(),
+              sendFriendRequestNotification: notification_di.sl(),
+              sendFriendAcceptedNotification: notification_di.sl(),
+            ),
+            child: const NotificationsPage(),
+          );
+        },
+      ),
+      GoRoute(
         path: '${AppRouteConstants.chatMessagePath}/:threadId',
         name: AppRouteConstants.chatMessagePathName,
         builder: (context, state) {
@@ -140,6 +164,9 @@ class AppRouter {
             repository: repository,
           );
           final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
+          final markMessagesAsReadUseCase = MarkMessagesAsReadUseCase(
+            repository,
+          );
 
           // Setup ChatThread repository and use cases for first message creation
           final chatThreadRepository = ChatThreadRepositoryImpl();
@@ -157,6 +184,7 @@ class AppRouter {
               editMessageUseCase: editMessageUseCase,
               deleteMessageUseCase: deleteMessageUseCase,
               sendFirstMessageUseCase: sendFirstMessageUseCase,
+              markMessagesAsReadUseCase: markMessagesAsReadUseCase,
             ),
             child: ChatMessagePage(
               threadId: threadId,

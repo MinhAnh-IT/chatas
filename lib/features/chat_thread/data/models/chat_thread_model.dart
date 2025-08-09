@@ -10,9 +10,12 @@ class ChatThreadModel extends Equatable {
   final String avatarUrl;
   final List<String> members;
   final bool isGroup;
-  final int unreadCount;
+  final Map<String, int> unreadCounts;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? groupAdminId;
+  final String? groupDescription;
+  final List<String> hiddenFor;
 
   const ChatThreadModel({
     required this.id,
@@ -22,9 +25,12 @@ class ChatThreadModel extends Equatable {
     required this.avatarUrl,
     required this.members,
     required this.isGroup,
-    required this.unreadCount,
+    required this.unreadCounts,
     required this.createdAt,
     required this.updatedAt,
+    this.groupAdminId,
+    this.groupDescription,
+    this.hiddenFor = const [],
   });
 
   @override
@@ -36,9 +42,12 @@ class ChatThreadModel extends Equatable {
     avatarUrl,
     members,
     isGroup,
-    unreadCount,
+    unreadCounts,
     createdAt,
     updatedAt,
+    groupAdminId,
+    groupDescription,
+    hiddenFor,
   ];
 
   factory ChatThreadModel.fromJson(Map<String, dynamic> map) {
@@ -47,7 +56,17 @@ class ChatThreadModel extends Equatable {
         return value.toDate();
       } else if (value is DateTime) {
         return value;
+      } else if (value is String) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          print('ChatThreadModel: Error parsing date string "$value": $e');
+          return DateTime.now();
+        }
       } else {
+        print(
+          'ChatThreadModel: Unexpected date type: ${value.runtimeType}, value: $value',
+        );
         return DateTime.now();
       }
     }
@@ -60,9 +79,12 @@ class ChatThreadModel extends Equatable {
       avatarUrl: map['avatarUrl'] ?? '',
       members: List<String>.from(map['members'] ?? []),
       isGroup: map['isGroup'] ?? false,
-      unreadCount: map['unreadCount'] ?? 0,
+      unreadCounts: Map<String, int>.from(map['unreadCounts'] ?? {}),
       createdAt: parseDate(map['createdAt']),
       updatedAt: parseDate(map['updatedAt']),
+      groupAdminId: map['groupAdminId'],
+      groupDescription: map['groupDescription'],
+      hiddenFor: List<String>.from(map['hiddenFor'] ?? []),
     );
   }
 
@@ -75,9 +97,12 @@ class ChatThreadModel extends Equatable {
       'avatarUrl': avatarUrl,
       'members': members,
       'isGroup': isGroup,
-      'unreadCount': unreadCount,
+      'unreadCounts': unreadCounts,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'groupAdminId': groupAdminId,
+      'groupDescription': groupDescription,
+      'hiddenFor': hiddenFor,
     };
   }
 
@@ -90,9 +115,12 @@ class ChatThreadModel extends Equatable {
       avatarUrl: avatarUrl,
       members: members,
       isGroup: isGroup,
-      unreadCount: unreadCount,
+      unreadCounts: unreadCounts,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      groupAdminId: groupAdminId,
+      groupDescription: groupDescription,
+      hiddenFor: hiddenFor,
     );
   }
 
@@ -105,9 +133,12 @@ class ChatThreadModel extends Equatable {
       avatarUrl: entity.avatarUrl,
       members: entity.members,
       isGroup: entity.isGroup,
-      unreadCount: entity.unreadCount,
+      unreadCounts: entity.unreadCounts,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      groupAdminId: entity.groupAdminId,
+      groupDescription: entity.groupDescription,
+      hiddenFor: entity.hiddenFor,
     );
   }
 }

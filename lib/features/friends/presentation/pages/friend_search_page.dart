@@ -268,6 +268,7 @@ class _FriendSearchPageState extends State<FriendSearchPage> {
                                       .sendFriendRequest(
                                         widget.currentUserId,
                                         user['userId'],
+                                        user['fullName'] ?? user['username'],
                                       );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(

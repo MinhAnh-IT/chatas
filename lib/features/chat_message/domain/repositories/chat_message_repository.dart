@@ -50,7 +50,7 @@ abstract class ChatMessageRepository {
   /// Takes message ID and user ID to identify which reaction to remove.
   Future<void> removeReaction(String messageId, String userId);
 
-  /// Marks a message as read by a specific user.
-  /// Updates the message status and read timestamps.
-  Future<void> markAsRead(String messageId, String userId);
+  /// Marks all messages in a chat thread as read for a specific user.
+  /// Resets the unread count for the chat thread.
+  Future<void> markMessagesAsRead(String chatThreadId, String userId);
 }
