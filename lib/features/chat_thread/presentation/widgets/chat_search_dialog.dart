@@ -139,6 +139,8 @@ class _ChatSearchDialogState extends State<ChatSearchDialog> {
             imageUrl: thread.avatarUrl,
             radius: ChatThreadListPageConstants.avatarRadius,
             fallbackText: thread.name,
+            showBorder: true,
+            showShadow: true,
           ),
           title: Text(thread.name),
           subtitle: Text(

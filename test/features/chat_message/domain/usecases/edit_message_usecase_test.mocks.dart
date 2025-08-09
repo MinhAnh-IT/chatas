@@ -134,9 +134,9 @@ class MockChatMessageRepository extends _i1.Mock
           as _i3.Future<void>);
 
   @override
-  _i3.Future<void> markAsRead(String? messageId, String? userId) =>
+  _i3.Future<void> markMessagesAsRead(String? chatThreadId, String? userId) =>
       (super.noSuchMethod(
-            Invocation.method(#markAsRead, [messageId, userId]),
+            Invocation.method(#markMessagesAsRead, [chatThreadId, userId]),
             returnValue: _i3.Future<void>.value(),
             returnValueForMissingStub: _i3.Future<void>.value(),
           )

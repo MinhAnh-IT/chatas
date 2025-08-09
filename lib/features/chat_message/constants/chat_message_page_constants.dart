@@ -8,6 +8,8 @@ class ChatMessagePageConstants {
   static const String sendTooltip = 'Gửi tin nhắn';
   static const String sendingText = 'Đang gửi...';
   static const String failedToSend = 'Gửi thất bại';
+  static const String userInfoUnknown =
+      'Không thể xác định thông tin người dùng';
 
   /// Message status.
   static const String statusSending = 'Đang gửi';
@@ -37,6 +39,7 @@ class ChatMessagePageConstants {
   static const String loadingMessages = 'Đang tải tin nhắn...';
   static const String failedToLoadMessages = 'Không thể tải tin nhắn';
   static const String retryButtonText = 'Thử lại';
+  static const String userNotLoggedInError = 'Người dùng chưa đăng nhập';
 
   /// Timestamp tooltips.
   static const String hideTimeTooltip = 'Ẩn thời gian';
@@ -95,7 +98,7 @@ class ChatMessagePageConstants {
   static const double avatarRadius = 16.0;
   static const double messageSpacing = 8.0;
   static const double sectionSpacing = 16.0;
-  static const double reactionSize = 20.0;
+  static const double reactionSize = 17.0;
   static const double inputHeight = 56.0;
 
   /// Colors (will be replaced with theme colors).

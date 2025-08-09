@@ -1,35 +1,46 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 import '../../domain/entities/chat_thread.dart';
+import '../../domain/repositories/chat_thread_repository.dart';
 import '../../domain/usecases/get_chat_threads_usecase.dart';
 import '../../domain/usecases/create_chat_thread_usecase.dart';
-import '../../domain/usecases/search_chat_threads_usecase.dart';
 import '../../domain/usecases/delete_chat_thread_usecase.dart';
+import '../../domain/usecases/hide_chat_thread_usecase.dart';
 import '../../domain/usecases/find_or_create_chat_thread_usecase.dart';
+import '../../domain/usecases/search_chat_threads_usecase.dart';
 import 'chat_thread_list_state.dart';
 
 class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   final GetChatThreadsUseCase getChatThreadsUseCase;
   final CreateChatThreadUseCase createChatThreadUseCase;
-  final SearchChatThreadsUseCase searchChatThreadsUseCase;
   final DeleteChatThreadUseCase deleteChatThreadUseCase;
+  final HideChatThreadUseCase hideChatThreadUseCase;
   final FindOrCreateChatThreadUseCase findOrCreateChatThreadUseCase;
+  final SearchChatThreadsUseCase searchChatThreadsUseCase;
 
   ChatThreadListCubit({
     required this.getChatThreadsUseCase,
     required this.createChatThreadUseCase,
-    required this.searchChatThreadsUseCase,
     required this.deleteChatThreadUseCase,
+    required this.hideChatThreadUseCase,
     required this.findOrCreateChatThreadUseCase,
+    required this.searchChatThreadsUseCase,
   }) : super(ChatThreadListInitial());
 
-  /// Fetches all chat threads from the repository for a specific user.
+  /// Fetches chat threads for the current user.
   Future<void> fetchChatThreads(String currentUserId) async {
+    if (currentUserId.isEmpty) {
+      emit(const ChatThreadListError('User ID cannot be empty'));
+      return;
+    }
+
     emit(ChatThreadListLoading());
+
     try {
       final threads = await getChatThreadsUseCase(currentUserId);
       emit(ChatThreadListLoaded(threads));
     } catch (e) {
-      emit(ChatThreadListError(e.toString()));
+      emit(ChatThreadListError('Failed to fetch chat threads: $e'));
     }
   }
 
@@ -45,7 +56,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     }
   }
 
-  /// Creates a new chat thread with the specified friend.
+  /// Creates a new chat thread.
   Future<void> createNewChatThread({
     required String currentUserId,
     required String friendId,
@@ -86,6 +97,24 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     }
   }
 
+  /// Hides a chat thread for the current user (soft delete).
+  Future<void> hideChatThread(String threadId, String currentUserId) async {
+    if (threadId.isEmpty) {
+      emit(const ChatThreadListError('Invalid thread ID'));
+      return;
+    }
+
+    emit(ChatThreadDeleting(threadId));
+
+    try {
+      await hideChatThreadUseCase(threadId, currentUserId);
+      // Refresh the list after successful hiding
+      await fetchChatThreads(currentUserId);
+    } catch (e) {
+      emit(ChatThreadListError('Failed to hide chat: ${e.toString()}'));
+    }
+  }
+
   /// Finds an existing chat thread or creates a temporary one for opening chat.
   /// Returns the chat thread that should be opened for messaging.
   Future<ChatThread> findOrCreateChatThreadForMessaging({
@@ -112,7 +141,7 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
         avatarUrl: friendAvatarUrl,
         members: [currentUserId, friendId],
         isGroup: false,
-        unreadCount: 0,
+        unreadCounts: {},
         createdAt: now,
         updatedAt: now,
       );

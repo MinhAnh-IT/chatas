@@ -21,6 +21,13 @@ class ChatMessageModel extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // File attachment properties
+  final String? fileUrl;
+  final String? fileName;
+  final String? fileType;
+  final int? fileSize;
+  final String? thumbnailUrl;
+
   const ChatMessageModel({
     required this.id,
     required this.chatThreadId,
@@ -37,6 +44,12 @@ class ChatMessageModel extends Equatable {
     this.replyToMessageId,
     required this.createdAt,
     required this.updatedAt,
+    // File attachment properties
+    this.fileUrl,
+    this.fileName,
+    this.fileType,
+    this.fileSize,
+    this.thumbnailUrl,
   });
 
   /// Creates a [ChatMessageModel] from Firestore document data.
@@ -67,6 +80,12 @@ class ChatMessageModel extends Equatable {
       replyToMessageId: json['replyToMessageId'],
       createdAt: parseDate(json['createdAt']),
       updatedAt: parseDate(json['updatedAt']),
+      // File attachment properties
+      fileUrl: json['fileUrl'],
+      fileName: json['fileName'],
+      fileType: json['fileType'],
+      fileSize: json['fileSize'],
+      thumbnailUrl: json['thumbnailUrl'],
     );
   }
 
@@ -88,6 +107,12 @@ class ChatMessageModel extends Equatable {
       'replyToMessageId': replyToMessageId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      // File attachment properties
+      'fileUrl': fileUrl,
+      'fileName': fileName,
+      'fileType': fileType,
+      'fileSize': fileSize,
+      'thumbnailUrl': thumbnailUrl,
     };
   }
 
@@ -109,6 +134,12 @@ class ChatMessageModel extends Equatable {
       replyToMessageId: replyToMessageId,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      // File attachment properties
+      fileUrl: fileUrl,
+      fileName: fileName,
+      fileType: fileType,
+      fileSize: fileSize,
+      thumbnailUrl: thumbnailUrl,
     );
   }
 
@@ -130,6 +161,12 @@ class ChatMessageModel extends Equatable {
       replyToMessageId: entity.replyToMessageId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      // File attachment properties
+      fileUrl: entity.fileUrl,
+      fileName: entity.fileName,
+      fileType: entity.fileType,
+      fileSize: entity.fileSize,
+      thumbnailUrl: entity.thumbnailUrl,
     );
   }
 
@@ -140,6 +177,8 @@ class ChatMessageModel extends Equatable {
         return MessageType.text;
       case 'image':
         return MessageType.image;
+      case 'video':
+        return MessageType.video;
       case 'file':
         return MessageType.file;
       case 'system':
@@ -156,6 +195,8 @@ class ChatMessageModel extends Equatable {
         return 'text';
       case MessageType.image:
         return 'image';
+      case MessageType.video:
+        return 'video';
       case MessageType.file:
         return 'file';
       case MessageType.system:
@@ -277,5 +318,10 @@ class ChatMessageModel extends Equatable {
     replyToMessageId,
     createdAt,
     updatedAt,
+    fileUrl,
+    fileName,
+    fileType,
+    fileSize,
+    thumbnailUrl,
   ];
 }

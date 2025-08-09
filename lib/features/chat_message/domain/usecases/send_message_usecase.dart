@@ -12,6 +12,7 @@ class SendMessageUseCase {
   /// Executes the use case to send a new message.
   /// Creates a [ChatMessage] entity with the provided parameters and sends it.
   /// Supports reply functionality through [replyToMessageId].
+  /// Supports file attachments through file-related parameters.
   Future<void> call({
     required String chatThreadId,
     required String content,
@@ -20,6 +21,12 @@ class SendMessageUseCase {
     String? senderAvatarUrl,
     MessageType type = MessageType.text,
     String? replyToMessageId,
+    // File attachment properties
+    String? fileUrl,
+    String? fileName,
+    String? fileType,
+    int? fileSize,
+    String? thumbnailUrl,
   }) async {
     final now = DateTime.now();
 
@@ -37,6 +44,12 @@ class SendMessageUseCase {
       replyToMessageId: replyToMessageId,
       createdAt: now,
       updatedAt: now,
+      // File attachment properties
+      fileUrl: fileUrl,
+      fileName: fileName,
+      fileType: fileType,
+      fileSize: fileSize,
+      thumbnailUrl: thumbnailUrl,
     );
 
     await repository.sendMessage(message);

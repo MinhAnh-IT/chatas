@@ -1,9 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/usecases/getReceivedFriendRequests.dart';
 import '../../domain/usecases/getSentFriendRequests.dart';
 import '../../domain/usecases/acceptFriendRequest.dart';
 import '../../domain/usecases/rejectFriendRequest.dart';
 import '../../domain/usecases/cancelFriendRequest.dart';
+import '../../injection/friends_injection.dart';
 import 'friend_request_state.dart';
 
 class FriendRequestCubit extends Cubit<FriendRequestState> {
@@ -63,11 +65,38 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
     String requestId,
     String senderId,
     String receiverId,
+    String senderName,
   ) async {
     emit(state.copyWith(isAccepting: true, clearActionError: true));
 
     try {
       await acceptFriendRequest(requestId, senderId, receiverId);
+
+      // Gửi thông báo cho người gửi lời mời rằng lời mời đã được chấp nhận
+      final notificationService =
+          FriendsDependencyInjection.friendNotificationService;
+
+      // Lấy tên thực của người chấp nhận từ Firestore
+      String accepterName = 'Bạn'; // Default fallback
+      try {
+        final accepterDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(receiverId)
+            .get();
+        if (accepterDoc.exists) {
+          final userData = accepterDoc.data() as Map<String, dynamic>;
+          accepterName =
+              userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
+        }
+      } catch (e) {
+        // Sử dụng default name nếu có lỗi
+      }
+
+      await notificationService['sendFriendAcceptedNotification']({
+        'accepterName': accepterName,
+        'accepterId': receiverId,
+        'toUserId': senderId, // Gửi thông báo cho người gửi lời mời
+      });
 
       // Cập nhật danh sách sau khi chấp nhận
       final updatedRequests = state.receivedRequests
@@ -85,11 +114,41 @@ class FriendRequestCubit extends Cubit<FriendRequestState> {
   }
 
   /// Từ chối lời mời kết bạn
-  Future<void> rejectRequest(String requestId) async {
+  Future<void> rejectRequest(
+    String requestId,
+    String senderId,
+    String senderName,
+  ) async {
     emit(state.copyWith(isRejecting: true, clearActionError: true));
 
     try {
       await rejectFriendRequest(requestId);
+
+      // Gửi thông báo cho người gửi lời mời rằng lời mời đã bị từ chối
+      final notificationService =
+          FriendsDependencyInjection.friendNotificationService;
+
+      // Lấy tên thực của người từ chối từ Firestore
+      String rejecterName = 'Bạn'; // Default fallback
+      try {
+        final rejecterDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .get();
+        if (rejecterDoc.exists) {
+          final userData = rejecterDoc.data() as Map<String, dynamic>;
+          rejecterName =
+              userData['fullName'] ?? userData['displayName'] ?? 'Bạn';
+        }
+      } catch (e) {
+        // Sử dụng default name nếu có lỗi
+      }
+
+      await notificationService['sendFriendRejectedNotification']({
+        'rejecterName': rejecterName,
+        'rejecterId': currentUserId,
+        'toUserId': senderId, // Gửi thông báo cho người gửi lời mời
+      });
 
       // Cập nhật danh sách sau khi từ chối
       final updatedRequests = state.receivedRequests

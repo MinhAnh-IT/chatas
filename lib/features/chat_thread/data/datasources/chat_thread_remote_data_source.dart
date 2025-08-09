@@ -24,14 +24,21 @@ class ChatThreadRemoteDataSource {
     );
 
     // Debug: Print details of each thread
-    final threads = snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id; // Set document ID from Firestore
-      print(
-        'ChatThreadRemoteDataSource: Thread ${doc.id} - Members: ${data['members']}, Name: ${data['name']}',
-      );
-      return ChatThreadModel.fromJson(data);
-    }).toList();
+    final threads = snapshot.docs
+        .map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id; // Set document ID from Firestore
+          print(
+            'ChatThreadRemoteDataSource: Thread ${doc.id} - Members: ${data['members']}, Name: ${data['name']}, AvatarUrl: ${data['avatarUrl']}, HiddenFor: ${data['hiddenFor'] ?? []}',
+          );
+          return ChatThreadModel.fromJson(data);
+        })
+        .where((thread) => !thread.hiddenFor.contains(currentUserId))
+        .toList(); // Filter out hidden threads
+
+    print(
+      'ChatThreadRemoteDataSource: After filtering hidden threads: ${threads.length} threads visible for user $currentUserId',
+    );
 
     return threads;
   }
@@ -65,6 +72,43 @@ class ChatThreadRemoteDataSource {
         .delete();
   }
 
+  Future<void> hideChatThread(String threadId, String userId) async {
+    print(
+      'ChatThreadRemoteDataSource: Hiding chat thread $threadId for user $userId',
+    );
+
+    // Get current thread data
+    final threadDoc = await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(threadId)
+        .get();
+
+    if (!threadDoc.exists) {
+      throw Exception('Chat thread not found');
+    }
+
+    final data = threadDoc.data()!;
+    final currentHiddenFor = List<String>.from(data['hiddenFor'] ?? []);
+
+    // Add user to hiddenFor list if not already there
+    if (!currentHiddenFor.contains(userId)) {
+      currentHiddenFor.add(userId);
+    }
+
+    // Update the thread with new hiddenFor list
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(threadId)
+        .update({
+          'hiddenFor': currentHiddenFor,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+    print(
+      'ChatThreadRemoteDataSource: Successfully hidden thread $threadId for user $userId',
+    );
+  }
+
   Stream<List<ChatThreadModel>> chatThreadsStream(String currentUserId) {
     print(
       'ChatThreadRemoteDataSource: Setting up threads stream for user: $currentUserId',
@@ -80,11 +124,103 @@ class ChatThreadRemoteDataSource {
           print(
             'ChatThreadRemoteDataSource: Stream received ${snapshot.docs.length} threads for user',
           );
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id; // Set document ID from Firestore
-            return ChatThreadModel.fromJson(data);
-          }).toList();
+          return snapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id; // Set document ID from Firestore
+                return ChatThreadModel.fromJson(data);
+              })
+              .where((thread) => !thread.hiddenFor.contains(currentUserId))
+              .toList(); // Filter out hidden threads
+        });
+  }
+
+  // New methods for group chat management
+  Future<void> createChatThread(ChatThreadModel model) async {
+    print(
+      'ChatThreadRemoteDataSource: Creating chat thread with ID: ${model.id}',
+    );
+    final data = model.toJson();
+    data.remove('id'); // Remove ID from data as it will be the document ID
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(model.id) // Use our specified ID as document ID
+        .set(data);
+    print('ChatThreadRemoteDataSource: Chat thread created successfully');
+  }
+
+  Future<ChatThreadModel?> getChatThreadById(String chatThreadId) async {
+    print(
+      'ChatThreadRemoteDataSource: Getting chat thread by ID: $chatThreadId',
+    );
+    final doc = await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      data['id'] = doc.id; // Set document ID from Firestore
+      return ChatThreadModel.fromJson(data);
+    }
+    return null;
+  }
+
+  Future<void> updateChatThreadMembers(
+    String chatThreadId,
+    List<String> members,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating members for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({
+          'members': members,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+  }
+
+  Future<void> updateChatThreadName(String chatThreadId, String name) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating name for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({'name': name, 'updatedAt': DateTime.now().toIso8601String()});
+  }
+
+  Future<void> updateChatThreadAvatar(
+    String chatThreadId,
+    String avatarUrl,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating avatar for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({
+          'avatarUrl': avatarUrl,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+  }
+
+  Future<void> updateChatThreadDescription(
+    String chatThreadId,
+    String description,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating description for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({
+          'groupDescription': description,
+          'updatedAt': DateTime.now().toIso8601String(),
         });
   }
 }
