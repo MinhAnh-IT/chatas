@@ -8,6 +8,8 @@ class ChatMessagePageConstants {
   static const String sendTooltip = 'Gửi tin nhắn';
   static const String sendingText = 'Đang gửi...';
   static const String failedToSend = 'Gửi thất bại';
+  static const String userInfoUnknown =
+      'Không thể xác định thông tin người dùng';
 
   /// Message status.
   static const String statusSending = 'Đang gửi';
@@ -37,6 +39,7 @@ class ChatMessagePageConstants {
   static const String loadingMessages = 'Đang tải tin nhắn...';
   static const String failedToLoadMessages = 'Không thể tải tin nhắn';
   static const String retryButtonText = 'Thử lại';
+  static const String userNotLoggedInError = 'Người dùng chưa đăng nhập';
 
   /// Timestamp tooltips.
   static const String hideTimeTooltip = 'Ẩn thời gian';
@@ -60,9 +63,34 @@ class ChatMessagePageConstants {
   static const String refreshTooltip = 'Kéo xuống để làm mới';
   static const String refreshedMessage = 'Đã làm mới tin nhắn';
 
+  /// Message context menu
+  static const String replyMenuOption = 'Trả lời';
+  static const String editMenuOption = 'Chỉnh sửa';
+  static const String deleteMenuOption = 'Xóa';
+  static const String copyMenuOption = 'Sao chép';
+
+  /// Message actions confirmations
+  static const String deleteConfirmTitle = 'Xóa tin nhắn';
+  static const String deleteConfirmMessage =
+      'Bạn có chắc chắn muốn xóa tin nhắn này không?';
+  static const String deleteConfirmButton = 'Xóa';
+  static const String cancelButton = 'Hủy';
+
+  /// Edit message
+  static const String editMessageTitle = 'Chỉnh sửa tin nhắn';
+  static const String editMessageSaveButton = 'Lưu';
+  static const String editMessageHint = 'Nhập tin nhắn mới...';
+
+  /// Reply message
+  static const String replyingToPrefix = 'Đang trả lời';
+  static const String cancelReplyButton = 'Hủy trả lời';
+
+  /// Status messages
+  static const String messageEditedSuccessfully = 'Tin nhắn đã được chỉnh sửa';
+  static const String messageDeletedSuccessfully = 'Tin nhắn đã được xóa';
+  static const String editedIndicator = 'đã chỉnh sửa';
+
   /// Temporary constants for development
-  static const String temporaryUserId = 'current_user';
-  static const String temporaryUserName = 'Current User';
   static const String temporaryAvatarUrl = 'https://via.placeholder.com/150';
 
   /// UI dimensions.
@@ -70,7 +98,7 @@ class ChatMessagePageConstants {
   static const double avatarRadius = 16.0;
   static const double messageSpacing = 8.0;
   static const double sectionSpacing = 16.0;
-  static const double reactionSize = 20.0;
+  static const double reactionSize = 17.0;
   static const double inputHeight = 56.0;
 
   /// Colors (will be replaced with theme colors).

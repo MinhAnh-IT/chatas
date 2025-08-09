@@ -8,9 +8,14 @@ import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cub
 import 'package:chatas/features/chat_message/domain/usecases/send_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/add_reaction_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/remove_reaction_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/edit_message_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/delete_message_usecase.dart';
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart';
+import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:chatas/features/chat_message/data/repositories/chat_message_repository_impl.dart';
 import 'package:chatas/features/chat_thread/presentation/pages/chat_thread_list_page.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
+import 'package:chatas/features/chat_thread/data/repositories/chat_thread_repository_impl.dart';
 import 'package:chatas/features/friends/presentation/pages/friends_list_page.dart';
 import 'package:chatas/features/friends/presentation/pages/friend_search_page.dart';
 import 'package:chatas/features/friends/presentation/pages/friend_requests_page.dart';
@@ -20,6 +25,7 @@ import 'package:chatas/features/notifications/presentation/pages/notifications_p
 import 'package:chatas/features/notifications/presentation/cubit/notification_cubit.dart';
 import 'package:chatas/features/notifications/notification_injection.dart'
     as notification_di;
+import 'package:chatas/features/friends/presentation/widgets/friends_with_chat_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -82,7 +88,10 @@ class AppRouter {
           return BlocProvider(
             create: (context) =>
                 FriendsDependencyInjection.createFriendsListCubit(),
-            child: FriendsListPage(currentUserId: currentUserId),
+            child: FriendsWithChatProvider(
+              currentUserId: currentUserId,
+              child: FriendsListPage(currentUserId: currentUserId),
+            ),
           );
         },
       ),
@@ -150,7 +159,21 @@ class AppRouter {
           final removeReactionUseCase = RemoveReactionUseCase(
             repository: repository,
           );
+          final editMessageUseCase = EditMessageUseCase(repository: repository);
+          final deleteMessageUseCase = DeleteMessageUseCase(
+            repository: repository,
+          );
           final getMessagesStreamUseCase = GetMessagesStreamUseCase(repository);
+          final markMessagesAsReadUseCase = MarkMessagesAsReadUseCase(
+            repository,
+          );
+
+          // Setup ChatThread repository and use cases for first message creation
+          final chatThreadRepository = ChatThreadRepositoryImpl();
+          final sendFirstMessageUseCase = SendFirstMessageUseCase(
+            chatThreadRepository: chatThreadRepository,
+            chatMessageRepository: repository,
+          );
 
           return BlocProvider(
             create: (context) => ChatMessageCubit(
@@ -158,6 +181,10 @@ class AppRouter {
               sendMessageUseCase: sendMessageUseCase,
               addReactionUseCase: addReactionUseCase,
               removeReactionUseCase: removeReactionUseCase,
+              editMessageUseCase: editMessageUseCase,
+              deleteMessageUseCase: deleteMessageUseCase,
+              sendFirstMessageUseCase: sendFirstMessageUseCase,
+              markMessagesAsReadUseCase: markMessagesAsReadUseCase,
             ),
             child: ChatMessagePage(
               threadId: threadId,

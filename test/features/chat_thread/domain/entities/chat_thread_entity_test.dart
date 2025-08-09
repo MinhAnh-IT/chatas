@@ -12,7 +12,7 @@ void main() {
       avatarUrl: 'https://example.com/avatar.png',
       members: const ['user1', 'user2'],
       isGroup: false,
-      unreadCount: 5,
+      unreadCounts: const {'user1': 0, 'user2': 5},
       createdAt: DateTime(2024, 1, 1, 9, 0),
       updatedAt: tDateTime,
     );
@@ -26,7 +26,8 @@ void main() {
       expect(tChatThread.avatarUrl, 'https://example.com/avatar.png');
       expect(tChatThread.members, const ['user1', 'user2']);
       expect(tChatThread.isGroup, false);
-      expect(tChatThread.unreadCount, 5);
+      expect(tChatThread.getUnreadCount('user1'), 0);
+      expect(tChatThread.getUnreadCount('user2'), 5);
       expect(tChatThread.createdAt, DateTime(2024, 1, 1, 9, 0));
       expect(tChatThread.updatedAt, tDateTime);
     });
@@ -41,15 +42,23 @@ void main() {
         avatarUrl: 'https://example.com/group_avatar.png',
         members: const ['user1', 'user2', 'user3', 'user4'],
         isGroup: true,
-        unreadCount: 12,
+        unreadCounts: const {'user1': 0, 'user2': 12, 'user3': 5, 'user4': 8},
         createdAt: DateTime(2024, 1, 1, 8, 0),
         updatedAt: tDateTime,
+        groupAdminId: 'user1',
+        groupDescription: 'Team discussion group',
       );
 
       // Assert
       expect(groupChat.isGroup, true);
       expect(groupChat.members.length, 4);
       expect(groupChat.name, 'Team Chat');
+      expect(groupChat.groupAdminId, 'user1');
+      expect(groupChat.groupDescription, 'Team discussion group');
+      expect(groupChat.isUserAdmin('user1'), true);
+      expect(groupChat.isUserAdmin('user2'), false);
+      expect(groupChat.canUserManage('user1'), true);
+      expect(groupChat.canUserManage('user2'), false);
     });
 
     test('should handle private chat properties correctly', () {
@@ -62,7 +71,7 @@ void main() {
         avatarUrl: 'https://example.com/alice_avatar.png',
         members: const ['current_user', 'alice_id'],
         isGroup: false,
-        unreadCount: 3,
+        unreadCounts: const {'current_user': 0, 'alice_id': 3},
         createdAt: DateTime(2024, 1, 1, 7, 0),
         updatedAt: tDateTime,
       );
@@ -71,6 +80,10 @@ void main() {
       expect(privateChat.isGroup, false);
       expect(privateChat.members.length, 2);
       expect(privateChat.name, 'Alice Johnson');
+      expect(privateChat.groupAdminId, null);
+      expect(privateChat.groupDescription, null);
+      expect(privateChat.isUserAdmin('current_user'), false);
+      expect(privateChat.canUserManage('current_user'), false);
     });
 
     test('should handle empty and zero values correctly', () {
@@ -83,7 +96,7 @@ void main() {
         avatarUrl: '',
         members: const [],
         isGroup: false,
-        unreadCount: 0,
+        unreadCounts: const {},
         createdAt: tDateTime,
         updatedAt: tDateTime,
       );
@@ -92,35 +105,35 @@ void main() {
       expect(emptyChat.lastMessage, '');
       expect(emptyChat.avatarUrl, '');
       expect(emptyChat.members, isEmpty);
-      expect(emptyChat.unreadCount, 0);
+      expect(emptyChat.getUnreadCount('any_user'), 0);
     });
 
     test('should support equality comparison', () {
       // Arrange
       final time = DateTime(2024, 1, 1, 10, 30);
-      final createdAt = DateTime(2024, 1, 1, 10, 0);
       final chatThread1 = ChatThread(
         id: '1',
-        name: 'John Doe',
+        name: 'Test Chat',
         lastMessage: 'Hello',
         lastMessageTime: time,
         avatarUrl: 'https://example.com/avatar.png',
         members: const ['user1', 'user2'],
         isGroup: false,
-        unreadCount: 5,
-        createdAt: createdAt,
+        unreadCounts: const {'user1': 0, 'user2': 1},
+        createdAt: time,
         updatedAt: time,
       );
+
       final chatThread2 = ChatThread(
         id: '1',
-        name: 'John Doe',
+        name: 'Test Chat',
         lastMessage: 'Hello',
         lastMessageTime: time,
         avatarUrl: 'https://example.com/avatar.png',
         members: const ['user1', 'user2'],
         isGroup: false,
-        unreadCount: 5,
-        createdAt: createdAt,
+        unreadCounts: const {'user1': 0, 'user2': 1},
+        createdAt: time,
         updatedAt: time,
       );
 
@@ -129,37 +142,100 @@ void main() {
       expect(chatThread1.hashCode, equals(chatThread2.hashCode));
     });
 
-    test('should not be equal when properties differ', () {
+    test('should handle different unread counts for different users', () {
       // Arrange
-      final time = DateTime(2024, 1, 1, 10, 30);
-      final createdAt = DateTime(2024, 1, 1, 10, 0);
-      final chatThread1 = ChatThread(
+      final chatThread = ChatThread(
         id: '1',
-        name: 'John Doe',
+        name: 'Test Chat',
         lastMessage: 'Hello',
-        lastMessageTime: time,
+        lastMessageTime: tDateTime,
         avatarUrl: 'https://example.com/avatar.png',
-        members: const ['user1', 'user2'],
+        members: const ['user1', 'user2', 'user3'],
         isGroup: false,
-        unreadCount: 5,
-        createdAt: createdAt,
-        updatedAt: time,
-      );
-      final chatThread2 = ChatThread(
-        id: '2', // Different ID
-        name: 'John Doe',
-        lastMessage: 'Hello',
-        lastMessageTime: time,
-        avatarUrl: 'https://example.com/avatar.png',
-        members: const ['user1', 'user2'],
-        isGroup: false,
-        unreadCount: 5,
-        createdAt: createdAt,
-        updatedAt: time,
+        unreadCounts: const {'user1': 0, 'user2': 5, 'user3': 10},
+        createdAt: tDateTime,
+        updatedAt: tDateTime,
       );
 
       // Assert
-      expect(chatThread1, isNot(equals(chatThread2)));
+      expect(chatThread.getUnreadCount('user1'), 0);
+      expect(chatThread.getUnreadCount('user2'), 5);
+      expect(chatThread.getUnreadCount('user3'), 10);
+      expect(chatThread.getUnreadCount('user4'), 0); // Non-member
+    });
+
+    test('should handle group admin permissions correctly', () {
+      // Arrange
+      final groupChat = ChatThread(
+        id: 'group_1',
+        name: 'Admin Group',
+        lastMessage: 'Admin message',
+        lastMessageTime: tDateTime,
+        avatarUrl: 'https://example.com/group.png',
+        members: const ['admin', 'member1', 'member2'],
+        isGroup: true,
+        unreadCounts: const {'admin': 0, 'member1': 1, 'member2': 1},
+        createdAt: tDateTime,
+        updatedAt: tDateTime,
+        groupAdminId: 'admin',
+        groupDescription: 'Admin controlled group',
+      );
+
+      // Assert
+      expect(groupChat.isUserAdmin('admin'), true);
+      expect(groupChat.isUserAdmin('member1'), false);
+      expect(groupChat.isUserAdmin('member2'), false);
+      expect(groupChat.canUserManage('admin'), true);
+      expect(groupChat.canUserManage('member1'), false);
+      expect(groupChat.canUserManage('member2'), false);
+    });
+
+    test('should handle group without admin', () {
+      // Arrange
+      final groupChat = ChatThread(
+        id: 'group_1',
+        name: 'No Admin Group',
+        lastMessage: 'Group message',
+        lastMessageTime: tDateTime,
+        avatarUrl: 'https://example.com/group.png',
+        members: const ['member1', 'member2'],
+        isGroup: true,
+        unreadCounts: const {'member1': 0, 'member2': 1},
+        createdAt: tDateTime,
+        updatedAt: tDateTime,
+        groupAdminId: null,
+        groupDescription: null,
+      );
+
+      // Assert
+      expect(groupChat.isUserAdmin('member1'), false);
+      expect(groupChat.isUserAdmin('member2'), false);
+      expect(groupChat.canUserManage('member1'), false);
+      expect(groupChat.canUserManage('member2'), false);
+      expect(groupChat.groupAdminId, null);
+      expect(groupChat.groupDescription, null);
+    });
+
+    test('should handle individual chat admin permissions', () {
+      // Arrange
+      final individualChat = ChatThread(
+        id: 'private_1',
+        name: 'Private Chat',
+        lastMessage: 'Private message',
+        lastMessageTime: tDateTime,
+        avatarUrl: 'https://example.com/private.png',
+        members: const ['user1', 'user2'],
+        isGroup: false,
+        unreadCounts: const {'user1': 0, 'user2': 1},
+        createdAt: tDateTime,
+        updatedAt: tDateTime,
+      );
+
+      // Assert
+      expect(individualChat.isUserAdmin('user1'), false);
+      expect(individualChat.isUserAdmin('user2'), false);
+      expect(individualChat.canUserManage('user1'), false);
+      expect(individualChat.canUserManage('user2'), false);
     });
   });
 }

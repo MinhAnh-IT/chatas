@@ -5,6 +5,7 @@ import '../cubit/friends_list_cubit.dart';
 import '../../domain/entities/friend.dart';
 import '../../../../shared/widgets/bottom_navigation.dart';
 import '../../../../core/constants/app_route_constants.dart';
+import '../widgets/friends_with_chat_provider.dart';
 
 class FriendsListPage extends StatefulWidget {
   final String currentUserId;
@@ -16,7 +17,8 @@ class FriendsListPage extends StatefulWidget {
   State<FriendsListPage> createState() => _FriendsListPageState();
 }
 
-class _FriendsListPageState extends State<FriendsListPage> {
+class _FriendsListPageState extends State<FriendsListPage>
+    with ChatOpeningMixin {
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -368,12 +370,7 @@ class _FriendsListPageState extends State<FriendsListPage> {
   }
 
   void _openChat(Friend friend) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Mở chat với ${friend.nickName}'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    openChatWithFriend(context, friend, widget.currentUserId);
   }
 
   String _formatDate(DateTime date) {

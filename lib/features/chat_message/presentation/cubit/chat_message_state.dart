@@ -23,23 +23,30 @@ class ChatMessageLoading extends ChatMessageState {
 class ChatMessageLoaded extends ChatMessageState {
   final List<ChatMessage> messages;
   final String? selectedMessageId; // For showing timestamp
+  final int timestamp; // Force rebuild
 
-  const ChatMessageLoaded({required this.messages, this.selectedMessageId});
+  const ChatMessageLoaded({
+    required this.messages,
+    this.selectedMessageId,
+    int? timestamp,
+  }) : timestamp = timestamp ?? 0;
 
   @override
-  List<Object?> get props => [messages, selectedMessageId];
+  List<Object?> get props => [messages, selectedMessageId, timestamp];
 
   /// Creates a copy of this state with updated values.
   ChatMessageLoaded copyWith({
     List<ChatMessage>? messages,
     String? selectedMessageId,
     bool clearSelection = false,
+    int? timestamp,
   }) {
     return ChatMessageLoaded(
       messages: messages ?? this.messages,
       selectedMessageId: clearSelection
           ? null
           : (selectedMessageId ?? this.selectedMessageId),
+      timestamp: timestamp ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
 }
@@ -102,4 +109,14 @@ class ChatMessageReactionAdded extends ChatMessageState {
 
   @override
   List<Object?> get props => [messages];
+}
+
+/// State for temporary chat thread (no messages yet, waiting for first message)
+class ChatMessageTemporary extends ChatMessageState {
+  final String tempThreadId;
+
+  const ChatMessageTemporary({required this.tempThreadId});
+
+  @override
+  List<Object?> get props => [tempThreadId];
 }

@@ -53,9 +53,11 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
           as _i2.FirebaseFirestore);
 
   @override
-  _i4.Future<List<_i5.ChatThreadModel>> fetchChatThreads() =>
+  _i4.Future<List<_i5.ChatThreadModel>> fetchChatThreads(
+    String? currentUserId,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#fetchChatThreads, []),
+            Invocation.method(#fetchChatThreads, [currentUserId]),
             returnValue: _i4.Future<List<_i5.ChatThreadModel>>.value(
               <_i5.ChatThreadModel>[],
             ),
@@ -90,10 +92,83 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  _i4.Stream<List<_i5.ChatThreadModel>> chatThreadsStream() =>
+  _i4.Stream<List<_i5.ChatThreadModel>> chatThreadsStream(
+    String? currentUserId,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#chatThreadsStream, []),
+            Invocation.method(#chatThreadsStream, [currentUserId]),
             returnValue: _i4.Stream<List<_i5.ChatThreadModel>>.empty(),
           )
           as _i4.Stream<List<_i5.ChatThreadModel>>);
+
+  @override
+  _i4.Future<void> createChatThread(_i5.ChatThreadModel? model) =>
+      (super.noSuchMethod(
+            Invocation.method(#createChatThread, [model]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<_i5.ChatThreadModel?> getChatThreadById(String? chatThreadId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getChatThreadById, [chatThreadId]),
+            returnValue: _i4.Future<_i5.ChatThreadModel?>.value(),
+          )
+          as _i4.Future<_i5.ChatThreadModel?>);
+
+  @override
+  _i4.Future<void> updateChatThreadMembers(
+    String? chatThreadId,
+    List<String>? members,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadMembers, [
+              chatThreadId,
+              members,
+            ]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateChatThreadName(String? chatThreadId, String? name) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadName, [chatThreadId, name]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateChatThreadAvatar(
+    String? chatThreadId,
+    String? avatarUrl,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadAvatar, [
+              chatThreadId,
+              avatarUrl,
+            ]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateChatThreadDescription(
+    String? chatThreadId,
+    String? description,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateChatThreadDescription, [
+              chatThreadId,
+              description,
+            ]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }

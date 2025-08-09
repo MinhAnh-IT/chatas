@@ -8,23 +8,45 @@ class ChatThreadRemoteDataSource {
   ChatThreadRemoteDataSource({FirebaseFirestore? firestore})
     : firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<List<ChatThreadModel>> fetchChatThreads() async {
+  Future<List<ChatThreadModel>> fetchChatThreads(String currentUserId) async {
+    print(
+      'ChatThreadRemoteDataSource: Fetching threads for user: $currentUserId',
+    );
     final snapshot = await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
+        .where(
+          'members',
+          arrayContains: currentUserId,
+        ) // Only threads where user is a member
         .get();
-    return snapshot.docs.map((doc) {
+    print(
+      'ChatThreadRemoteDataSource: Found ${snapshot.docs.length} threads for user $currentUserId',
+    );
+
+    // Debug: Print details of each thread
+    final threads = snapshot.docs.map((doc) {
       final data = doc.data();
       data['id'] = doc.id; // Set document ID from Firestore
+      print(
+        'ChatThreadRemoteDataSource: Thread ${doc.id} - Members: ${data['members']}, Name: ${data['name']}, AvatarUrl: ${data['avatarUrl']}',
+      );
       return ChatThreadModel.fromJson(data);
     }).toList();
+
+    return threads;
   }
 
   Future<void> addChatThread(ChatThreadModel model) async {
+    print(
+      'ChatThreadRemoteDataSource: Adding chat thread with ID: ${model.id}',
+    );
     final data = model.toJson();
-    data.remove('id'); // Remove ID from data as Firestore will auto-generate
+    data.remove('id'); // Remove ID from data as it will be the document ID
     await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
-        .add(data);
+        .doc(model.id) // Use our specified ID as document ID
+        .set(data);
+    print('ChatThreadRemoteDataSource: Chat thread added successfully');
   }
 
   Future<void> updateChatThread(String id, ChatThreadModel model) async {
@@ -43,16 +65,115 @@ class ChatThreadRemoteDataSource {
         .delete();
   }
 
-  Stream<List<ChatThreadModel>> chatThreadsStream() {
+  Stream<List<ChatThreadModel>> chatThreadsStream(String currentUserId) {
+    print(
+      'ChatThreadRemoteDataSource: Setting up threads stream for user: $currentUserId',
+    );
     return firestore
         .collection(ChatThreadRemoteConstants.collectionName)
+        .where(
+          'members',
+          arrayContains: currentUserId,
+        ) // Only threads where user is a member
         .snapshots()
         .map((snapshot) {
+          print(
+            'ChatThreadRemoteDataSource: Stream received ${snapshot.docs.length} threads for user',
+          );
           return snapshot.docs.map((doc) {
             final data = doc.data();
             data['id'] = doc.id; // Set document ID from Firestore
             return ChatThreadModel.fromJson(data);
           }).toList();
+        });
+  }
+
+  // New methods for group chat management
+  Future<void> createChatThread(ChatThreadModel model) async {
+    print(
+      'ChatThreadRemoteDataSource: Creating chat thread with ID: ${model.id}',
+    );
+    final data = model.toJson();
+    data.remove('id'); // Remove ID from data as it will be the document ID
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(model.id) // Use our specified ID as document ID
+        .set(data);
+    print('ChatThreadRemoteDataSource: Chat thread created successfully');
+  }
+
+  Future<ChatThreadModel?> getChatThreadById(String chatThreadId) async {
+    print(
+      'ChatThreadRemoteDataSource: Getting chat thread by ID: $chatThreadId',
+    );
+    final doc = await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      data['id'] = doc.id; // Set document ID from Firestore
+      return ChatThreadModel.fromJson(data);
+    }
+    return null;
+  }
+
+  Future<void> updateChatThreadMembers(
+    String chatThreadId,
+    List<String> members,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating members for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({
+          'members': members,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+  }
+
+  Future<void> updateChatThreadName(String chatThreadId, String name) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating name for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({'name': name, 'updatedAt': DateTime.now().toIso8601String()});
+  }
+
+  Future<void> updateChatThreadAvatar(
+    String chatThreadId,
+    String avatarUrl,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating avatar for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({
+          'avatarUrl': avatarUrl,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+  }
+
+  Future<void> updateChatThreadDescription(
+    String chatThreadId,
+    String description,
+  ) async {
+    print(
+      'ChatThreadRemoteDataSource: Updating description for chat thread: $chatThreadId',
+    );
+    await firestore
+        .collection(ChatThreadRemoteConstants.collectionName)
+        .doc(chatThreadId)
+        .update({
+          'groupDescription': description,
+          'updatedAt': DateTime.now().toIso8601String(),
         });
   }
 }

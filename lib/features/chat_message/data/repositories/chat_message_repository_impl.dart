@@ -85,11 +85,43 @@ class ChatMessageRepositoryImpl implements ChatMessageRepository {
   }
 
   @override
-  Future<void> markAsRead(String messageId, String userId) async {
+  Future<void> markMessagesAsRead(String chatThreadId, String userId) async {
     try {
-      await _remoteDataSource.updateMessageStatus(messageId, 'read');
+      await _remoteDataSource.markMessagesAsRead(chatThreadId, userId);
     } catch (e) {
-      throw Exception('Failed to mark message as read: $e');
+      throw Exception('Failed to mark messages as read: $e');
+    }
+  }
+
+  @override
+  Future<void> editMessage({
+    required String messageId,
+    required String newContent,
+    required String userId,
+  }) async {
+    try {
+      await _remoteDataSource.editMessage(
+        messageId: messageId,
+        newContent: newContent,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to edit message: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteMessageWithValidation({
+    required String messageId,
+    required String userId,
+  }) async {
+    try {
+      await _remoteDataSource.deleteMessageWithValidation(
+        messageId: messageId,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to delete message: $e');
     }
   }
 

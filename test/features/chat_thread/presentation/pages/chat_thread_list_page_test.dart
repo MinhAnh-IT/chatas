@@ -11,7 +11,8 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   FakeChatThreadRepository(this._threads);
 
   @override
-  Future<List<ChatThread>> getChatThreads() async => _threads;
+  Future<List<ChatThread>> getChatThreads(String currentUserId) async =>
+      _threads;
 
   @override
   Future<void> addChatThread(ChatThread chatThread) async {
@@ -21,6 +22,117 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   @override
   Future<void> deleteChatThread(String threadId) async {
     _threads.removeWhere((thread) => thread.id == threadId);
+  }
+
+  @override
+  Future<void> createChatThread(ChatThread chatThread) async {
+    _threads.add(chatThread);
+  }
+
+  @override
+  Future<ChatThread?> getChatThreadById(String chatThreadId) async {
+    try {
+      return _threads.firstWhere((thread) => thread.id == chatThreadId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> updateChatThreadMembers(
+    String chatThreadId,
+    List<String> members,
+  ) async {
+    final index = _threads.indexWhere((thread) => thread.id == chatThreadId);
+    if (index != -1) {
+      final thread = _threads[index];
+      _threads[index] = ChatThread(
+        id: thread.id,
+        name: thread.name,
+        lastMessage: thread.lastMessage,
+        lastMessageTime: thread.lastMessageTime,
+        avatarUrl: thread.avatarUrl,
+        isGroup: thread.isGroup,
+        members: members,
+        unreadCounts: thread.unreadCounts,
+        createdAt: thread.createdAt,
+        updatedAt: DateTime.now(),
+        groupAdminId: thread.groupAdminId,
+        groupDescription: thread.groupDescription,
+      );
+    }
+  }
+
+  @override
+  Future<void> updateChatThreadName(String chatThreadId, String name) async {
+    final index = _threads.indexWhere((thread) => thread.id == chatThreadId);
+    if (index != -1) {
+      final thread = _threads[index];
+      _threads[index] = ChatThread(
+        id: thread.id,
+        name: name,
+        lastMessage: thread.lastMessage,
+        lastMessageTime: thread.lastMessageTime,
+        avatarUrl: thread.avatarUrl,
+        isGroup: thread.isGroup,
+        members: thread.members,
+        unreadCounts: thread.unreadCounts,
+        createdAt: thread.createdAt,
+        updatedAt: DateTime.now(),
+        groupAdminId: thread.groupAdminId,
+        groupDescription: thread.groupDescription,
+      );
+    }
+  }
+
+  @override
+  Future<void> updateChatThreadAvatar(
+    String chatThreadId,
+    String avatarUrl,
+  ) async {
+    final index = _threads.indexWhere((thread) => thread.id == chatThreadId);
+    if (index != -1) {
+      final thread = _threads[index];
+      _threads[index] = ChatThread(
+        id: thread.id,
+        name: thread.name,
+        lastMessage: thread.lastMessage,
+        lastMessageTime: thread.lastMessageTime,
+        avatarUrl: avatarUrl,
+        isGroup: thread.isGroup,
+        members: thread.members,
+        unreadCounts: thread.unreadCounts,
+        createdAt: thread.createdAt,
+        updatedAt: DateTime.now(),
+        groupAdminId: thread.groupAdminId,
+        groupDescription: thread.groupDescription,
+      );
+    }
+  }
+
+  @override
+  Future<void> updateChatThreadDescription(
+    String chatThreadId,
+    String description,
+  ) async {
+    final index = _threads.indexWhere((thread) => thread.id == chatThreadId);
+    if (index != -1) {
+      final thread = _threads[index];
+      _threads[index] = ChatThread(
+        id: thread.id,
+        name: thread.name,
+        lastMessage: thread.lastMessage,
+        lastMessageTime: thread.lastMessageTime,
+        avatarUrl: thread.avatarUrl,
+        isGroup: thread.isGroup,
+        members: thread.members,
+        unreadCounts: thread.unreadCounts,
+        createdAt: thread.createdAt,
+        updatedAt: DateTime.now(),
+        groupAdminId: thread.groupAdminId,
+        groupDescription: description,
+      );
+    }
   }
 }
 
@@ -178,7 +290,7 @@ class _TestChatThreadListWidgetState extends State<TestChatThreadListWidget> {
 void main() {
   group('ChatThreadListPage Widget Tests', () {
     final now = DateTime.now();
-    final testChatThreads = [
+    final testChatThreads = <ChatThread>[
       ChatThread(
         id: '1',
         name: 'John Doe',
@@ -187,7 +299,7 @@ void main() {
         avatarUrl: 'https://example.com/avatar1.jpg',
         members: ['1', '2'],
         isGroup: false,
-        unreadCount: 0,
+        unreadCounts: {'1': 0, '2': 0},
         createdAt: now,
         updatedAt: now,
       ),
@@ -199,7 +311,7 @@ void main() {
         avatarUrl: 'https://example.com/avatar2.jpg',
         members: ['1', '3'],
         isGroup: false,
-        unreadCount: 2,
+        unreadCounts: {'1': 0, '3': 2},
         createdAt: now,
         updatedAt: now,
       ),

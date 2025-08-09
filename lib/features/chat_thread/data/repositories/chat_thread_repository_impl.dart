@@ -10,9 +10,9 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
     : _remoteDataSource = remoteDataSource ?? ChatThreadRemoteDataSource();
 
   @override
-  Future<List<ChatThread>> getChatThreads() async {
+  Future<List<ChatThread>> getChatThreads(String currentUserId) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    final models = await _remoteDataSource.fetchChatThreads();
+    final models = await _remoteDataSource.fetchChatThreads(currentUserId);
     return models.map((model) => model.toEntity()).toList();
   }
 
@@ -25,5 +25,55 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
   @override
   Future<void> deleteChatThread(String threadId) async {
     return await _remoteDataSource.deleteChatThread(threadId);
+  }
+
+  @override
+  Future<void> createChatThread(ChatThread chatThread) async {
+    final model = ChatThreadModel.fromEntity(chatThread);
+    return await _remoteDataSource.createChatThread(model);
+  }
+
+  @override
+  Future<ChatThread?> getChatThreadById(String chatThreadId) async {
+    final model = await _remoteDataSource.getChatThreadById(chatThreadId);
+    return model?.toEntity();
+  }
+
+  @override
+  Future<void> updateChatThreadMembers(
+    String chatThreadId,
+    List<String> members,
+  ) async {
+    return await _remoteDataSource.updateChatThreadMembers(
+      chatThreadId,
+      members,
+    );
+  }
+
+  @override
+  Future<void> updateChatThreadName(String chatThreadId, String name) async {
+    return await _remoteDataSource.updateChatThreadName(chatThreadId, name);
+  }
+
+  @override
+  Future<void> updateChatThreadAvatar(
+    String chatThreadId,
+    String avatarUrl,
+  ) async {
+    return await _remoteDataSource.updateChatThreadAvatar(
+      chatThreadId,
+      avatarUrl,
+    );
+  }
+
+  @override
+  Future<void> updateChatThreadDescription(
+    String chatThreadId,
+    String description,
+  ) async {
+    return await _remoteDataSource.updateChatThreadDescription(
+      chatThreadId,
+      description,
+    );
   }
 }

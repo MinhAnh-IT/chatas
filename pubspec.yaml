@@ -46,7 +46,7 @@ dependencies:
   # Local storage
   path_provider: ^2.1.5
   sqflite: ^2.3.0
-  path: ^1.8.0
+  path: ^1.9.0
 
   # State management
   flutter_bloc: ^8.1.3
@@ -57,7 +57,9 @@ dependencies:
   get_it: ^7.6.4
 
   image_picker: ^1.0.4
-
+  file_picker: ^8.0.3
+  mime: ^1.0.5
+  url_launcher: ^6.2.5
   dartz: ^0.10.1
 
   # Google APIs for Firebase Admin SDK

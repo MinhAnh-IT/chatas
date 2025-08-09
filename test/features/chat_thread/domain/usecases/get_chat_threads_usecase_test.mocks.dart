@@ -35,9 +35,9 @@ class MockChatThreadRepository extends _i1.Mock
   }
 
   @override
-  _i3.Future<List<_i4.ChatThread>> getChatThreads() =>
+  _i3.Future<List<_i4.ChatThread>> getChatThreads(String? currentUserId) =>
       (super.noSuchMethod(
-            Invocation.method(#getChatThreads, []),
+            Invocation.method(#getChatThreads, [currentUserId]),
             returnValue: _i3.Future<List<_i4.ChatThread>>.value(
               <_i4.ChatThread>[],
             ),
