@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:chatas/shared/constants/shared_constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 class ImageUploadService {
-  static const String _cloudinaryUrl =
-      'https://api.cloudinary.com/v1_1/dzbo8ubol/image/upload';
+  static const String _cloudinaryUrl = SharedConstants.cloudinaryImageUploadUrl;
   static const String _profileUploadPreset = 'profile_upload';
   static const String _groupUploadPreset =
       'profile_upload'; // Using same preset for now

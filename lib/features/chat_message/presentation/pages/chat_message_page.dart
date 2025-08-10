@@ -15,6 +15,8 @@ import '../widgets/message_bubble.dart';
 import '../widgets/message_input.dart';
 import '../widgets/reaction_picker.dart';
 import '../widgets/reply_preview.dart';
+
+import '../widgets/chat_summary_widget.dart';
 import '../../constants/chat_message_page_constants.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../../chat_thread/domain/entities/chat_thread.dart';
@@ -59,6 +61,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
     _initializeMessages();
     _setupScrollListener();
     _loadChatThreadInfo();
+    _setupOnlineStatusListener();
   }
 
   /// Sets up scroll listener to mark messages as read when user scrolls
@@ -81,12 +84,19 @@ class _ChatMessagePageState extends State<ChatMessagePage>
     });
   }
 
+  /// Sets up online status listener for detecting when user comes back online
+  void _setupOnlineStatusListener() {
+    // Online status listening is disabled - summary only triggered manually
+    // This method is kept for potential future use
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _timestampTimer?.cancel();
     _markAsReadTimer?.cancel();
+
     super.dispose();
   }
 
@@ -151,9 +161,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
 
     // Check if Firebase user matches widget user
     if (FirebaseAuth.instance.currentUser?.uid != widget.currentUserId) {
-      print(
-        'ChatMessagePage: WARNING - Firebase user (${FirebaseAuth.instance.currentUser?.uid}) != widget user (${widget.currentUserId})',
-      );
+      // Firebase user mismatch - this could indicate a session issue
     }
 
     try {
@@ -230,9 +238,8 @@ class _ChatMessagePageState extends State<ChatMessagePage>
           // Silent failure, will use fallback
         }
       }
-    } catch (e, stackTrace) {
-      print('ChatMessagePage: Error getting user name from auth service: $e');
-      print('ChatMessagePage: Stack trace: $stackTrace');
+    } catch (e) {
+      // Error getting user name from auth service - use fallback
     }
 
     // If still empty, use Firebase Auth email as last resort
@@ -248,9 +255,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
       }
     }
 
-    print(
-      'ChatMessagePage: Final user info - userId: ${widget.currentUserId}, userName: $userName, avatarUrl: $userAvatarUrl',
-    );
+    // Final user info set
     cubit.setCurrentUser(
       userId: widget.currentUserId,
       userName: userName,
@@ -398,7 +403,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
   void _handleMenuSelection(String value) {
     switch (value) {
       case 'ai_summary':
-        _showAISummaryFeature();
+        _triggerOfflineSummary();
         break;
       case 'group_settings':
         _showGroupSettings();
@@ -406,12 +411,42 @@ class _ChatMessagePageState extends State<ChatMessagePage>
     }
   }
 
-  /// Shows AI summary feature placeholder.
-  void _showAISummaryFeature() {
+  /// Manually triggers AI summary for all messages in current chat
+  Future<void> _triggerOfflineSummary() async {
+    // Trigger manual summary for current chat
+    final cubit = context.read<ChatMessageCubit>();
+    final currentState = cubit.state;
+
+    if (currentState is ChatMessageLoaded) {
+      if (currentState.messages.isEmpty) {
+        print('⚠️ [UI DEBUG] No messages to summarize');
+        _showErrorMessage('Không có tin nhắn nào để tóm tắt');
+        return;
+      }
+
+      try {
+        // Use manual summary method which summarizes all messages
+        await cubit.manualSummarizeAllMessages(
+          allMessages: currentState.messages,
+        );
+      } catch (e) {
+        _showErrorMessage('Lỗi khi tóm tắt: ${e.toString()}');
+      }
+    } else {
+      print(
+        '❌ [UI DEBUG] State is not ChatMessageLoaded: ${currentState.runtimeType}',
+      );
+      _showErrorMessage('Chưa tải được tin nhắn để tóm tắt');
+    }
+  }
+
+  /// Shows error message in snackbar
+  void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(ChatMessagePageConstants.aiSummaryFeatureMessage),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -611,7 +646,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
         });
       }
     } catch (e) {
-      print('Error loading chat thread info: $e');
+      // Error loading chat thread info
     }
   }
 
@@ -743,7 +778,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
     });
 
     try {
-      print('ChatMessagePage: Uploading file: $filePath');
+      // Uploading file
 
       // Check file size (50MB max)
       final file = File(filePath);
@@ -766,9 +801,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
         chatThreadId: widget.threadId,
       );
 
-      print(
-        'ChatMessagePage: File uploaded successfully: ${uploadResult.fileUrl}',
-      );
+      // File uploaded successfully
 
       // Send message with file attachment
       final now = DateTime.now();
@@ -809,7 +842,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
         ),
       );
     } catch (e) {
-      print('ChatMessagePage: Error uploading file: $e');
+      // Error uploading file
       _showErrorSnackBar('Lỗi gửi tệp: ${e.toString()}');
     } finally {
       setState(() {
@@ -921,6 +954,7 @@ class _ChatMessagePageState extends State<ChatMessagePage>
   Widget _buildMessageList() {
     return BlocBuilder<ChatMessageCubit, ChatMessageState>(
       builder: (context, state) {
+        // Show loading list state for initial chat load
         if (state is ChatMessageLoading) {
           return RefreshableListView<ChatMessage>(
             items: const [],
@@ -942,6 +976,28 @@ class _ChatMessagePageState extends State<ChatMessagePage>
           );
         }
 
+        // IMPORTANT: For summary states, we should KEEP rendering the message list
+        // and the ChatSummaryWidget. Previously, we returned an empty widget which
+        // caused the summary widget to be disposed before receiving the Loaded state.
+        if (state is ChatMessageSummaryLoading ||
+            state is ChatMessageSummaryLoaded ||
+            state is ChatMessageSummaryError) {
+          final messages = context.read<ChatMessageCubit>().currentMessages;
+          return Column(
+            children: [
+              ChatSummaryWidget(
+                isExpanded: _isOfflineSummaryExpanded,
+                onExpandToggle: () {
+                  setState(() {
+                    _isOfflineSummaryExpanded = !_isOfflineSummaryExpanded;
+                  });
+                },
+              ),
+              Expanded(child: _buildMessageListView(messages)),
+            ],
+          );
+        }
+
         if (state is ChatMessageLoaded) {
           // Scroll to bottom when messages are loaded
           if (state.messages.isNotEmpty) {
@@ -959,18 +1015,44 @@ class _ChatMessagePageState extends State<ChatMessagePage>
               });
             });
           }
-          return _buildMessageListView(state.messages);
+          return Column(
+            children: [
+              ChatSummaryWidget(
+                isExpanded: _isOfflineSummaryExpanded,
+                onExpandToggle: () {
+                  setState(() {
+                    _isOfflineSummaryExpanded = !_isOfflineSummaryExpanded;
+                  });
+                },
+              ),
+              Expanded(child: _buildMessageListView(state.messages)),
+            ],
+          );
         }
 
         if (state is ChatMessageTemporary) {
           // Show empty message list for temporary threads
-          return _buildMessageListView(const []);
+          return Column(
+            children: [
+              ChatSummaryWidget(
+                isExpanded: _isOfflineSummaryExpanded,
+                onExpandToggle: () {
+                  setState(() {
+                    _isOfflineSummaryExpanded = !_isOfflineSummaryExpanded;
+                  });
+                },
+              ),
+              Expanded(child: _buildMessageListView(const [])),
+            ],
+          );
         }
 
         return const SizedBox.shrink();
       },
     );
   }
+
+  bool _isOfflineSummaryExpanded = false;
 
   /// Builds the scrollable message list view with pull-to-refresh functionality.
   Widget _buildMessageListView(List<ChatMessage> messages) {

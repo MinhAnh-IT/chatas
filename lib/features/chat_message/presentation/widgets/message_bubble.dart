@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../constants/chat_message_page_constants.dart';
 import '../../../../shared/utils/date_utils.dart' as app_date_utils;
+import '../../../../shared/constants/shared_constants.dart';
 import 'message_context_menu.dart';
 import '../../../../shared/widgets/smart_image.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
@@ -131,7 +132,7 @@ class MessageBubble extends StatelessWidget {
     // If avatar URL already exists and is not placeholder, use it
     if (message.senderAvatarUrl.isNotEmpty &&
         !message.senderAvatarUrl.contains('placeholder') &&
-        !message.senderAvatarUrl.contains('via.placeholder.com')) {
+        !message.senderAvatarUrl.contains(SharedConstants.placeholderDomain)) {
       print(
         'MessageBubble: Using existing avatar URL: ${message.senderAvatarUrl}',
       );

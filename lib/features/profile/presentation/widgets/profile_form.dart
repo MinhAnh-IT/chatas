@@ -31,6 +31,13 @@ class _ProfileFormState extends State<ProfileForm> {
     _fullNameController = TextEditingController(text: widget.profile.fullName);
     _usernameController = TextEditingController(text: widget.profile.username);
     _selectedGender = ProfileConstants.normalizeGender(widget.profile.gender);
+
+    // Validate gender value against available options
+    _selectedGender =
+        ProfileConstants.genderOptions.contains(widget.profile.gender)
+        ? widget.profile.gender
+        : ProfileConstants.defaultGender;
+
     _selectedBirthDate = widget.profile.birthDate;
   }
 
@@ -222,7 +229,9 @@ class _ProfileFormState extends State<ProfileForm> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedGender,
+          value: ProfileConstants.genderOptions.contains(_selectedGender)
+              ? _selectedGender
+              : ProfileConstants.defaultGender,
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.person_outline, color: Colors.grey.shade600),
             border: OutlineInputBorder(
@@ -245,7 +254,10 @@ class _ProfileFormState extends State<ProfileForm> {
             fillColor: Colors.white,
           ),
           items: ProfileConstants.genderOptions.map((gender) {
-            return DropdownMenuItem(value: gender, child: Text(gender));
+            return DropdownMenuItem(
+              value: gender,
+              child: Text(ProfileConstants.genderLabels[gender] ?? gender),
+            );
           }).toList(),
           onChanged: (value) {
             setState(() {

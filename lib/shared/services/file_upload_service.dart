@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:chatas/shared/constants/shared_constants.dart';
+import 'package:chatas/shared/constants/file_constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:mime/mime.dart';
@@ -71,7 +73,7 @@ class FileUploadService {
     final mimeType = lookupMimeType(filePath) ?? 'application/octet-stream';
 
     // Validate file size (max 50MB)
-    if (fileSize > 50 * 1024 * 1024) {
+    if (fileSize > FileConstants.maxFileSize) {
       throw Exception('File quá lớn. Kích thước tối đa 50MB.');
     }
 
@@ -100,7 +102,7 @@ class FileUploadService {
     try {
       // Upload to Cloudinary
       final cloudinaryUrl = Uri.parse(
-        'https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/$resourceType/upload',
+        '${SharedConstants.cloudinaryApiBaseUrl}/$_cloudinaryCloudName/$resourceType/upload',
       );
 
       final publicId =
@@ -118,7 +120,7 @@ class FileUploadService {
 
       final response = await request.send();
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != FileConstants.httpOk) {
         final errorBody = await response.stream.bytesToString();
         print(
           'FileUploadService: Upload failed with status ${response.statusCode}: $errorBody',
@@ -247,12 +249,12 @@ class FileUploadService {
 
     // For videos, Cloudinary can generate thumbnails
     if (mimeType.startsWith('video/')) {
-      return 'https://res.cloudinary.com/$_cloudinaryCloudName/video/upload/so_0,w_300,h_200,c_fill/$publicId.jpg';
+      return '${SharedConstants.cloudinaryResourceBaseUrl}/video/upload/so_0,w_300,h_200,c_fill/$publicId.jpg';
     }
 
     // For images, use the same URL but smaller
     if (mimeType.startsWith('image/')) {
-      return 'https://res.cloudinary.com/$_cloudinaryCloudName/image/upload/w_300,h_200,c_fill/$publicId';
+      return '${SharedConstants.cloudinaryResourceBaseUrl}/image/upload/w_300,h_200,c_fill/$publicId';
     }
 
     // For documents, you might want to generate preview thumbnails
@@ -264,7 +266,7 @@ class FileUploadService {
   static Future<bool> testCloudinaryConnection() async {
     try {
       final testUrl = Uri.parse(
-        'https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/image/upload',
+        '${SharedConstants.cloudinaryApiBaseUrl}/$_cloudinaryCloudName/image/upload',
       );
 
       // Test with POST request and upload preset
@@ -280,7 +282,7 @@ class FileUploadService {
       print('FileUploadService: Cloudinary test body: $responseBody');
 
       // 400 with "Upload preset not found" means preset doesn't exist
-      if (response.statusCode == 400 &&
+      if (response.statusCode == FileConstants.httpBadRequest &&
           responseBody.contains('Upload preset not found')) {
         print(
           'FileUploadService: Upload preset $_cloudinaryUploadPreset not found',
@@ -289,14 +291,14 @@ class FileUploadService {
       }
 
       // 400 with "Upload preset must be specified" means preset is required
-      if (response.statusCode == 400 &&
+      if (response.statusCode == FileConstants.httpBadRequest &&
           responseBody.contains('Upload preset must be specified')) {
         print('FileUploadService: Upload preset is required');
         return false;
       }
 
       // 200 means success (even without file, it should accept the request)
-      return response.statusCode == 200;
+      return response.statusCode == FileConstants.httpOk;
     } catch (e) {
       print('FileUploadService: Cloudinary test failed: $e');
       return false;
@@ -322,17 +324,18 @@ class FileUploadService {
 
   /// Get file size string helper
   static String formatFileSize(int bytes) {
-    if (bytes < 1024) return '${bytes}B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    if (bytes < FileConstants.bytesPerKB) return '${bytes}B';
+    if (bytes < FileConstants.bytesPerMB)
+      return '${(bytes / FileConstants.bytesPerKB).toStringAsFixed(1)}KB';
+    if (bytes < FileConstants.bytesPerGB) {
+      return '${(bytes / FileConstants.bytesPerMB).toStringAsFixed(1)}MB';
     }
-    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
+    return '${(bytes / FileConstants.bytesPerGB).toStringAsFixed(1)}GB';
   }
 
   /// Check if file size is acceptable
   static bool isFileSizeAcceptable(int bytes, {int maxSizeMB = 50}) {
-    final maxBytes = maxSizeMB * 1024 * 1024;
+    final maxBytes = maxSizeMB * FileConstants.bytesPerMB;
     return bytes <= maxBytes;
   }
 

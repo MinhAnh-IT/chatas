@@ -88,6 +88,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
       getUnreadCount: notification_di.sl(),
       sendFriendRequestNotification: notification_di.sl(),
       sendFriendAcceptedNotification: notification_di.sl(),
+      sendNewMessageNotification: notification_di.sl(),
     );
 
     // Get current user ID and fetch threads

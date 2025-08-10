@@ -10,6 +10,7 @@ import 'domain/usecases/initialize_notifications.dart';
 import 'domain/usecases/mark_notification_as_read.dart';
 import 'domain/usecases/send_friend_accepted_notification.dart';
 import 'domain/usecases/send_friend_request_notification.dart';
+import 'domain/usecases/send_new_message_notification.dart';
 import 'presentation/cubit/notification_cubit.dart';
 
 final GetIt sl = GetIt.instance;
@@ -39,6 +40,7 @@ void setupNotificationDependencies() {
   sl.registerLazySingleton(() => MarkNotificationAsRead(sl()));
   sl.registerLazySingleton(() => SendFriendRequestNotification(sl()));
   sl.registerLazySingleton(() => SendFriendAcceptedNotification(sl()));
+  sl.registerLazySingleton(() => SendNewMessageNotification(sl()));
 
   // Cubit
   sl.registerFactory(
@@ -49,6 +51,7 @@ void setupNotificationDependencies() {
       markAsRead: sl(),
       sendFriendRequestNotification: sl(),
       sendFriendAcceptedNotification: sl(),
+      sendNewMessageNotification: sl(),
     ),
   );
 }

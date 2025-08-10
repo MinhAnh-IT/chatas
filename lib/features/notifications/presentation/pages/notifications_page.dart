@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_route_constants.dart';
 import '../../../../shared/widgets/bottom_navigation.dart';
+import '../../../../shared/widgets/app_bar.dart';
 import '../../domain/entities/notification.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
@@ -44,10 +45,23 @@ class _NotificationsPageState extends State<NotificationsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thông báo'),
+      appBar: CommonAppBar(
+        title: 'Thông báo',
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Quay lại',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRouteConstants.homePath);
+            }
+          },
+        ),
         actions: [
           PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Tùy chọn',
             onSelected: (value) {
               switch (value) {
                 case 'refresh':
@@ -58,22 +72,29 @@ class _NotificationsPageState extends State<NotificationsPage>
                   break;
               }
             },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'refresh',
-                child: ListTile(
-                  leading: Icon(Icons.refresh),
-                  title: Text('Làm mới'),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'mark_all_read',
-                child: ListTile(
-                  leading: Icon(Icons.mark_email_read),
-                  title: Text('Đánh dấu tất cả đã đọc'),
-                ),
-              ),
-            ],
+            itemBuilder: (BuildContext context) =>
+                const <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'refresh',
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh),
+                        SizedBox(width: 12.0),
+                        Text('Làm mới'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'mark_all_read',
+                    child: Row(
+                      children: [
+                        Icon(Icons.mark_email_read_outlined),
+                        SizedBox(width: 12.0),
+                        Text('Đánh dấu tất cả đã đọc'),
+                      ],
+                    ),
+                  ),
+                ],
           ),
         ],
       ),
@@ -227,11 +248,28 @@ class _NotificationsPageState extends State<NotificationsPage>
   }
 
   void _navigateToChat(NotificationEntity notification) {
-    // TODO: Navigate to chat
-    final chatId = notification.data['chatId'];
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Navigating to chat: $chatId')));
+    // Extract chat thread ID from notification data
+    final chatThreadId = notification.data['chatThreadId'] as String?;
+    final senderName = notification.data['senderName'] as String?;
+
+    if (chatThreadId != null && senderName != null) {
+      // Navigate to chat message page
+      context.go(
+        '/chat_message/$chatThreadId',
+        extra: {
+          'otherUserName': senderName,
+          'otherUserId': notification.data['senderId'],
+        },
+      );
+    } else {
+      // Show error if data is missing
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể mở cuộc trò chuyện. Dữ liệu không hợp lệ.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showNotificationDetails(NotificationEntity notification) {
