@@ -54,7 +54,7 @@ dependencies:
 
   http: ^1.1.0
 
-  get_it: ^7.6.4
+  get_it: ^8.2.0
 
   image_picker: ^1.0.4
   file_picker: ^8.0.3
