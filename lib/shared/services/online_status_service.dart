@@ -8,8 +8,22 @@ import '../../features/auth/di/online_status_dependency_injection.dart';
 
 class OnlineStatusService with WidgetsBindingObserver {
   static OnlineStatusService? _instance;
-  static OnlineStatusService get instance =>
-      _instance ??= OnlineStatusService._();
+  static OnlineStatusService? _testInstance;
+
+  static OnlineStatusService get instance {
+    if (_testInstance != null) {
+      return _testInstance!;
+    }
+    if (_instance == null) {
+      _instance = OnlineStatusService._();
+    }
+    return _instance!;
+  }
+
+  /// For testing purposes only - allows overriding the instance
+  static void setTestInstance(OnlineStatusService? testInstance) {
+    _testInstance = testInstance;
+  }
 
   OnlineStatusService._();
 

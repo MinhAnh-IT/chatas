@@ -4,6 +4,8 @@ import 'package:chatas/features/chat_message/presentation/widgets/reply_preview.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../shared/test_helpers.dart';
+
 void main() {
   group('ReplyPreview', () {
     late ChatMessage testMessage;
@@ -20,6 +22,12 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
+
+      TestOnlineStatusService.setup();
+    });
+
+    tearDown(() {
+      TestOnlineStatusService.reset();
     });
 
     Widget createWidgetUnderTest({
