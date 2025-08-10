@@ -240,6 +240,11 @@ class ChatMessageRemoteDataSource {
       'ChatMessageRemoteDataSource: Adding message to Firestore - ID: ${model.id}, ThreadID: ${model.chatThreadId}',
     );
 
+    // Variables to track hiddenFor changes for atomic update
+    List<String>? updatedHiddenFor;
+    bool needsHiddenForUpdate = false;
+    List<String> usersToRevive = [];
+
     // STEP 1: Check and revive thread for any members who should see this message
     final threadDoc = await firestore
         .collection(ChatThreadRemoteConstants.collectionName)
@@ -251,50 +256,33 @@ class ChatMessageRemoteDataSource {
       final hiddenFor = List<String>.from(threadData['hiddenFor'] ?? []);
       // final members = List<String>.from(threadData['members'] ?? []); // Currently unused
       final isGroup = threadData['isGroup'] ?? false;
-      final visibilityCutoffData =
-          threadData['visibilityCutoff'] as Map<String, dynamic>?;
-      final joinedAtData = threadData['joinedAt'] as Map<String, dynamic>?;
 
-      bool needsUpdate = false;
-      final usersToRevive = <String>[];
-
-      // Check each member in hiddenFor to see if they should see this new message
+      // Check each member in hiddenFor to see if they should be auto-revived
       for (final userId in List<String>.from(hiddenFor)) {
         bool shouldRevive = false;
 
-        if (userId == model.senderId) {
-          // Always revive for sender
+        if (isGroup) {
+          // For GROUP CHATS: never auto-revive anyone (including sender)
+          // Archived group threads must stay archived until user explicitly unarchives
+          shouldRevive = false;
+          print(
+            'ChatMessageRemoteDataSource: Group chat is archived. Not auto-reviving user $userId.',
+          );
+        } else if (userId == model.senderId) {
+          // For 1-1 chats: revive for sender only so they can see their own message
           shouldRevive = true;
+          print(
+            'ChatMessageRemoteDataSource: Auto-reviving 1-1 thread for sender $userId',
+          );
         } else {
-          // For other members, check if this message is visible to them
-          if (isGroup) {
-            // For group chats: check joinedAt
-            if (joinedAtData != null && joinedAtData[userId] != null) {
-              final joinedAtString = joinedAtData[userId] as String;
-              final joinedAt = DateTime.parse(joinedAtString);
-              if (model.createdAt.isAfter(joinedAt) ||
-                  model.createdAt.isAtSameMomentAs(joinedAt)) {
-                shouldRevive = true;
-              }
-            } else {
-              // No joinedAt means they can see all messages
-              shouldRevive = true;
-            }
-          } else {
-            // For 1-1 chats: check visibilityCutoff
-            if (visibilityCutoffData != null &&
-                visibilityCutoffData[userId] != null) {
-              final cutoffString = visibilityCutoffData[userId] as String;
-              final visibilityCutoff = DateTime.parse(cutoffString);
-              if (model.createdAt.isAfter(visibilityCutoff) ||
-                  model.createdAt.isAtSameMomentAs(visibilityCutoff)) {
-                shouldRevive = true;
-              }
-            } else {
-              // No visibilityCutoff means they can see all messages
-              shouldRevive = true;
-            }
-          }
+          // For other members who have archived/hidden this thread:
+          // DON'T auto-revive them. Let them stay archived.
+          // They can still receive notifications but thread remains hidden
+          // until they manually unarchive it.
+          shouldRevive = false;
+          print(
+            'ChatMessageRemoteDataSource: User $userId has archived this thread. Keeping it archived despite new message.',
+          );
         }
 
         if (shouldRevive) {
@@ -306,26 +294,16 @@ class ChatMessageRemoteDataSource {
       for (final userId in usersToRevive) {
         if (hiddenFor.contains(userId)) {
           hiddenFor.remove(userId);
-          needsUpdate = true;
+          needsHiddenForUpdate = true;
           print(
             'ChatMessageRemoteDataSource: User $userId should see this message, reviving thread ${model.chatThreadId}',
           );
         }
       }
 
-      // Update hiddenFor if needed
-      if (needsUpdate) {
-        await firestore
-            .collection(ChatThreadRemoteConstants.collectionName)
-            .doc(model.chatThreadId)
-            .update({
-              'hiddenFor': hiddenFor,
-              'updatedAt': DateTime.now().toIso8601String(),
-            });
-
-        print(
-          'ChatMessageRemoteDataSource: Successfully revived thread ${model.chatThreadId} for users: $usersToRevive',
-        );
+      // Store the updated hiddenFor for atomic update later
+      if (needsHiddenForUpdate) {
+        updatedHiddenFor = hiddenFor;
       }
     }
 
@@ -391,15 +369,27 @@ class ChatMessageRemoteDataSource {
           }
         }
 
+        // Prepare update data - always include lastMessage, unreadCounts, etc.
+        final Map<String, dynamic> updateData = {
+          'lastMessage': model.content,
+          'lastMessageTime': model.sentAt.toIso8601String(),
+          'unreadCounts': currentUnreadCounts,
+          'updatedAt': DateTime.now().toIso8601String(),
+        };
+
+        // Add hiddenFor changes if needed (from STEP 1)
+        if (needsHiddenForUpdate && updatedHiddenFor != null) {
+          updateData['hiddenFor'] = updatedHiddenFor;
+          print(
+            'ChatMessageRemoteDataSource: Including hiddenFor update - revived thread for users: $usersToRevive',
+          );
+        }
+
+        // Single atomic update to avoid race conditions
         await firestore
             .collection(ChatThreadRemoteConstants.collectionName)
             .doc(model.chatThreadId)
-            .update({
-              'lastMessage': model.content,
-              'lastMessageTime': model.sentAt.toIso8601String(),
-              'unreadCounts': currentUnreadCounts,
-              'updatedAt': DateTime.now().toIso8601String(),
-            });
+            .update(updateData);
       }
       print(
         'ChatMessageRemoteDataSource: Updated chat thread lastMessage for thread: ${model.chatThreadId}',
@@ -486,6 +476,42 @@ class ChatMessageRemoteDataSource {
         'ChatMessageRemoteDataSource: markMessagesAsRead called for thread: $chatThreadId, user: $userId',
       );
 
+      // First, get the chat thread to check visibility settings
+      final threadDoc = await firestore
+          .collection(ChatThreadRemoteConstants.collectionName)
+          .doc(chatThreadId)
+          .get();
+
+      DateTime? visibilityCutoff;
+      if (threadDoc.exists) {
+        final threadData = threadDoc.data()!;
+        final isGroup = threadData['isGroup'] ?? false;
+
+        if (isGroup) {
+          // For group chats: check joinedAt timestamp
+          final joinedAtData = threadData['joinedAt'] as Map<String, dynamic>?;
+          if (joinedAtData != null && joinedAtData[userId] != null) {
+            final joinedAtString = joinedAtData[userId] as String;
+            visibilityCutoff = DateTime.parse(joinedAtString);
+            print(
+              'ChatMessageRemoteDataSource: Found joinedAt for group: $visibilityCutoff',
+            );
+          }
+        } else {
+          // For 1-1 chats: check visibilityCutoff timestamp
+          final visibilityCutoffData =
+              threadData['visibilityCutoff'] as Map<String, dynamic>?;
+          if (visibilityCutoffData != null &&
+              visibilityCutoffData[userId] != null) {
+            final cutoffString = visibilityCutoffData[userId] as String;
+            visibilityCutoff = DateTime.parse(cutoffString);
+            print(
+              'ChatMessageRemoteDataSource: Found visibilityCutoff for 1-1: $visibilityCutoff',
+            );
+          }
+        }
+      }
+
       // Get all messages in this thread that are not deleted
       // We'll filter in code to avoid Firestore's limit on != queries
       final allMessagesQuery = await firestore
@@ -498,12 +524,40 @@ class ChatMessageRemoteDataSource {
           .get();
 
       // Filter in code: messages NOT from current user AND status != 'read'
+      // ALSO filter by visibility cutoff to only mark messages user can actually see
       final unreadMessagesDocs = allMessagesQuery.docs.where((doc) {
         final data = doc.data();
         final senderId =
             data[ChatMessageRemoteConstants.senderIdField] as String?;
         final status = data[ChatMessageRemoteConstants.statusField] as String?;
-        return senderId != userId && status != 'read';
+
+        // Skip if message is from current user or already read
+        if (senderId == userId || status == 'read') {
+          return false;
+        }
+
+        // Skip if user has deleted this message
+        final deletedFor = List<String>.from(data['deletedFor'] ?? []);
+        if (deletedFor.contains(userId)) {
+          return false;
+        }
+
+        // Filter by visibility cutoff (same logic as fetchMessages)
+        if (visibilityCutoff != null) {
+          final createdAtString =
+              data[ChatMessageRemoteConstants.createdAtField] as String?;
+          if (createdAtString != null) {
+            final messageTime = DateTime.parse(createdAtString);
+            if (messageTime.isBefore(visibilityCutoff)) {
+              print(
+                'ChatMessageRemoteDataSource: Skipping message ${doc.id} created at $messageTime (before visibility cutoff $visibilityCutoff)',
+              );
+              return false;
+            }
+          }
+        }
+
+        return true;
       }).toList();
 
       print(
@@ -511,7 +565,7 @@ class ChatMessageRemoteDataSource {
       );
 
       if (unreadMessagesDocs.isNotEmpty) {
-        // Mark all messages as read
+        // Mark all visible unread messages as read
         final batch = firestore.batch();
         for (final doc in unreadMessagesDocs) {
           final data = doc.data();
@@ -528,24 +582,21 @@ class ChatMessageRemoteDataSource {
         print(
           'ChatMessageRemoteDataSource: Batch commit completed for ${unreadMessagesDocs.length} messages',
         );
-
-        // Reset unread count for this specific user
-        await firestore
-            .collection(ChatThreadRemoteConstants.collectionName)
-            .doc(chatThreadId)
-            .update({
-              'unreadCounts.$userId': 0,
-              'updatedAt': DateTime.now().toIso8601String(),
-            });
-
-        print(
-          'ChatMessageRemoteDataSource: Reset unread count to 0 for user: $userId in thread: $chatThreadId',
-        );
-      } else {
-        print(
-          'ChatMessageRemoteDataSource: No unread messages found to mark as read',
-        );
       }
+
+      // Always reset unread count for this specific user regardless of whether we marked any messages
+      // This ensures UI consistency - if user opened the chat, their unread count should be 0
+      await firestore
+          .collection(ChatThreadRemoteConstants.collectionName)
+          .doc(chatThreadId)
+          .update({
+            'unreadCounts.$userId': 0,
+            'updatedAt': DateTime.now().toIso8601String(),
+          });
+
+      print(
+        'ChatMessageRemoteDataSource: Reset unread count to 0 for user: $userId in thread: $chatThreadId (marked ${unreadMessagesDocs.length} messages as read)',
+      );
     } catch (e) {
       print('ChatMessageRemoteDataSource: Error marking messages as read: $e');
       // Don't throw - this is not critical

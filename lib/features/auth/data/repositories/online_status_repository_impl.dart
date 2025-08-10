@@ -39,4 +39,9 @@ class OnlineStatusRepositoryImpl implements OnlineStatusRepository {
   Future<bool> setUserOffline(String userId) async {
     return await _remoteDataSource.setUserOffline(userId);
   }
+
+  @override
+  Future<bool> cleanupUserOnlineStatus(String userId) async {
+    return await _remoteDataSource.cleanupUserOnlineStatus(userId);
+  }
 }

@@ -71,6 +71,11 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   }
 
   @override
+  Stream<List<ChatThread>> getChatThreadsStream(String currentUserId) {
+    return Stream.value(_threads);
+  }
+
+  @override
   Future<void> resetThreadForUser(String threadId, String userId) async {
     // Implementation for testing
   }
