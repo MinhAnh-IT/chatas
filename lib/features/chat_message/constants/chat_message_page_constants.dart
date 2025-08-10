@@ -1,3 +1,5 @@
+import '../../../shared/constants/shared_constants.dart';
+
 class ChatMessagePageConstants {
   /// Page title and navigation.
   static const String title = 'Tin nhắn';
@@ -49,6 +51,21 @@ class ChatMessagePageConstants {
   static const String moreOptionsTooltip = 'Tùy chọn khác';
   static const String aiSummaryTooltip = 'Tóm tắt đoạn chat với AI';
 
+  /// Offline chat summary feature.
+  static const String offlineSummaryTitle = 'Tóm tắt tin nhắn khi vắng mặt';
+  static const String offlineSummaryLoading =
+      'Đang tóm tắt cuộc trò chuyện bằng AI...';
+  static const String offlineSummaryNoNewMessages =
+      'Không có tin nhắn mới để tóm tắt.';
+  static const String offlineSummaryNoContent = 'Không có nội dung để tóm tắt.';
+  static const String offlineSummaryError = 'Lỗi tóm tắt AI: ';
+  static const String offlineSummaryClose = 'Đóng';
+  static const String offlineSummaryErrorTitle = 'Lỗi tóm tắt';
+  static const String offlineSummaryDialogTitle = 'Tóm tắt AI';
+  static const String offlineSummaryButtonText = 'Tóm tắt khi vắng mặt';
+  static const String offlineSummaryButtonTooltip =
+      'Tóm tắt các tin nhắn gửi khi bạn vắng mặt';
+
   /// Feature development messages.
   static const String attachmentFeatureMessage =
       'Tính năng đính kèm đang được phát triển';
@@ -90,8 +107,13 @@ class ChatMessagePageConstants {
   static const String messageDeletedSuccessfully = 'Tin nhắn đã được xóa';
   static const String editedIndicator = 'đã chỉnh sửa';
 
+  /// Additional UI text
+  static const String showMore = 'Xem thêm';
+  static const String showLess = 'Thu gọn';
+  static const String retryButton = 'Thử lại';
+
   /// Temporary constants for development
-  static const String temporaryAvatarUrl = 'https://via.placeholder.com/150';
+  static const String temporaryAvatarUrl = SharedConstants.placeholderImageUrl;
 
   /// UI dimensions.
   static const double messageRadius = 18.0;

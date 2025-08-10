@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:get_it/get_it.dart';
+import '../constants/friends_constants.dart';
+import '../../../shared/constants/shared_constants.dart';
 import '../../notifications/data/datasources/notification_local_notification_datasource.dart';
 import '../../notifications/domain/repositories/notification_repository.dart';
 import '../../notifications/domain/entities/notification.dart';
@@ -15,9 +17,7 @@ final GetIt sl = GetIt.instance;
 
 class FCMPushService {
   // Firebase Admin SDK credentials
-  static const String _projectId = 'chatas-9469d';
-  static const String _fcmSendUrl =
-      'https://fcm.googleapis.com/v1/projects/$_projectId/messages:send';
+  static const String _fcmSendUrl = FriendsConstants.fcmMessagesUrl;
 
   // Service Account credentials - TODO: Move to secure storage
   static Map<String, dynamic>? _serviceAccountCredentials;
@@ -128,7 +128,7 @@ class FCMPushService {
       print('🔍 ServiceAccount created successfully');
 
       // Tạo OAuth2 client với scope FCM và clock skew tolerance
-      final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+      final scopes = [SharedConstants.googleFirebaseMessagingScope];
       print('🔍 Creating OAuth2 client with scopes: $scopes');
 
       final authClient = await auth.clientViaServiceAccount(
@@ -299,7 +299,7 @@ class FCMPushService {
 
       // 4. Gửi HTTP request đến FCM Legacy API
       final response = await http.post(
-        Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        Uri.parse(SharedConstants.fcmLegacyUrl),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'key=$serverKey',

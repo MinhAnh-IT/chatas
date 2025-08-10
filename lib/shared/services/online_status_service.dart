@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +16,8 @@ class OnlineStatusService {
   Timer? _backgroundTimer;
   bool _isActive = true;
   bool _isInBackground = false;
-  final Duration _inactivityThreshold = const Duration(minutes: 5);
+  // User is considered offline if no interaction for 1 minute
+  final Duration _inactivityThreshold = const Duration(minutes: 1);
   final Duration _backgroundCheckInterval = const Duration(minutes: 1);
 
   // Stream controllers for real-time updates
@@ -25,9 +25,14 @@ class OnlineStatusService {
       StreamController<bool>.broadcast();
   Stream<bool> get onlineStatusStream => _onlineStatusController.stream;
 
+  // Callback for when user comes back online after being offline
+  VoidCallback? _onUserBackOnlineCallback;
+
   void initialize() {
     _setupActivityDetection();
     _setupBackgroundDetection();
+    // Mark online as soon as app starts
+    setOnline();
     _startActivityTimer();
   }
 
@@ -66,6 +71,7 @@ class OnlineStatusService {
 
   void _onAppPaused() {
     _isInBackground = true;
+    // Immediately mark user offline and update lastActive
     _setActive(false);
     _startBackgroundTimer();
   }
@@ -77,10 +83,16 @@ class OnlineStatusService {
 
   void _setActive(bool active) {
     if (_isActive != active) {
+      final wasOffline = !_isActive;
       _isActive = active;
       if (active) {
         _updateOnlineStatus(true);
         _startActivityTimer();
+
+        // Trigger callback if user was offline and now back online
+        if (wasOffline && _onUserBackOnlineCallback != null) {
+          _onUserBackOnlineCallback!();
+        }
       } else {
         _updateOnlineStatus(false);
         _stopActivityTimer();
@@ -172,11 +184,17 @@ class OnlineStatusService {
   // Get current online status
   bool get isOnline => _isActive && !_isInBackground;
 
+  /// Sets a callback to be called when user comes back online after being offline
+  void setOnUserBackOnlineCallback(VoidCallback? callback) {
+    _onUserBackOnlineCallback = callback;
+  }
+
   // Dispose resources
   void dispose() {
     _stopActivityTimer();
     _stopBackgroundTimer();
     _onlineStatusController.close();
+    _onUserBackOnlineCallback = null;
   }
 }
 
