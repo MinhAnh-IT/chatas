@@ -84,6 +84,18 @@ class MockChatThreadRemoteDataSource extends _i1.Mock
           as _i5.Future<List<_i6.ChatThreadModel>>);
 
   @override
+  _i5.Future<List<_i6.ChatThreadModel>> getArchivedChatThreads(
+    String? currentUserId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getArchivedChatThreads, [currentUserId]),
+            returnValue: _i5.Future<List<_i6.ChatThreadModel>>.value(
+              <_i6.ChatThreadModel>[],
+            ),
+          )
+          as _i5.Future<List<_i6.ChatThreadModel>>);
+
+  @override
   _i5.Future<void> addChatThread(_i6.ChatThreadModel? model) =>
       (super.noSuchMethod(
             Invocation.method(#addChatThread, [model]),

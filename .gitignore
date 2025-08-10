@@ -47,4 +47,4 @@ app.*.map.json
 
 # Firebase/Security related
 *.pem
-*.p12
+*.p12assets/*.json # hoặc cụ thể hơn cho file secret

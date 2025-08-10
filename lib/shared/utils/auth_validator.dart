@@ -1,6 +1,7 @@
 import '../../features/auth/constants/auth_constants.dart';
 import '../../features/auth/domain/entities/register_request.dart';
 import '../../features/auth/domain/entities/login_request.dart';
+import '../constants/validation_constants.dart';
 
 class AuthValidator {
   static String? validateEmail(String? email) {
@@ -8,7 +9,7 @@ class AuthValidator {
       return AuthConstants.emailRequired;
     }
 
-    final emailRegex = RegExp(r'^[\w\.-]+@gmail\.com$');
+    final emailRegex = RegExp(ValidationConstants.emailPattern);
     if (!emailRegex.hasMatch(email)) {
       return AuthConstants.invalidEmail;
     }

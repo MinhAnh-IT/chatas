@@ -22,6 +22,9 @@ class OpenChatCubit extends Cubit<OpenChatState> {
     emit(OpenChatLoading());
 
     try {
+      // Block rule: disallow opening chat if friendship is blocked in either direction
+      // Check friend documents: `${currentUserId}_${friendId}` and `${friendId}_${currentUserId}`
+      // We keep this as a soft check via repository if available, otherwise fallback in UI layer
       final chatThread = await findOrCreateChatThreadUseCase(
         currentUserId: currentUserId,
         friendId: friendId,

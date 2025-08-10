@@ -135,4 +135,23 @@ class NotificationRepositoryImpl implements NotificationRepository {
   Future<void> updateFCMTokenOnServer(String token) async {
     await remoteDataSource.sendTokenToServer(token);
   }
+
+  @override
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required NotificationEntity notification,
+  }) async {
+    // Convert entity to model
+    final notificationModel = NotificationModel.fromEntity(notification);
+
+    // Send notification via FCM to specific user
+    await remoteDataSource.sendNotificationToUser(
+      userId: userId,
+      notification: notificationModel,
+    );
+
+    print('✅ Sent notification to user: $userId');
+    print('   Title: ${notification.title}');
+    print('   Body: ${notification.body}');
+  }
 }

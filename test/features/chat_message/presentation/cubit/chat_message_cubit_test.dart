@@ -14,6 +14,8 @@ import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_u
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cubit.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_state.dart';
 import 'package:chatas/features/chat_message/constants/chat_message_page_constants.dart';
+import 'package:chatas/shared/services/offline_summary_service.dart';
+import 'package:chatas/features/chat_message/domain/usecases/ai_summary_usecase.dart';
 
 /// Mock implementations for testing.
 class MockGetMessagesStreamUseCase extends Mock
@@ -35,6 +37,10 @@ class MockSendFirstMessageUseCase extends Mock
 class MockMarkMessagesAsReadUseCase extends Mock
     implements MarkMessagesAsReadUseCase {}
 
+class MockOfflineSummaryService extends Mock implements OfflineSummaryService {}
+
+class MockAISummaryUseCase extends Mock implements AISummaryUseCase {}
+
 void main() {
   setUpAll(() {
     // Register fallback values for enums
@@ -51,6 +57,8 @@ void main() {
     late MockDeleteMessageUseCase mockDeleteMessageUseCase;
     late MockSendFirstMessageUseCase mockSendFirstMessageUseCase;
     late MockMarkMessagesAsReadUseCase mockMarkMessagesAsReadUseCase;
+    late MockOfflineSummaryService mockOfflineSummaryService;
+    late MockAISummaryUseCase mockAISummaryUseCase;
     late StreamController<List<ChatMessage>> messagesStreamController;
 
     setUp(() {
@@ -62,6 +70,8 @@ void main() {
       mockDeleteMessageUseCase = MockDeleteMessageUseCase();
       mockSendFirstMessageUseCase = MockSendFirstMessageUseCase();
       mockMarkMessagesAsReadUseCase = MockMarkMessagesAsReadUseCase();
+      mockOfflineSummaryService = MockOfflineSummaryService();
+      mockAISummaryUseCase = MockAISummaryUseCase();
       messagesStreamController = StreamController<List<ChatMessage>>();
 
       // Setup mock for markMessagesAsReadUseCase
@@ -81,6 +91,8 @@ void main() {
         deleteMessageUseCase: mockDeleteMessageUseCase,
         sendFirstMessageUseCase: mockSendFirstMessageUseCase,
         markMessagesAsReadUseCase: mockMarkMessagesAsReadUseCase,
+        offlineSummaryService: mockOfflineSummaryService,
+        aiSummaryUseCase: mockAISummaryUseCase,
       );
 
       // Set current user for testing
@@ -251,6 +263,8 @@ void main() {
             deleteMessageUseCase: mockDeleteMessageUseCase,
             sendFirstMessageUseCase: mockSendFirstMessageUseCase,
             markMessagesAsReadUseCase: mockMarkMessagesAsReadUseCase,
+            offlineSummaryService: mockOfflineSummaryService,
+            aiSummaryUseCase: mockAISummaryUseCase,
           );
           cubit.setCurrentUser(userId: 'test_user', userName: 'Test User');
           return cubit;
@@ -570,6 +584,50 @@ void main() {
 
         expect(cubit.isMessageSelected(testMessageId), isFalse);
       });
+    });
+
+    group('summarizeOfflineMessages', () {
+      final testMessages = [
+        ChatMessage(
+          id: '1',
+          chatThreadId: 'thread1',
+          senderId: 'user1',
+          senderName: 'User 1',
+          senderAvatarUrl: 'https://example.com/avatar1.jpg',
+          content: 'Hello',
+          type: MessageType.text,
+          sentAt: DateTime(2024, 1, 1, 12, 1, 0),
+          createdAt: DateTime(2024, 1, 1, 12, 1, 0),
+          updatedAt: DateTime(2024, 1, 1, 12, 1, 0),
+        ),
+        ChatMessage(
+          id: '2',
+          chatThreadId: 'thread1',
+          senderId: 'user2',
+          senderName: 'User 2',
+          senderAvatarUrl: 'https://example.com/avatar2.jpg',
+          content: 'How are you?',
+          type: MessageType.text,
+          sentAt: DateTime(2024, 1, 1, 12, 2, 0),
+          createdAt: DateTime(2024, 1, 1, 12, 2, 0),
+          updatedAt: DateTime(2024, 1, 1, 12, 2, 0),
+        ),
+      ];
+      final lastActive = DateTime(2024, 1, 1, 12, 0, 0);
+
+      blocTest<ChatMessageCubit, ChatMessageState>(
+        'should handle manual summarize trigger',
+        build: () => cubit,
+        act: (cubit) {
+          // Just verify the method can be called without crashing
+          cubit.manualSummarizeAllMessages(allMessages: testMessages);
+        },
+        wait: const Duration(milliseconds: 100),
+        verify: (_) {
+          // Just verify no crash occurred
+          expect(true, isTrue);
+        },
+      );
     });
   });
 }

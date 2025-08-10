@@ -5,6 +5,7 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
+import '../../constants/auth_ui_constants.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
@@ -179,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                             AuthTextField(
                               controller: _emailOrUsernameController,
                               label: 'Email hoặc tên đăng nhập',
-                              hint: 'example@email.com',
+                              hint: AuthUIConstants.emailPlaceholder,
                               icon: Icons.email_outlined,
                               validator: (value) =>
                                   AuthValidator.validateEmailOrUsername(value),

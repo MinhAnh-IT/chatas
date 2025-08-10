@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'features/friends/injection/friends_injection.dart';
 import 'features/auth/online_status_exports.dart';
-import 'features/friends/services/fcm_push_service.dart';
 import 'features/notifications/notification_injection.dart';
 import 'features/notifications/background_message_handler.dart';
 import 'core/services/credentials_loader.dart';

@@ -1,5 +1,3 @@
-import '../entities/user.dart';
-
 abstract class OnlineStatusRepository {
   Future<bool> updateOnlineStatus({
     required String userId,

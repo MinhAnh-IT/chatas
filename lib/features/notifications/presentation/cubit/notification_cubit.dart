@@ -7,6 +7,7 @@ import '../../domain/usecases/initialize_notifications.dart';
 import '../../domain/usecases/mark_notification_as_read.dart';
 import '../../domain/usecases/send_friend_accepted_notification.dart';
 import '../../domain/usecases/send_friend_request_notification.dart';
+import '../../domain/usecases/send_new_message_notification.dart';
 import 'notification_state.dart';
 
 class NotificationCubit extends Cubit<NotificationState> {
@@ -16,6 +17,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   final MarkNotificationAsRead markAsRead;
   final SendFriendRequestNotification sendFriendRequestNotification;
   final SendFriendAcceptedNotification sendFriendAcceptedNotification;
+  final SendNewMessageNotification sendNewMessageNotification;
 
   StreamSubscription? _foregroundMessageSubscription;
   StreamSubscription? _backgroundMessageSubscription;
@@ -27,6 +29,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     required this.markAsRead,
     required this.sendFriendRequestNotification,
     required this.sendFriendAcceptedNotification,
+    required this.sendNewMessageNotification,
   }) : super(NotificationInitial());
 
   Future<void> initialize() async {
@@ -106,6 +109,34 @@ class NotificationCubit extends Cubit<NotificationState> {
       emit(
         NotificationError(
           'Failed to send friend accepted notification: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> sendNewMessage({
+    required String senderName,
+    required String senderId,
+    required String receiverId,
+    required String chatThreadId,
+    required String messageContent,
+    bool isGroupChat = false,
+    String? groupName,
+  }) async {
+    try {
+      await sendNewMessageNotification(
+        senderName: senderName,
+        senderId: senderId,
+        receiverId: receiverId,
+        chatThreadId: chatThreadId,
+        messageContent: messageContent,
+        isGroupChat: isGroupChat,
+        groupName: groupName,
+      );
+    } catch (e) {
+      emit(
+        NotificationError(
+          'Failed to send new message notification: ${e.toString()}',
         ),
       );
     }
