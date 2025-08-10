@@ -70,7 +70,9 @@ class _ProfilePageState extends State<ProfilePage> {
               fullName: data[AuthRemoteConstants.fullNameField] ?? '',
               email: data[AuthRemoteConstants.emailField] ?? '',
               username: data[AuthRemoteConstants.usernameField] ?? '',
-              gender: ProfileConstants.normalizeGender(data[AuthRemoteConstants.genderField]),
+              gender: ProfileConstants.normalizeGender(
+                data[AuthRemoteConstants.genderField],
+              ),
               birthDate: birthDate,
               profileImageUrl: data[AuthRemoteConstants.avatarUrlField] ?? '',
             );
@@ -627,7 +629,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         fullName: request.fullName,
                         email: profile.email,
                         username: request.username,
-                        gender: ProfileConstants.normalizeGender(request.gender),
+                        gender: ProfileConstants.normalizeGender(
+                          request.gender,
+                        ),
                         birthDate: request.birthDate,
                         profileImageUrl:
                             request.profileImageUrl ?? profile.profileImageUrl,

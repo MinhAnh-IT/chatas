@@ -32,10 +32,10 @@ void main() async {
   if (currentUser != null) {
     // Force cleanup any existing online status first
     await OnlineStatusService.instance.forceCleanup();
-    
+
     // Wait a bit to ensure cleanup is processed
     await Future.delayed(const Duration(milliseconds: 1000));
-    
+
     // Then set online
     await OnlineStatusService.instance.setOnline();
   }

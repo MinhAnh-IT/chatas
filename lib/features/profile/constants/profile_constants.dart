@@ -26,7 +26,7 @@ class ProfileConstants {
 
   // Gender options (Vietnamese display)
   static const List<String> genderOptions = ['Nam', 'Nữ', 'Khác'];
-  
+
   // Gender mapping from English to Vietnamese
   static const Map<String, String> genderMapping = {
     'Male': 'Nam',
@@ -36,7 +36,7 @@ class ProfileConstants {
     'Nữ': 'Nữ',
     'Khác': 'Khác',
   };
-  
+
   // Gender mapping from Vietnamese to English (for database)
   static const Map<String, String> genderToEnglish = {
     'Nam': 'Male',
@@ -47,13 +47,13 @@ class ProfileConstants {
   // Minimum lengths
   static const int minUsernameLength = 3;
   static const int minPasswordLength = 8;
-  
+
   // Helper method to normalize gender value
   static String normalizeGender(String? gender) {
     if (gender == null || gender.isEmpty) return 'Nam';
     return genderMapping[gender] ?? 'Nam';
   }
-  
+
   // Helper method to convert to English for database
   static String toEnglishGender(String vietnameseGender) {
     return genderToEnglish[vietnameseGender] ?? 'Male';

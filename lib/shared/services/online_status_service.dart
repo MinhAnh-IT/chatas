@@ -36,8 +36,6 @@ class OnlineStatusService with WidgetsBindingObserver {
     _startActivityTimer();
   }
 
-
-
   void _setupBackgroundDetection() {
     // For web, we can use visibility API
     if (kIsWeb) {
@@ -79,12 +77,12 @@ class OnlineStatusService with WidgetsBindingObserver {
       } else if (msg == AppLifecycleState.hidden.toString()) {
         _onAppHidden();
       }
-      
+
       // Force offline for any non-resumed state
       if (msg != AppLifecycleState.resumed.toString()) {
         _forceOffline();
       }
-      
+
       return null;
     });
   }
@@ -94,7 +92,7 @@ class OnlineStatusService with WidgetsBindingObserver {
     _setActive(true);
     _startActivityTimer();
     _stopTerminationTimer();
-    
+
     // Check if user is still logged in and set online
     final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
@@ -107,7 +105,7 @@ class OnlineStatusService with WidgetsBindingObserver {
     _setActive(false);
     _startBackgroundTimer();
     _startTerminationTimer();
-    
+
     // Set offline when app goes to background
     _updateOnlineStatus(false);
   }
@@ -237,15 +235,15 @@ class OnlineStatusService with WidgetsBindingObserver {
         await OnlineStatusDependencyInjection.setUserOfflineUseCase(
           currentUser.uid,
         );
-        
+
         // Wait a bit to ensure cleanup is processed
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         // Then set online
         await OnlineStatusDependencyInjection.setUserOnlineUseCase(
           currentUser.uid,
         );
-        
+
         _setActive(true);
         _onlineStatusController.add(true);
       }
