@@ -42,7 +42,7 @@ class AuthRemoteDataSource {
       if (userCredential.user != null) {
         final userModel = UserModel(
           userId: userCredential.user!.uid,
-          isOnline: true, // User is online when they register
+          isOnline: false, // User is offline after register (needs to login)
           lastActive: DateTime.now(),
           fullName: request.fullName,
           username: request.username,

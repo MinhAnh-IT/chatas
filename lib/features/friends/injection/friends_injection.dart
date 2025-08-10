@@ -14,8 +14,6 @@ import '../presentation/cubit/friends_list_cubit.dart';
 import '../presentation/cubit/friend_search_cubit.dart';
 import '../presentation/cubit/friend_request_cubit.dart';
 import '../services/fcm_push_service.dart';
-import '../../notifications/domain/repositories/notification_repository.dart';
-import '../../notifications/notification_injection.dart' as notification_di;
 
 class FriendsDependencyInjection {
   static late FriendRemoteDataSource _dataSource;

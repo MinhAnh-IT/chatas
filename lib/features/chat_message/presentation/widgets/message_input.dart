@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/chat_message_page_constants.dart';
+import '../../../../shared/services/online_status_service.dart';
 
 /// Widget for composing and sending new messages.
 /// Includes text input, send button, and reaction picker.
@@ -33,6 +34,7 @@ class _MessageInputState extends State<MessageInput> {
   void _handleSendMessage() {
     final text = _textController.text.trim();
     if (text.isNotEmpty) {
+      OnlineStatusService.instance.onUserActivity();
       widget.onSendMessage(text);
       _textController.clear();
       setState(() {
@@ -73,7 +75,12 @@ class _MessageInputState extends State<MessageInput> {
   /// Builds the attachment button for adding files or images.
   Widget _buildAttachmentButton(ThemeData theme) {
     return IconButton(
-      onPressed: widget.onAttachmentPressed,
+      onPressed: () {
+        OnlineStatusService.instance.onUserActivity();
+        if (widget.onAttachmentPressed != null) {
+          widget.onAttachmentPressed!();
+        }
+      },
       icon: Icon(
         Icons.attach_file,
         color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -102,6 +109,9 @@ class _MessageInputState extends State<MessageInput> {
         focusNode: _focusNode,
         onChanged: _handleTextChanged,
         onSubmitted: (_) => _handleSendMessage(),
+        onTap: () {
+          OnlineStatusService.instance.onUserActivity();
+        },
         maxLines: null,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
@@ -132,7 +142,12 @@ class _MessageInputState extends State<MessageInput> {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        onPressed: _isComposing ? _handleSendMessage : null,
+        onPressed: _isComposing
+            ? () {
+                OnlineStatusService.instance.onUserActivity();
+                _handleSendMessage();
+              }
+            : null,
         icon: Icon(
           Icons.send,
           color: _isComposing

@@ -249,7 +249,7 @@ class ChatMessageRemoteDataSource {
     if (threadDoc.exists) {
       final threadData = threadDoc.data()!;
       final hiddenFor = List<String>.from(threadData['hiddenFor'] ?? []);
-      final members = List<String>.from(threadData['members'] ?? []);
+      // final members = List<String>.from(threadData['members'] ?? []); // Currently unused
       final isGroup = threadData['isGroup'] ?? false;
       final visibilityCutoffData =
           threadData['visibilityCutoff'] as Map<String, dynamic>?;

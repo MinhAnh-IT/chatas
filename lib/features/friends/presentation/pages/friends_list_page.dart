@@ -4,8 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../cubit/friends_list_cubit.dart';
 import '../../domain/entities/friend.dart';
 import '../../../../shared/widgets/bottom_navigation.dart';
+import '../../../../shared/widgets/refreshable_list_view.dart';
+import '../../../../shared/widgets/app_bar.dart';
 import '../../../../core/constants/app_route_constants.dart';
 import '../widgets/friends_with_chat_provider.dart';
+import '../../../../features/auth/di/online_status_dependency_injection.dart';
+import '../../../../shared/widgets/online_status_indicator.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 class FriendsListPage extends StatefulWidget {
   final String currentUserId;
@@ -36,50 +41,50 @@ class _FriendsListPageState extends State<FriendsListPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Danh sách bạn bè'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+      appBar: CommonAppBar(
+        title: 'Bạn bè',
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Quay lại',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.mail_outline),
-            onPressed: () {
-              context.go(AppRouteConstants.friendRequestsPath);
-            },
+            onPressed: () => context.go(AppRouteConstants.friendRequestsPath),
             tooltip: 'Lời mời kết bạn',
           ),
-          Container(
-            margin: const EdgeInsets.only(right: 8.0),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                context.go(AppRouteConstants.friendSearchPath);
-              },
-              icon: const Icon(Icons.person_add, color: Colors.blue),
-              label: const Text(
-                'Tìm bạn mới',
-                style: TextStyle(color: Colors.blue, fontSize: 12),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                elevation: 2,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              context.read<FriendsListCubit>().refreshFriends(
-                widget.currentUserId,
-              );
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Tùy chọn',
+            onSelected: (value) {
+              switch (value) {
+                case 'search_friends':
+                  context.go(AppRouteConstants.friendSearchPath);
+                  break;
+                case 'friend_requests':
+                  context.go(AppRouteConstants.friendRequestsPath);
+                  break;
+              }
             },
-            tooltip: 'Làm mới danh sách',
+            itemBuilder: (BuildContext context) => const [
+              PopupMenuItem<String>(
+                value: 'search_friends',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_add),
+                    SizedBox(width: 12.0),
+                    Text('Thêm bạn bè'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -99,125 +104,75 @@ class _FriendsListPageState extends State<FriendsListPage>
                 fillColor: Colors.grey[100],
               ),
               onChanged: (query) {
+                OnlineStatusService.instance.onUserActivity();
                 context.read<FriendsListCubit>().searchFriends(query);
               },
             ),
           ),
           Expanded(
-            child: BlocConsumer<FriendsListCubit, FriendsState>(
-              listener: (context, state) {
-                if (state is FriendsError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                if (state is FriendsLoaded && state.successMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.successMessage!),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  context.read<FriendsListCubit>().clearMessage();
-                }
+            child: GestureDetector(
+              onTap: () {
+                OnlineStatusService.instance.onUserActivity();
               },
-              builder: (context, state) {
-                if (state is FriendsLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is FriendsLoaded) {
-                  if (state.friends.isEmpty) {
-                    return _buildEmptyState();
+              child: BlocConsumer<FriendsListCubit, FriendsState>(
+                listener: (context, state) {
+                  if (state is FriendsError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                   }
-                  return ListView.builder(
-                    itemCount: state.friends.length,
-                    itemBuilder: (context, index) {
-                      final friend = state.friends[index];
+                  if (state is FriendsLoaded && state.successMessage != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.successMessage!),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    context.read<FriendsListCubit>().clearMessage();
+                  }
+                },
+                builder: (context, state) {
+                  if (state is FriendsError) {
+                    return _buildErrorState(state.message);
+                  }
+
+                  final friends = state is FriendsLoaded
+                      ? state.friends
+                      : <Friend>[];
+                  final isLoading = state is FriendsLoading;
+
+                  return RefreshableListView<Friend>(
+                    items: friends,
+                    isLoading: isLoading,
+                    onRefresh: () async {
+                      OnlineStatusService.instance.onUserActivity();
+                      await context.read<FriendsListCubit>().refreshFriends(
+                        widget.currentUserId,
+                      );
+                    },
+                    emptyWidget: _buildEmptyState(),
+                    itemBuilder: (context, friend, index) {
                       return Card(
                         margin: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 4.0,
+                          horizontal: 12.0,
+                          vertical: 6.0,
                         ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blue,
-                            child: Text(
-                              friend.nickName.isNotEmpty
-                                  ? friend.nickName[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            friend.nickName.isNotEmpty
-                                ? friend.nickName
-                                : 'Người dùng',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Thêm vào: ${_formatDate(friend.addAt)}',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                ),
-                              ),
-                              if (friend.isBlock)
-                                const Text(
-                                  'Đã chặn',
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  friend.isBlock
-                                      ? Icons.block
-                                      : Icons.block_outlined,
-                                  color: friend.isBlock
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
-                                onPressed: () => _showBlockDialog(friend),
-                                tooltip: friend.isBlock ? 'Bỏ chặn' : 'Chặn',
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.chat,
-                                  color: Colors.blue,
-                                ),
-                                onPressed: () => _openChat(friend),
-                                tooltip: 'Nhắn tin',
-                              ),
-                            ],
-                          ),
-                          onTap: () => _openChat(friend),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: _FriendListTile(
+                          friend: friend,
+                          onOpenChat: _openChat,
+                          onToggleBlock: _showBlockDialog,
                         ),
                       );
                     },
                   );
-                } else if (state is FriendsError) {
-                  return _buildErrorState(state.message);
-                }
-                return const Center(child: Text('Khởi tạo danh sách bạn bè'));
-              },
+                },
+              ),
             ),
           ),
         ],
@@ -372,11 +327,97 @@ class _FriendsListPageState extends State<FriendsListPage>
   void _openChat(Friend friend) {
     openChatWithFriend(context, friend, widget.currentUserId);
   }
+}
+
+class _FriendListTile extends StatelessWidget {
+  final Friend friend;
+  final void Function(Friend) onOpenChat;
+  final void Function(Friend) onToggleBlock;
+
+  const _FriendListTile({
+    required this.friend,
+    required this.onOpenChat,
+    required this.onToggleBlock,
+  });
+
+  String _actualFriendId() {
+    final parts = friend.friendId.split('_');
+    return parts.length == 2 ? parts[1] : friend.friendId;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final otherUserId = _actualFriendId();
+    return StreamBuilder<Map<String, dynamic>?>(
+      stream: OnlineStatusDependencyInjection.streamUserOnlineStatusUseCase(
+        otherUserId,
+      ),
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        final isOnline = (data?['isOnline'] as bool?) ?? false;
+        final lastActive = data?['lastActive'] as DateTime?;
+        final avatarUrl = data?['avatarUrl'] as String? ?? '';
+        final displayName = friend.nickName.isNotEmpty
+            ? friend.nickName
+            : (data?['fullName'] as String? ?? 'Người dùng');
+
+        return ListTile(
+          leading: ProfileWithOnlineStatus(
+            imageUrl: avatarUrl,
+            isOnline: isOnline,
+            lastActive: lastActive,
+            imageSize: 44,
+            indicatorSize: 12,
+            showLastActive: false,
+          ),
+          title: Text(
+            displayName,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Thêm vào: ${_formatDate(friend.addAt)}',
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+              if (friend.isBlock)
+                const Text(
+                  'Đã chặn',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isOnline ? Icons.circle : Icons.circle_outlined,
+                size: 10,
+                color: isOnline ? const Color(0xFF4CAF50) : Colors.grey,
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.block_outlined),
+                color: friend.isBlock ? Colors.red : Colors.grey,
+                onPressed: () => onToggleBlock(friend),
+                tooltip: friend.isBlock ? 'Bỏ chặn' : 'Chặn',
+              ),
+            ],
+          ),
+          onTap: () => onOpenChat(friend),
+        );
+      },
+    );
+  }
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-
     if (difference.inDays < 1) {
       return 'Hôm nay';
     } else if (difference.inDays < 7) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '/shared/utils/auth_validator.dart';
+import '../../constants/auth_ui_constants.dart';
+import '/shared/constants/file_constants.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import 'package:go_router/go_router.dart';
@@ -99,7 +101,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   vertical: 24,
                 ),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 400),
+                  constraints: const BoxConstraints(
+                    maxWidth: FileConstants.maxDialogWidth,
+                  ),
                   child: Card(
                     elevation: 8,
                     shape: RoundedRectangleBorder(
@@ -139,7 +143,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             AuthTextField(
                               controller: _emailController,
                               label: 'Email',
-                              hint: 'example@email.com',
+                              hint: AuthUIConstants.emailPlaceholder,
                               icon: Icons.email_outlined,
                               validator: (value) =>
                                   AuthValidator.validateEmail(value),

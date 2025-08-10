@@ -14,6 +14,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
 import 'package:chatas/shared/widgets/refreshable_list_view.dart';
+import 'package:chatas/shared/widgets/online_status_indicator.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 import 'archived_threads_page.dart';
 import 'package:chatas/core/constants/app_route_constants.dart';
 import 'package:go_router/go_router.dart';
@@ -88,6 +90,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
       getUnreadCount: notification_di.sl(),
       sendFriendRequestNotification: notification_di.sl(),
       sendFriendAcceptedNotification: notification_di.sl(),
+      sendNewMessageNotification: notification_di.sl(),
     );
 
     // Get current user ID and fetch threads
@@ -552,7 +555,14 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
                 ),
               ),
             // Content
-            Expanded(child: _buildContent()),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  OnlineStatusService.instance.onUserActivity();
+                },
+                child: _buildContent(),
+              ),
+            ),
           ],
         ),
         bottomNavigationBar: CommonBottomNavigation(

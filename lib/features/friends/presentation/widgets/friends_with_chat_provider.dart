@@ -8,6 +8,8 @@ import '../../../../features/chat_thread/domain/usecases/find_or_create_chat_thr
 import '../../../../features/chat_thread/data/repositories/chat_thread_repository_impl.dart';
 import '../../../../core/constants/app_route_constants.dart';
 import 'package:go_router/go_router.dart';
+import '../../../friends/data/datasources/friendDataSource.dart';
+import '../../../friends/constants/FriendRemoteConstants.dart';
 
 /// Widget that provides OpenChatCubit for friends functionality
 class FriendsWithChatProvider extends StatelessWidget {
@@ -69,11 +71,13 @@ mixin ChatOpeningMixin {
     Friend friend,
     String currentUserId,
   ) async {
-    // Check if friend is blocked
+    // 1) Không cho mở chat nếu bất kỳ phía nào chặn
+    // - friend.isBlock: current user đã chặn người kia
+    // - Kiểm tra chiều ngược lại: người kia có chặn current user không
     if (friend.isBlock) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Không thể mở chat với người dùng đã bị chặn'),
+          content: Text('Không thể mở chat: bạn đã chặn người này'),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
         ),
@@ -95,8 +99,9 @@ mixin ChatOpeningMixin {
       );
     }
 
-    // Get friend's avatar URL from their user profile
+    // Get friend's avatar URL & block status from their user profile
     String friendAvatarUrl = '';
+    bool friendBlockedYou = false;
     try {
       // Import and use auth service to get friend's profile
       final friendUser = await AuthDependencyInjection.authRemoteDataSource
@@ -104,10 +109,33 @@ mixin ChatOpeningMixin {
       if (friendUser != null) {
         friendAvatarUrl = friendUser.avatarUrl;
         print('ChatOpeningMixin: Got friend avatar URL: $friendAvatarUrl');
+        // Kiểm tra chiều block ngược lại qua collection bạn bè
+        // Nếu doc '${actualFriendId}_$currentUserId' có isBlock = true => bạn bị chặn
+        try {
+          final friendDoc = await FriendRemoteDataSource().firestore
+              .collection(Friendremoteconstants.friendCollection)
+              .doc('${actualFriendId}_$currentUserId')
+              .get();
+          final data = friendDoc.data();
+          if (data != null && (data['isBlock'] as bool? ?? false)) {
+            friendBlockedYou = true;
+          }
+        } catch (_) {}
       }
     } catch (e) {
       print('ChatOpeningMixin: Error getting friend avatar: $e');
       // Continue with empty avatar - SmartAvatar will handle fallback
+    }
+
+    if (friendBlockedYou) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể mở chat: bạn đã bị đối phương chặn'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
     }
 
     // Use OpenChatCubit to handle the chat opening

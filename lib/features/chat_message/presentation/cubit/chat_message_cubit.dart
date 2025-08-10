@@ -15,6 +15,9 @@ import '../../../chat_thread/data/datasources/chat_thread_remote_data_source.dar
 import '../../../auth/di/auth_dependency_injection.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../constants/chat_message_page_constants.dart';
+import '../../../../shared/services/offline_summary_service.dart';
+import '../../../notifications/notification_injection.dart' as notif_sl;
+import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import 'chat_message_state.dart';
 
 /// Cubit for managing chat message state and business logic.
@@ -28,6 +31,9 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   final DeleteMessageUseCase _deleteMessageUseCase;
   final SendFirstMessageUseCase _sendFirstMessageUseCase;
   final MarkMessagesAsReadUseCase _markMessagesAsReadUseCase;
+  final OfflineSummaryService _offlineSummaryService;
+  final dynamic
+  aiSummaryUseCase; // dynamic để tránh lỗi import vòng tròn, sẽ truyền đúng type khi khởi tạo
 
   StreamSubscription<List<ChatMessage>>? _messagesSubscription;
   String? _currentChatThreadId;
@@ -42,6 +48,9 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   // Reply state
   String? _replyToMessageId;
 
+  // Summary state protection - to prevent message stream from overriding summary states
+  bool _isSummaryInProgress = false;
+
   ChatMessageCubit({
     required GetMessagesStreamUseCase getMessagesStreamUseCase,
     required SendMessageUseCase sendMessageUseCase,
@@ -51,6 +60,8 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
     required DeleteMessageUseCase deleteMessageUseCase,
     required SendFirstMessageUseCase sendFirstMessageUseCase,
     required MarkMessagesAsReadUseCase markMessagesAsReadUseCase,
+    required OfflineSummaryService offlineSummaryService,
+    required this.aiSummaryUseCase,
   }) : _getMessagesStreamUseCase = getMessagesStreamUseCase,
        _sendMessageUseCase = sendMessageUseCase,
        _addReactionUseCase = addReactionUseCase,
@@ -59,7 +70,142 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
        _deleteMessageUseCase = deleteMessageUseCase,
        _sendFirstMessageUseCase = sendFirstMessageUseCase,
        _markMessagesAsReadUseCase = markMessagesAsReadUseCase,
+       _offlineSummaryService = offlineSummaryService,
        super(const ChatMessageInitial());
+
+  @override
+  void emit(ChatMessageState state) {
+    // Quiet mode: remove verbose logs for production
+    super.emit(state);
+  }
+
+  /// Summarizes messages sent while user was offline (from lastActive to now)
+  /// NOTE: This method is deprecated - use manualSummarizeAllMessages instead
+  @Deprecated('Use manualSummarizeAllMessages for manual summary triggering')
+  Future<void> summarizeOfflineMessages({
+    required List<ChatMessage> allMessages,
+    required DateTime lastActive,
+  }) async {
+    // This method is deprecated - redirect to manual summary
+    await manualSummarizeAllMessages(allMessages: allMessages);
+  }
+
+  /// Manually triggers AI summary for all messages (regardless of offline status)
+  Future<void> manualSummarizeAllMessages({
+    required List<ChatMessage> allMessages,
+  }) async {
+    print(
+      '🔄 [DEBUG] Starting manual summary with ${allMessages.length} messages',
+    );
+
+    // Set flag and emit loading state IMMEDIATELY
+    _isSummaryInProgress = true;
+    emit(
+      ChatMessageSummaryLoading(
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+    print('⏳ [DEBUG] Loading state emitted - showing to user');
+
+    try {
+      // Get only text messages for summarization
+      final textContent = _offlineSummaryService.extractMessageContent(
+        allMessages,
+      );
+      print(
+        '📝 [DEBUG] Extracted ${textContent.length} text messages for summarization',
+      );
+
+      if (textContent.isEmpty) {
+        print('⚠️ [DEBUG] No text content found, showing empty message');
+        // Even for empty case, keep loading visible briefly before showing result
+        await Future.delayed(const Duration(milliseconds: 500));
+        emit(
+          ChatMessageSummaryLoaded(
+            summary:
+                'Không có tin nhắn text nào để tóm tắt trong cuộc trò chuyện này.',
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+        return;
+      }
+
+      // Show user we're calling AI service
+      print('🤖 [DEBUG] Calling AI service for manual summary...');
+      print('📡 [DEBUG] Waiting for AI response...');
+
+      // Call AI service and WAIT for complete response
+      final summary = await aiSummaryUseCase(
+        textContent,
+        isManualSummary: true,
+      );
+
+      // Only proceed after we have the complete response
+      print('✅ [DEBUG] AI summary received successfully');
+      print('📋 [DEBUG] Summary content length: ${summary.length} characters');
+
+      // Small delay to ensure loading was visible to user
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Now emit the successful result
+      print('🚀 [DEBUG] About to emit ChatMessageSummaryLoaded...');
+      emit(
+        ChatMessageSummaryLoaded(
+          summary: summary,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+      print('🎉 [DEBUG] Summary result displayed to user');
+
+      // Extended delay to ensure UI picks up the state
+      await Future.delayed(const Duration(seconds: 2));
+      print('🛡️ [DEBUG] Summary state protection period completed');
+    } catch (e) {
+      print('❌ [DEBUG] Error during AI summary process: $e');
+
+      // Small delay to ensure loading was visible even for errors
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      emit(
+        ChatMessageSummaryError(
+          message:
+              'Không thể tóm tắt cuộc trò chuyện. Vui lòng thử lại sau. Chi tiết lỗi: $e',
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+    } finally {
+      // Always reset flag when done
+      _isSummaryInProgress = false;
+      print('🏁 [DEBUG] Summary process completed');
+    }
+  }
+
+  /// Checks if user was offline and triggers summary automatically
+  /// NOTE: This is now disabled - summary only triggered manually via menu
+  Future<void> _checkAndTriggerOfflineSummary(
+    List<ChatMessage> messages,
+  ) async {
+    // Auto summary is disabled - users must manually trigger via menu
+    // This method is kept for potential future use
+    return;
+  }
+
+  /// Clears the current offline summary display
+  void clearSummary() {
+    _isSummaryInProgress = false;
+    // Don't emit summary states, just return to normal message state
+    final currentState = state;
+    if (currentState is ChatMessageLoaded) {
+      emit(ChatMessageLoaded(messages: currentState.messages));
+    }
+  }
+
+  /// Resets the offline summary check flag so it can trigger again
+  /// NOTE: This method is deprecated as auto-summary is disabled
+  @Deprecated('Auto-summary is disabled, this method is no longer needed')
+  void resetOfflineSummaryCheck() {
+    // Method body removed as auto-summary is disabled
+  }
 
   /// Sets the current user information for message sending
   void setCurrentUser({
@@ -110,11 +256,21 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
 
       _messagesSubscription =
           _getMessagesStreamUseCase(chatThreadId, _currentUserId!).listen(
-            (messages) {
-              emit(ChatMessageLoaded(messages: messages));
+            (messages) async {
+              // Stream update while listening for messages
+
+              // Only emit ChatMessageLoaded if not currently processing summary
+              if (!_isSummaryInProgress) {
+                emit(ChatMessageLoaded(messages: messages));
+              } else {}
+
+              // Check for offline summary on first load
+              await _checkAndTriggerOfflineSummary(messages);
             },
             onError: (error) {
-              emit(ChatMessageError(message: error.toString()));
+              if (!_isSummaryInProgress) {
+                emit(ChatMessageError(message: error.toString()));
+              }
             },
           );
     } catch (e) {
@@ -188,6 +344,12 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           message: firstMessage,
         );
 
+        // Send notification for first message
+        await _sendNewMessageNotification(
+          content: content.trim(),
+          chatThreadId: realThreadId,
+        );
+
         // Clear reply state after sending first message
         if (_replyToMessageId != null) {
           _replyToMessageId = null;
@@ -222,10 +384,6 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           if (thread != null &&
               thread.isHiddenFor(_currentUserId!) &&
               !thread.isGroup) {
-            print(
-              'ChatMessageCubit: Detected first message to hidden 1-1 thread, using SendFirstMessageUseCase',
-            );
-
             // Create the first message
             final now = DateTime.now();
             final firstMessage = ChatMessage(
@@ -255,6 +413,12 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
               message: firstMessage,
             );
 
+            // Send notification for recreated thread message
+            await _sendNewMessageNotification(
+              content: content.trim(),
+              chatThreadId: _currentChatThreadId!,
+            );
+
             // Clear reply state after sending first message
             if (_replyToMessageId != null) {
               _replyToMessageId = null;
@@ -265,7 +429,6 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
             return;
           }
         } catch (e) {
-          print('ChatMessageCubit: Error checking hidden thread status: $e');
           // Fall through to normal message sending
         }
       }
@@ -307,6 +470,12 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
           senderName: _currentUserName!,
           senderAvatarUrl: _currentUserAvatarUrl,
           replyToMessageId: _replyToMessageId,
+        );
+
+        // Send notification to other users in the chat
+        await _sendNewMessageNotification(
+          content: content.trim(),
+          chatThreadId: _currentChatThreadId!,
         );
 
         // Clear reply state after sending
@@ -413,7 +582,6 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         }
       }
     } catch (e) {
-      print('ChatMessageCubit: Error sending file message: $e');
       emit(ChatMessageError(message: 'Lỗi gửi tệp: ${e.toString()}'));
     }
   }
@@ -606,35 +774,20 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   /// Marks all messages in the current chat thread as read for the current user.
   /// This should be called when the user opens a chat thread.
   Future<void> markMessagesAsRead() async {
-    print(
-      'ChatMessageCubit: markMessagesAsRead called - threadId: $_currentChatThreadId, userId: $_currentUserId',
-    );
     if (_currentChatThreadId != null && _currentUserId != null) {
       try {
-        print('ChatMessageCubit: Calling markMessagesAsReadUseCase...');
         await _markMessagesAsReadUseCase(
           chatThreadId: _currentChatThreadId!,
           userId: _currentUserId!,
         );
-        print(
-          'ChatMessageCubit: markMessagesAsReadUseCase completed successfully',
-        );
       } catch (e) {
         // Silent failure - this is not critical for the user experience
-        print('ChatMessageCubit: Error marking messages as read: $e');
       }
-    } else {
-      print(
-        'ChatMessageCubit: Cannot mark messages as read - missing threadId or userId',
-      );
     }
   }
 
   /// Sets the message to reply to
   void setReplyToMessage(String? messageId) {
-    print(
-      'ChatMessageCubit: setReplyToMessage called with messageId: $messageId',
-    );
     _replyToMessageId = messageId;
 
     // Force emit to trigger UI update
@@ -661,9 +814,7 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
 
   /// Clears the reply state
   void clearReply() {
-    print('ChatMessageCubit: clearReply called');
     _replyToMessageId = null;
-    print('ChatMessageCubit: _replyToMessageId cleared');
 
     final currentState = state;
     if (currentState is ChatMessageLoaded) {
@@ -681,6 +832,50 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
         pendingMessage: currentState.pendingMessage,
       );
       emit(newState);
+    }
+  }
+
+  /// Helper method to send new message notifications to other users in the chat
+  Future<void> _sendNewMessageNotification({
+    required String content,
+    required String chatThreadId,
+  }) async {
+    try {
+      // Get chat thread details to find other members
+      final chatThreadRepository = ChatThreadRepositoryImpl(
+        remoteDataSource: ChatThreadRemoteDataSource(),
+      );
+
+      final chatThread = await chatThreadRepository.getChatThreadById(
+        chatThreadId,
+      );
+      if (chatThread == null) {
+        print('❌ Chat thread not found: $chatThreadId');
+        return;
+      }
+
+      // Get notification cubit
+      final notificationCubit = notif_sl.sl<NotificationCubit>();
+
+      // Send notification to each member except the sender
+      for (final memberId in chatThread.members) {
+        if (memberId != _currentUserId) {
+          await notificationCubit.sendNewMessage(
+            senderName: _currentUserName ?? 'Unknown User',
+            senderId: _currentUserId!,
+            receiverId: memberId,
+            chatThreadId: chatThreadId,
+            messageContent: content,
+            isGroupChat: chatThread.isGroup,
+            groupName: chatThread.isGroup ? chatThread.name : null,
+          );
+        }
+      }
+
+      print('✅ Sent new message notifications for chat: $chatThreadId');
+    } catch (e) {
+      print('❌ Error sending new message notification: $e');
+      // Don't throw error - notification failure shouldn't block message sending
     }
   }
 

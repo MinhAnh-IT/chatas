@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../shared/test_helpers.dart';
+
 void main() {
   group('MessageContextMenu', () {
     late ChatMessage testMessage;
@@ -23,6 +25,12 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
+
+      TestOnlineStatusService.setup();
+    });
+
+    tearDown(() {
+      TestOnlineStatusService.reset();
     });
 
     Widget createWidgetUnderTest({
