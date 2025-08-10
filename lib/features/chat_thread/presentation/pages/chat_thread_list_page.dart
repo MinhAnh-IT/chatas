@@ -1,4 +1,5 @@
 import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_stream_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/get_archived_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
@@ -14,7 +15,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chatas/shared/widgets/app_bar.dart';
 import 'package:chatas/shared/widgets/bottom_navigation.dart';
 import 'package:chatas/shared/widgets/refreshable_list_view.dart';
-import 'package:chatas/shared/widgets/online_status_indicator.dart';
+
 import 'package:chatas/shared/services/online_status_service.dart';
 import 'archived_threads_page.dart';
 import 'package:chatas/core/constants/app_route_constants.dart';
@@ -55,6 +56,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
     WidgetsBinding.instance.addObserver(this);
     final repository = ChatThreadRepositoryImpl();
     final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+    final getChatThreadsStreamUseCase = GetChatThreadsStreamUseCase(repository);
     final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(repository);
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
     final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
@@ -70,6 +72,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
 
     _cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
+      getChatThreadsStreamUseCase: getChatThreadsStreamUseCase,
       getArchivedThreadsUseCase: getArchivedThreadsUseCase,
       createChatThreadUseCase: createChatThreadUseCase,
       searchChatThreadsUseCase: searchChatThreadsUseCase,
@@ -100,7 +103,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
       'ChatThreadListPage: initState - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}',
     );
     if (currentUserId.isNotEmpty) {
-      _cubit.fetchChatThreads(currentUserId);
+      _cubit.startListeningToThreads(currentUserId);
     } else {
       print('ChatThreadListPage: initState - No current user found!');
     }
@@ -129,7 +132,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
       print('ChatThreadListPage: App resumed, refreshing chat threads');
       final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
       if (currentUserId.isNotEmpty) {
-        _cubit.fetchChatThreads(currentUserId);
+        _cubit.startListeningToThreads(currentUserId);
       }
     }
   }
@@ -204,6 +207,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
     // Create repository and use cases for archived page
     final repository = ChatThreadRepositoryImpl();
     final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+    final getChatThreadsStreamUseCase = GetChatThreadsStreamUseCase(repository);
     final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(repository);
     final createChatThreadUseCase = CreateChatThreadUseCase(repository);
     final searchChatThreadsUseCase = SearchChatThreadsUseCase(repository);
@@ -219,6 +223,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
 
     final cubit = ChatThreadListCubit(
       getChatThreadsUseCase: getChatThreadsUseCase,
+      getChatThreadsStreamUseCase: getChatThreadsStreamUseCase,
       getArchivedThreadsUseCase: getArchivedThreadsUseCase,
       createChatThreadUseCase: createChatThreadUseCase,
       searchChatThreadsUseCase: searchChatThreadsUseCase,
@@ -246,7 +251,8 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
   Future<void> _handleRefresh() async {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (currentUserId.isNotEmpty) {
-      await _cubit.fetchChatThreads(currentUserId);
+      // Since we're using real-time streams, just restart the listener
+      _cubit.startListeningToThreads(currentUserId);
     }
 
     if (mounted) {
@@ -334,7 +340,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
               final currentUserId =
                   FirebaseAuth.instance.currentUser?.uid ?? '';
               if (currentUserId.isNotEmpty) {
-                _cubit.fetchChatThreads(currentUserId);
+                _cubit.startListeningToThreads(currentUserId);
               }
             },
             itemBuilder: (context, thread, index) => const SizedBox.shrink(),
@@ -419,7 +425,7 @@ class _ChatThreadListPageState extends State<ChatThreadListPage>
           'ChatThreadListPage: build - FirebaseAuth current user: ${FirebaseAuth.instance.currentUser?.email}',
         );
         if (currentUserId.isNotEmpty) {
-          _cubit.fetchChatThreads(currentUserId);
+          _cubit.startListeningToThreads(currentUserId);
         } else {
           print('ChatThreadListPage: build - No current user found!');
         }

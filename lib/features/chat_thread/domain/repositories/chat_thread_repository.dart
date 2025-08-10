@@ -103,4 +103,7 @@ abstract class ChatThreadRepository {
     String query,
     String currentUserId,
   );
+
+  /// Gets a real-time stream of chat threads for a user.
+  Stream<List<ChatThread>> getChatThreadsStream(String currentUserId);
 }

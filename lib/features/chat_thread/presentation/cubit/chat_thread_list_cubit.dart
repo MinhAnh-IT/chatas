@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/chat_thread.dart';
 import '../../domain/usecases/get_chat_threads_usecase.dart';
+import '../../domain/usecases/get_chat_threads_stream_usecase.dart';
 import '../../domain/usecases/get_archived_threads_usecase.dart';
 import '../../domain/usecases/create_chat_thread_usecase.dart';
 import '../../domain/usecases/search_chat_threads_usecase.dart';
@@ -15,6 +17,7 @@ import 'chat_thread_list_state.dart';
 
 class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   final GetChatThreadsUseCase getChatThreadsUseCase;
+  final GetChatThreadsStreamUseCase getChatThreadsStreamUseCase;
   final GetArchivedThreadsUseCase getArchivedThreadsUseCase;
   final CreateChatThreadUseCase createChatThreadUseCase;
   final DeleteChatThreadUseCase deleteChatThreadUseCase;
@@ -26,8 +29,11 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
   final FindOrCreateChatThreadUseCase findOrCreateChatThreadUseCase;
   final SearchChatThreadsUseCase searchChatThreadsUseCase;
 
+  StreamSubscription<List<ChatThread>>? _threadsSubscription;
+
   ChatThreadListCubit({
     required this.getChatThreadsUseCase,
+    required this.getChatThreadsStreamUseCase,
     required this.getArchivedThreadsUseCase,
     required this.createChatThreadUseCase,
     required this.deleteChatThreadUseCase,
@@ -40,7 +46,13 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     required this.searchChatThreadsUseCase,
   }) : super(ChatThreadListInitial());
 
-  /// Fetches chat threads for the current user.
+  @override
+  Future<void> close() {
+    _threadsSubscription?.cancel();
+    return super.close();
+  }
+
+  /// Fetches chat threads for the current user (one-time fetch).
   Future<void> fetchChatThreads(String currentUserId) async {
     if (currentUserId.isEmpty) {
       emit(const ChatThreadListError('User ID cannot be empty'));
@@ -55,6 +67,34 @@ class ChatThreadListCubit extends Cubit<ChatThreadListState> {
     } catch (e) {
       emit(ChatThreadListError('Failed to fetch chat threads: $e'));
     }
+  }
+
+  /// Starts listening to real-time chat threads stream for the current user.
+  void startListeningToThreads(String currentUserId) {
+    if (currentUserId.isEmpty) {
+      emit(const ChatThreadListError('User ID cannot be empty'));
+      return;
+    }
+
+    // Cancel any existing subscription
+    _threadsSubscription?.cancel();
+
+    emit(ChatThreadListLoading());
+
+    _threadsSubscription = getChatThreadsStreamUseCase(currentUserId).listen(
+      (threads) {
+        emit(ChatThreadListLoaded(threads));
+      },
+      onError: (error) {
+        emit(ChatThreadListError('Failed to load chat threads: $error'));
+      },
+    );
+  }
+
+  /// Stops listening to the real-time threads stream.
+  void stopListeningToThreads() {
+    _threadsSubscription?.cancel();
+    _threadsSubscription = null;
   }
 
   /// Searches for chat threads based on the given query.
