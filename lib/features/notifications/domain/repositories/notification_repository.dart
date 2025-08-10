@@ -44,4 +44,10 @@ abstract class NotificationRepository {
 
   /// Cập nhật FCM token lên server (nếu có backend)
   Future<void> updateFCMTokenOnServer(String token);
+
+  /// Gửi thông báo đến user cụ thể thông qua FCM
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required NotificationEntity notification,
+  });
 }

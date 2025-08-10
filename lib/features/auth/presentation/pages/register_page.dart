@@ -5,6 +5,7 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
+import '../../constants/auth_ui_constants.dart';
 import '../../data/models/user_model.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../domain/entities/register_request.dart';
@@ -206,7 +207,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     AuthTextField(
                       controller: _emailController,
                       label: 'Email',
-                      hint: 'example@email.com',
+                      hint: AuthUIConstants.emailPlaceholder,
                       icon: Icons.email_outlined,
                       validator: (value) => AuthValidator.validateEmail(value),
                     ),

@@ -17,6 +17,7 @@ import '../../../../shared/services/online_status_service.dart';
 import 'package:chatas/features/auth/constants/auth_remote_constants.dart';
 import 'package:chatas/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:chatas/features/auth/domain/entities/auth_result.dart';
+import '../../../../shared/widgets/app_bar.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -32,7 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   UserProfile? _profile;
   bool _isLoading = true;
-  bool _isUpdating = false;
+  bool _isUpdating = false; // Reserved for future async update indicators
   bool _isOnline = true;
 
   @override
@@ -275,24 +276,55 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF2C3E50),
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Hồ sơ cá nhân',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-        ),
+      appBar: CommonAppBar(
+        title: 'Hồ sơ cá nhân',
         leading: IconButton(
-          onPressed: () => context.go('/'),
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF2C3E50)),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Quay lại',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
         actions: [
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(Icons.logout, color: Color(0xFFE74C3C)),
-            tooltip: 'Đăng xuất',
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Tùy chọn',
+            onSelected: (value) {
+              switch (value) {
+                case 'logout':
+                  _logout();
+                  break;
+                case 'change_password':
+                  _showChangePasswordDialog();
+                  break;
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'change_password',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_reset),
+                    SizedBox(width: 12.0),
+                    Text('Đổi mật khẩu'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 12.0),
+                    Text('Đăng xuất'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -820,6 +852,13 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const ChangePasswordDialog(),
     );
   }
 }

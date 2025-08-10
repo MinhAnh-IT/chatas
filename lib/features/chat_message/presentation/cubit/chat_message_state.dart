@@ -1,5 +1,5 @@
+import 'package:chatas/features/chat_message/domain/entities/chat_message.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/chat_message.dart';
 
 /// Base state for chat message feature.
 abstract class ChatMessageState extends Equatable {
@@ -7,6 +7,41 @@ abstract class ChatMessageState extends Equatable {
 
   @override
   List<Object?> get props => [];
+}
+
+/// State when AI summary is loading
+class ChatMessageSummaryLoading extends ChatMessageState {
+  final int timestamp;
+  const ChatMessageSummaryLoading({required this.timestamp});
+
+  @override
+  List<Object?> get props => [timestamp];
+}
+
+/// State when AI summary loaded
+class ChatMessageSummaryLoaded extends ChatMessageState {
+  final String summary;
+  final int timestamp;
+  const ChatMessageSummaryLoaded({
+    required this.summary,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [summary, timestamp];
+}
+
+/// State when AI summary error
+class ChatMessageSummaryError extends ChatMessageState {
+  final String message;
+  final int timestamp;
+  const ChatMessageSummaryError({
+    required this.message,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [message, timestamp];
 }
 
 /// Initial state when the chat message page is first loaded.
