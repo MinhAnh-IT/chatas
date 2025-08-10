@@ -27,7 +27,8 @@ class FileUploadResult {
 /// Service for uploading various file types to Cloudinary
 class FileUploadService {
   // Use shared constants to avoid mismatch across services
-  static const String _cloudinaryCloudName = SharedConstants.cloudinaryCloudName;
+  static const String _cloudinaryCloudName =
+      SharedConstants.cloudinaryCloudName;
   // Reuse working preset already used by ImageUploadService
   // Alternatively, create 'chatas_upload' preset in Cloudinary and set it here
   static const String _cloudinaryUploadPreset = 'profile_upload';
