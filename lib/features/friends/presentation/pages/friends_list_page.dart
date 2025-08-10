@@ -10,6 +10,7 @@ import '../../../../core/constants/app_route_constants.dart';
 import '../widgets/friends_with_chat_provider.dart';
 import '../../../../features/auth/di/online_status_dependency_injection.dart';
 import '../../../../shared/widgets/online_status_indicator.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 class FriendsListPage extends StatefulWidget {
   final String currentUserId;
@@ -103,68 +104,75 @@ class _FriendsListPageState extends State<FriendsListPage>
                 fillColor: Colors.grey[100],
               ),
               onChanged: (query) {
+                OnlineStatusService.instance.onUserActivity();
                 context.read<FriendsListCubit>().searchFriends(query);
               },
             ),
           ),
           Expanded(
-            child: BlocConsumer<FriendsListCubit, FriendsState>(
-              listener: (context, state) {
-                if (state is FriendsError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                if (state is FriendsLoaded && state.successMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.successMessage!),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  context.read<FriendsListCubit>().clearMessage();
-                }
+            child: GestureDetector(
+              onTap: () {
+                OnlineStatusService.instance.onUserActivity();
               },
-              builder: (context, state) {
-                if (state is FriendsError) {
-                  return _buildErrorState(state.message);
-                }
-
-                final friends = state is FriendsLoaded
-                    ? state.friends
-                    : <Friend>[];
-                final isLoading = state is FriendsLoading;
-
-                return RefreshableListView<Friend>(
-                  items: friends,
-                  isLoading: isLoading,
-                  onRefresh: () async {
-                    await context.read<FriendsListCubit>().refreshFriends(
-                      widget.currentUserId,
-                    );
-                  },
-                  emptyWidget: _buildEmptyState(),
-                  itemBuilder: (context, friend, index) {
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 6.0,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: _FriendListTile(
-                        friend: friend,
-                        onOpenChat: _openChat,
-                        onToggleBlock: _showBlockDialog,
+              child: BlocConsumer<FriendsListCubit, FriendsState>(
+                listener: (context, state) {
+                  if (state is FriendsError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: Colors.red,
                       ),
                     );
-                  },
-                );
-              },
+                  }
+                  if (state is FriendsLoaded && state.successMessage != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.successMessage!),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    context.read<FriendsListCubit>().clearMessage();
+                  }
+                },
+                builder: (context, state) {
+                  if (state is FriendsError) {
+                    return _buildErrorState(state.message);
+                  }
+
+                  final friends = state is FriendsLoaded
+                      ? state.friends
+                      : <Friend>[];
+                  final isLoading = state is FriendsLoading;
+
+                  return RefreshableListView<Friend>(
+                    items: friends,
+                    isLoading: isLoading,
+                    onRefresh: () async {
+                      OnlineStatusService.instance.onUserActivity();
+                      await context.read<FriendsListCubit>().refreshFriends(
+                        widget.currentUserId,
+                      );
+                    },
+                    emptyWidget: _buildEmptyState(),
+                    itemBuilder: (context, friend, index) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 6.0,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: _FriendListTile(
+                          friend: friend,
+                          onOpenChat: _openChat,
+                          onToggleBlock: _showBlockDialog,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],

@@ -5,6 +5,7 @@ import '../cubit/chat_message_state.dart';
 import 'offline_summary_widget.dart';
 import '../../domain/entities/chat_message.dart';
 import 'dart:async';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 /// A stateful widget that manages the chat summary display
 /// Uses BlocListener to properly listen to summary states
@@ -147,6 +148,7 @@ class _ChatSummaryWidgetState extends State<ChatSummaryWidget> {
         isExpanded: widget.isExpanded,
         onExpand: widget.onExpandToggle,
         onDismiss: () {
+          OnlineStatusService.instance.onUserActivity();
           setState(() {
             _currentSummaryState = null;
           });
@@ -160,12 +162,14 @@ class _ChatSummaryWidgetState extends State<ChatSummaryWidget> {
       return OfflineSummaryErrorWidget(
         error: state.message,
         onRetry: () {
+          OnlineStatusService.instance.onUserActivity();
           final messageState = context.read<ChatMessageCubit>().state;
           if (messageState is ChatMessageLoaded) {
             _retrySummary(messageState.messages);
           }
         },
         onDismiss: () {
+          OnlineStatusService.instance.onUserActivity();
           setState(() {
             _currentSummaryState = null;
           });

@@ -25,6 +25,7 @@ import '../../../chat_thread/presentation/pages/group_chat_settings_page.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
 import '../../../../shared/widgets/refreshable_list_view.dart';
 import '../../../../shared/services/file_upload_service.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 /// Main chat message page that displays a conversation between users.
 /// Implements real-time messaging with reactions and message status.
@@ -897,11 +898,16 @@ class _ChatMessagePageState extends State<ChatMessagePage>
       },
       child: Scaffold(
         appBar: _buildAppBar(),
-        body: Column(
-          children: [
-            Expanded(child: _buildMessageList()),
-            _buildMessageInput(),
-          ],
+        body: GestureDetector(
+          onTap: () {
+            OnlineStatusService.instance.onUserActivity();
+          },
+          child: Column(
+            children: [
+              Expanded(child: _buildMessageList()),
+              _buildMessageInput(),
+            ],
+          ),
         ),
       ),
     );

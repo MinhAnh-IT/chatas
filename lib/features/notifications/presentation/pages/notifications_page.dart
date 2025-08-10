@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_route_constants.dart';
 import '../../../../shared/widgets/bottom_navigation.dart';
 import '../../../../shared/widgets/app_bar.dart';
+import '../../../../shared/services/online_status_service.dart';
 import '../../domain/entities/notification.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
@@ -98,90 +99,99 @@ class _NotificationsPageState extends State<NotificationsPage>
           ),
         ],
       ),
-      body: BlocBuilder<NotificationCubit, NotificationState>(
-        builder: (context, state) {
-          if (state is NotificationLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: GestureDetector(
+        onTap: () {
+          OnlineStatusService.instance.onUserActivity();
+        },
+        child: BlocBuilder<NotificationCubit, NotificationState>(
+          builder: (context, state) {
+            if (state is NotificationLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is NotificationError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red.shade300,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Đã xảy ra lỗi',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<NotificationCubit>().loadNotifications();
-                    },
-                    child: const Text('Thử lại'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (state is NotificationLoaded) {
-            if (state.notifications.isEmpty) {
-              return const Center(
+            if (state is NotificationError) {
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.notifications_none,
+                      Icons.error_outline,
                       size: 64,
-                      color: Colors.grey,
+                      color: Colors.red.shade300,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
-                      'Chưa có thông báo nào',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      'Đã xảy ra lỗi',
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Các thông báo sẽ xuất hiện ở đây',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        OnlineStatusService.instance.onUserActivity();
+                        context.read<NotificationCubit>().loadNotifications();
+                      },
+                      child: const Text('Thử lại'),
                     ),
                   ],
                 ),
               );
             }
 
-            return RefreshIndicator(
-              onRefresh: () async {
-                await context.read<NotificationCubit>().refreshNotifications();
-              },
-              child: ListView.builder(
-                itemCount: state.notifications.length,
-                itemBuilder: (context, index) {
-                  final notification = state.notifications[index];
-                  return NotificationItem(
-                    notification: notification,
-                    onTap: () => _onNotificationTap(notification),
-                  );
-                },
-              ),
-            );
-          }
+            if (state is NotificationLoaded) {
+              if (state.notifications.isEmpty) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.notifications_none,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Chưa có thông báo nào',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Các thông báo sẽ xuất hiện ở đây',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-          return const SizedBox.shrink();
-        },
+              return RefreshIndicator(
+                onRefresh: () async {
+                  OnlineStatusService.instance.onUserActivity();
+                  await context
+                      .read<NotificationCubit>()
+                      .refreshNotifications();
+                },
+                child: ListView.builder(
+                  itemCount: state.notifications.length,
+                  itemBuilder: (context, index) {
+                    final notification = state.notifications[index];
+                    return NotificationItem(
+                      notification: notification,
+                      onTap: () => _onNotificationTap(notification),
+                    );
+                  },
+                ),
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
       bottomNavigationBar: CommonBottomNavigation(
         currentIndex: 2, // Notifications tab is index 2
@@ -209,6 +219,7 @@ class _NotificationsPageState extends State<NotificationsPage>
   }
 
   void _onNotificationTap(NotificationEntity notification) {
+    OnlineStatusService.instance.onUserActivity();
     // Mark as read if not already read
     if (!notification.isRead) {
       context.read<NotificationCubit>().markNotificationAsRead(notification.id);

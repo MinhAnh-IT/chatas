@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/chat_message.dart';
+import 'package:chatas/features/chat_message/domain/entities/chat_message.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 import '../../constants/chat_message_page_constants.dart';
 
 /// Widget that shows a preview of the message being replied to.
@@ -53,7 +54,10 @@ class ReplyPreview extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: onCancel,
+            onPressed: () {
+              OnlineStatusService.instance.onUserActivity();
+              onCancel();
+            },
             icon: Icon(
               Icons.close,
               size: 20,

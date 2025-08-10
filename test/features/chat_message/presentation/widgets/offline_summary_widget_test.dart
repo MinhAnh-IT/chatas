@@ -3,8 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:chatas/features/chat_message/presentation/widgets/offline_summary_widget.dart';
 import 'package:chatas/features/chat_message/constants/chat_message_page_constants.dart';
 
+import '../../../../shared/test_helpers.dart';
+
 void main() {
   group('OfflineSummaryWidget', () {
+    setUp(() {
+      TestOnlineStatusService.setup();
+    });
+
+    tearDown(() {
+      TestOnlineStatusService.reset();
+    });
+
     testWidgets('should display summary text and title', (
       WidgetTester tester,
     ) async {

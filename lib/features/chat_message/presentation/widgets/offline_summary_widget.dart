@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/chat_message_page_constants.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 /// Widget to display offline chat summary with a beautiful UI.
 class OfflineSummaryWidget extends StatelessWidget {
@@ -102,7 +103,10 @@ class OfflineSummaryWidget extends StatelessWidget {
                 if (summary.length > 150) ...[
                   const SizedBox(height: 12),
                   InkWell(
-                    onTap: onExpand,
+                    onTap: () {
+                      OnlineStatusService.instance.onUserActivity();
+                      onExpand?.call();
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,

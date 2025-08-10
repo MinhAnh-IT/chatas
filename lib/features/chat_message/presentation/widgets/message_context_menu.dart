@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../constants/chat_message_page_constants.dart';
 import '../../domain/entities/chat_message.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 /// Context menu widget that appears when user long presses on a message.
 /// Provides options like Reply, Edit, Delete, and Copy based on message ownership.
@@ -52,7 +53,10 @@ class MessageContextMenu extends StatelessWidget {
           // Invisible barrier to close menu when tapping outside
           Positioned.fill(
             child: GestureDetector(
-              onTap: closeMenu,
+              onTap: () {
+                OnlineStatusService.instance.onUserActivity();
+                closeMenu();
+              },
               child: Container(color: Colors.transparent),
             ),
           ),
@@ -68,7 +72,7 @@ class MessageContextMenu extends StatelessWidget {
                 if (onReply != null) {
                   // Use original context for callbacks, not overlay context
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    onReply();
+                    onReply?.call();
                   });
                 }
               },
@@ -76,7 +80,7 @@ class MessageContextMenu extends StatelessWidget {
                 closeMenu();
                 if (onEdit != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    onEdit();
+                    onEdit?.call();
                   });
                 }
               },
@@ -84,7 +88,7 @@ class MessageContextMenu extends StatelessWidget {
                 closeMenu();
                 if (onDelete != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    onDelete();
+                    onDelete?.call();
                   });
                 }
               },
@@ -92,7 +96,7 @@ class MessageContextMenu extends StatelessWidget {
                 closeMenu();
                 if (onCopy != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    onCopy();
+                    onCopy?.call();
                   });
                 }
               },
@@ -128,7 +132,10 @@ class MessageContextMenu extends StatelessWidget {
               context: context,
               icon: Icons.reply,
               label: ChatMessagePageConstants.replyMenuOption,
-              onTap: onReply,
+              onTap: () {
+                OnlineStatusService.instance.onUserActivity();
+                onReply?.call();
+              },
             ),
 
             // Edit option (only for own messages)
@@ -137,7 +144,10 @@ class MessageContextMenu extends StatelessWidget {
                 context: context,
                 icon: Icons.edit,
                 label: ChatMessagePageConstants.editMenuOption,
-                onTap: onEdit,
+                onTap: () {
+                  OnlineStatusService.instance.onUserActivity();
+                  onEdit?.call();
+                },
               ),
 
             // Delete option (only for own messages)
@@ -146,7 +156,10 @@ class MessageContextMenu extends StatelessWidget {
                 context: context,
                 icon: Icons.delete,
                 label: ChatMessagePageConstants.deleteMenuOption,
-                onTap: onDelete,
+                onTap: () {
+                  OnlineStatusService.instance.onUserActivity();
+                  onDelete?.call();
+                },
                 isDestructive: true,
               ),
 
@@ -157,6 +170,7 @@ class MessageContextMenu extends StatelessWidget {
                 icon: Icons.copy,
                 label: ChatMessagePageConstants.copyMenuOption,
                 onTap: () {
+                  OnlineStatusService.instance.onUserActivity();
                   Clipboard.setData(ClipboardData(text: message.content));
                   onCopy?.call();
                 },
