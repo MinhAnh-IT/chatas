@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/chat_message.dart';
@@ -9,6 +10,10 @@ import 'message_context_menu.dart';
 import '../../../../shared/widgets/smart_image.dart';
 import '../../../auth/di/auth_dependency_injection.dart';
 import '../../../auth/constants/auth_remote_constants.dart';
+import 'package:chatas/features/chat_thread/domain/entities/chat_thread.dart';
+import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cubit.dart';
+import 'package:chatas/features/chat_message/presentation/cubit/chat_message_state.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 /// Widget for displaying a single chat message bubble.
 /// Handles different message types, reactions, and selection states.
@@ -48,7 +53,10 @@ class MessageBubble extends StatelessWidget {
     final isCurrentUserMessage = isFromCurrentUser;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        OnlineStatusService.instance.onUserActivity();
+        onTap();
+      },
       onLongPress: () => _showContextMenu(context),
       child: Container(
         margin: const EdgeInsets.symmetric(
@@ -434,7 +442,10 @@ class MessageBubble extends StatelessWidget {
             );
 
             return GestureDetector(
-              onTap: () => onReactionTap(message.id, entry.key),
+              onTap: () {
+                OnlineStatusService.instance.onUserActivity();
+                onReactionTap(message.id, entry.key);
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 8.0,
@@ -544,7 +555,10 @@ class MessageBubble extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => _openFile(context),
+      onTap: () {
+        OnlineStatusService.instance.onUserActivity();
+        _openFile(context);
+      },
       child: Container(
         constraints: const BoxConstraints(maxWidth: 250, maxHeight: 250),
         child: ClipRRect(
@@ -590,7 +604,10 @@ class MessageBubble extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => _openFile(context),
+      onTap: () {
+        OnlineStatusService.instance.onUserActivity();
+        _openFile(context);
+      },
       child: Container(
         width: 250,
         padding: const EdgeInsets.all(12),
@@ -681,7 +698,10 @@ class MessageBubble extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => _openFile(context),
+      onTap: () {
+        OnlineStatusService.instance.onUserActivity();
+        _openFile(context);
+      },
       child: Container(
         width: 250,
         padding: const EdgeInsets.all(12),

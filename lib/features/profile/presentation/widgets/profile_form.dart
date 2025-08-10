@@ -3,6 +3,7 @@ import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/update_profile_request.dart';
 import '../../../../shared/utils/profile_validator.dart';
 import '../../constants/profile_constants.dart';
+import '../../../../shared/services/online_status_service.dart';
 
 class ProfileForm extends StatefulWidget {
   final UserProfile profile;
@@ -52,67 +53,77 @@ class _ProfileFormState extends State<ProfileForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Email (Read-only)
-          _buildReadOnlyField(
-            label: 'Email',
-            value: widget.profile.email,
-            icon: Icons.email_outlined,
-          ),
-          const SizedBox(height: 20),
+    return GestureDetector(
+      onTapDown: (_) {
+        // Notify online status service when user interacts
+        OnlineStatusService.instance.onUserActivity();
+      },
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Email (Read-only)
+            _buildReadOnlyField(
+              label: 'Email',
+              value: widget.profile.email,
+              icon: Icons.email_outlined,
+            ),
+            const SizedBox(height: 20),
 
-          // Full Name
-          _buildTextField(
-            controller: _fullNameController,
-            label: 'Họ và tên',
-            icon: Icons.person_outline,
-            validator: ProfileValidator.validateFullName,
-          ),
-          const SizedBox(height: 20),
+            // Full Name
+            _buildTextField(
+              controller: _fullNameController,
+              label: 'Họ và tên',
+              icon: Icons.person_outline,
+              validator: ProfileValidator.validateFullName,
+            ),
+            const SizedBox(height: 20),
 
-          // Username
-          _buildTextField(
-            controller: _usernameController,
-            label: 'Tên người dùng',
-            icon: Icons.alternate_email_outlined,
-            validator: ProfileValidator.validateUsername,
-          ),
-          const SizedBox(height: 20),
+            // Username
+            _buildTextField(
+              controller: _usernameController,
+              label: 'Tên người dùng',
+              icon: Icons.alternate_email_outlined,
+              validator: ProfileValidator.validateUsername,
+            ),
+            const SizedBox(height: 20),
 
-          // Gender
-          _buildGenderDropdown(),
-          const SizedBox(height: 20),
+            // Gender
+            _buildGenderDropdown(),
+            const SizedBox(height: 20),
 
-          // Birth Date
-          _buildBirthDatePicker(),
-          const SizedBox(height: 32),
+            // Birth Date
+            _buildBirthDatePicker(),
+            const SizedBox(height: 32),
 
-          // Save Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saveProfile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3498DB),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            // Save Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Notify online status service when user interacts
+                  OnlineStatusService.instance.onUserActivity();
+                  _saveProfile();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3498DB),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 2,
+                  shadowColor: const Color(0xFF3498DB).withOpacity(0.3),
                 ),
-                elevation: 2,
-                shadowColor: const Color(0xFF3498DB).withOpacity(0.3),
-              ),
-              child: const Text(
-                'Lưu thay đổi',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: const Text(
+                  'Lưu thay đổi',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -183,6 +194,10 @@ class _ProfileFormState extends State<ProfileForm> {
         TextFormField(
           controller: controller,
           validator: validator,
+          onTap: () {
+            // Notify online status service when user interacts
+            OnlineStatusService.instance.onUserActivity();
+          },
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: Colors.grey.shade600),
             border: OutlineInputBorder(
@@ -232,6 +247,10 @@ class _ProfileFormState extends State<ProfileForm> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _selectedGender,
+          onTap: () {
+            // Notify online status service when user interacts
+            OnlineStatusService.instance.onUserActivity();
+          },
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.person_outline, color: Colors.grey.shade600),
             border: OutlineInputBorder(
@@ -284,7 +303,11 @@ class _ProfileFormState extends State<ProfileForm> {
         ),
         const SizedBox(height: 8),
         InkWell(
-          onTap: _selectBirthDate,
+          onTap: () {
+            // Notify online status service when user interacts
+            OnlineStatusService.instance.onUserActivity();
+            _selectBirthDate();
+          },
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

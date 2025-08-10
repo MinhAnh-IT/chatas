@@ -295,7 +295,10 @@ class OnlineStatusService with WidgetsBindingObserver {
 
   // Method to handle user activity (call this when user interacts with the app)
   void onUserActivity() {
-    if (!_isActive && !_isInBackground) {
+    // Reset background state when user is active
+    _isInBackground = false;
+
+    if (!_isActive) {
       _setActive(true);
     }
     _startActivityTimer();

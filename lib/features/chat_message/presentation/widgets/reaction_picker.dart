@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/chat_message_page_constants.dart';
 import '../../domain/entities/chat_message.dart';
+import 'package:chatas/shared/services/online_status_service.dart';
 
 /// Widget for selecting message reactions.
 /// Displays available reactions in a popup overlay.
@@ -29,7 +30,12 @@ class ReactionPicker extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: onDismiss,
+      onTap: () {
+        OnlineStatusService.instance.onUserActivity();
+        if (onDismiss != null) {
+          onDismiss();
+        }
+      },
       child: Container(
         color: Colors.transparent,
         child: Center(
@@ -109,7 +115,10 @@ class ReactionPicker extends StatelessWidget {
     String emoji,
   ) {
     return GestureDetector(
-      onTap: () => onReactionSelected(reaction),
+      onTap: () {
+        OnlineStatusService.instance.onUserActivity();
+        onReactionSelected(reaction);
+      },
       child: Container(
         width: 56.0,
         height: 56.0,
@@ -184,7 +193,12 @@ class MessageReactions extends StatelessWidget {
     final emoji = _getEmojiForReaction(reaction);
 
     return GestureDetector(
-      onTap: onReactionTap != null ? () => onReactionTap!(reaction) : null,
+      onTap: onReactionTap != null
+          ? () {
+              OnlineStatusService.instance.onUserActivity();
+              onReactionTap!(reaction);
+            }
+          : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
         decoration: BoxDecoration(

@@ -40,6 +40,15 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _getUserProfile();
+
+    // Listen to online status changes
+    OnlineStatusService.instance.onlineStatusStream.listen((isOnline) {
+      if (mounted) {
+        setState(() {
+          _isOnline = isOnline;
+        });
+      }
+    });
   }
 
   Future<void> _getUserProfile() async {
@@ -413,386 +422,371 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileContent(BuildContext context, UserProfile profile) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // Profile Header Card
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF667EEA).withOpacity(0.3),
-                  spreadRadius: 2,
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+    return GestureDetector(
+      onTapDown: (_) {
+        // Notify online status service when user interacts
+        OnlineStatusService.instance.onUserActivity();
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // Profile Header Card
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  // Profile Image with Online Status
-                  Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ProfileImagePicker(
-                          imageUrl: profile.profileImageUrl,
-                          onImageSelected: (imagePath) {
-                            _uploadProfileImage(imagePath);
-                          },
-                        ),
-                      ),
-                      // Online Status Indicator
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: OnlineStatusIndicator(
-                          isOnline: _isOnline,
-                          lastActive: DateTime.now(),
-                          size: 20,
-                          showLastActive: false,
-                        ),
-                      ),
-                    ],
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF667EEA).withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
-                  const SizedBox(height: 20),
-
-                  // User Info
-                  Text(
-                    profile.fullName.isNotEmpty
-                        ? profile.fullName
-                        : 'Chưa cập nhật',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '@${profile.username.isNotEmpty ? profile.username : 'username'}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Online Status Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _isOnline
-                          ? Colors.white.withOpacity(0.2)
-                          : Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Profile Image with Online Status
+                    Stack(
                       children: [
                         Container(
-                          width: 8,
-                          height: 8,
                           decoration: BoxDecoration(
-                            color: _isOnline
-                                ? const Color(0xFF4CAF50)
-                                : Colors.grey.shade400,
                             shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 2,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ProfileImagePicker(
+                            imageUrl: profile.profileImageUrl,
+                            onImageSelected: (imagePath) {
+                              _uploadProfileImage(imagePath);
+                            },
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _isOnline ? 'Đang hoạt động' : 'Không hoạt động',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Test button to toggle online status
-                        GestureDetector(
-                          onTap: () async {
-                            if (_isOnline) {
-                              await OnlineStatusService.instance.setOffline();
-                            } else {
-                              await OnlineStatusService.instance.setOnline();
-                            }
-                            setState(() {
-                              _isOnline = !_isOnline;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                        // Online Status Indicator
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: OnlineStatusIndicator(
+                            isOnline: _isOnline,
+                            lastActive: DateTime.now(),
+                            size: 20,
+                            showLastActive: false,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 20),
 
-                  // Email
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      profile.email,
+                    // User Info
+                    Text(
+                      profile.fullName.isNotEmpty
+                          ? profile.fullName
+                          : 'Chưa cập nhật',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '@${profile.username.isNotEmpty ? profile.username : 'username'}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.9),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                    const SizedBox(height: 12),
 
-          const SizedBox(height: 24),
+                    // Online Status Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _isOnline
+                            ? Colors.white.withOpacity(0.2)
+                            : Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: _isOnline
+                                  ? const Color(0xFF4CAF50)
+                                  : Colors.grey.shade400,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _isOnline ? 'Đang hoạt động' : 'Không hoạt động',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Test button to toggle online status
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
-          // Profile Form Card
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
+                    // Email
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        profile.email,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Card Header
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF3498DB).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.edit_note,
-                          color: Color(0xFF3498DB),
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Chỉnh sửa thông tin',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF2C3E50),
-                                  ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Cập nhật thông tin cá nhân của bạn',
-                              style: TextStyle(
-                                color: const Color(0xFF7F8C8D),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
 
-                  // Profile Form
-                  ProfileForm(
-                    profile: profile,
-                    onProfileUpdated: (UpdateProfileRequest request) async {
-                      final updatedProfile = UserProfile(
-                        id: profile.id,
-                        fullName: request.fullName,
-                        email: profile.email,
-                        username: request.username,
-                        gender: ProfileConstants.normalizeGender(
-                          request.gender,
-                        ),
-                        birthDate: request.birthDate,
-                        profileImageUrl:
-                            request.profileImageUrl ?? profile.profileImageUrl,
-                      );
-                      await _updateProfile(updatedProfile);
-                    },
+            const SizedBox(height: 24),
+
+            // Profile Form Card
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            ),
-          ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Card Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3498DB).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.edit_note,
+                            color: Color(0xFF3498DB),
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Chỉnh sửa thông tin',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF2C3E50),
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Cập nhật thông tin cá nhân của bạn',
+                                style: TextStyle(
+                                  color: const Color(0xFF7F8C8D),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
 
-          const SizedBox(height: 24),
-
-          // Quick Actions Card
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
+                    // Profile Form
+                    ProfileForm(
+                      profile: profile,
+                      onProfileUpdated: (UpdateProfileRequest request) async {
+                        final updatedProfile = UserProfile(
+                          id: profile.id,
+                          fullName: request.fullName,
+                          email: profile.email,
+                          username: request.username,
+                          gender: ProfileConstants.normalizeGender(
+                            request.gender,
+                          ),
+                          birthDate: request.birthDate,
+                          profileImageUrl:
+                              request.profileImageUrl ??
+                              profile.profileImageUrl,
+                        );
+                        await _updateProfile(updatedProfile);
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Card Header
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE67E22).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.settings,
-                          color: Color(0xFFE67E22),
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Tùy chọn khác',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF2C3E50),
-                                  ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Quản lý tài khoản và bảo mật',
-                              style: TextStyle(
-                                color: const Color(0xFF7F8C8D),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
 
-                  // Action Buttons
-                  _buildActionButton(
-                    icon: Icons.lock_outline,
-                    title: 'Đổi mật khẩu',
-                    subtitle: 'Cập nhật mật khẩu tài khoản',
-                    color: const Color(0xFFE67E22),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const ChangePasswordDialog(),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActionButton(
-                    icon: Icons.security,
-                    title: 'Bảo mật tài khoản',
-                    subtitle: 'Cài đặt bảo mật nâng cao',
-                    color: const Color(0xFF9B59B6),
-                    onTap: () {
-                      // TODO: Implement security settings
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Tính năng đang phát triển'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActionButton(
-                    icon: Icons.help_outline,
-                    title: 'Trợ giúp & Hỗ trợ',
-                    subtitle: 'Liên hệ hỗ trợ khách hàng',
-                    color: const Color(0xFF3498DB),
-                    onTap: () {
-                      // TODO: Implement help & support
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Tính năng đang phát triển'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    },
+            const SizedBox(height: 24),
+
+            // Quick Actions Card
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            ),
-          ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Card Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE67E22).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.settings,
+                            color: Color(0xFFE67E22),
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tùy chọn khác',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF2C3E50),
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Quản lý tài khoản và bảo mật',
+                                style: TextStyle(
+                                  color: const Color(0xFF7F8C8D),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-          const SizedBox(height: 32),
-        ],
+                    // Action Buttons
+                    _buildActionButton(
+                      icon: Icons.lock_outline,
+                      title: 'Đổi mật khẩu',
+                      subtitle: 'Cập nhật mật khẩu tài khoản',
+                      color: const Color(0xFFE67E22),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const ChangePasswordDialog(),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildActionButton(
+                      icon: Icons.security,
+                      title: 'Bảo mật tài khoản',
+                      subtitle: 'Cài đặt bảo mật nâng cao',
+                      color: const Color(0xFF9B59B6),
+                      onTap: () {
+                        // TODO: Implement security settings
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tính năng đang phát triển'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildActionButton(
+                      icon: Icons.help_outline,
+                      title: 'Trợ giúp & Hỗ trợ',
+                      subtitle: 'Liên hệ hỗ trợ khách hàng',
+                      color: const Color(0xFF3498DB),
+                      onTap: () {
+                        // TODO: Implement help & support
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tính năng đang phát triển'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
