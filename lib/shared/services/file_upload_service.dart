@@ -26,10 +26,11 @@ class FileUploadResult {
 
 /// Service for uploading various file types to Cloudinary
 class FileUploadService {
-  static const String _cloudinaryCloudName =
-      'dzbo8ubol'; // Replace with your Cloudinary cloud name
-  static const String _cloudinaryUploadPreset =
-      'chatas_upload'; // Use custom preset for chat app
+  // Use shared constants to avoid mismatch across services
+  static const String _cloudinaryCloudName = SharedConstants.cloudinaryCloudName;
+  // Reuse working preset already used by ImageUploadService
+  // Alternatively, create 'chatas_upload' preset in Cloudinary and set it here
+  static const String _cloudinaryUploadPreset = 'profile_upload';
 
   /// Upload any file type to Cloudinary
   static Future<FileUploadResult> uploadFile({
@@ -37,12 +38,17 @@ class FileUploadService {
     required String chatThreadId,
     String? customFileName,
   }) async {
-    // Test Cloudinary connection first
-    final isConnected = await testCloudinaryConnection();
-    if (!isConnected) {
-      throw Exception(
-        'Không thể kết nối đến Cloudinary. Vui lòng kiểm tra kết nối mạng.',
-      );
+    // Optional: test Cloudinary connection but do not block upload
+    try {
+      final isConnected = await testCloudinaryConnection();
+      if (!isConnected) {
+        print(
+          'FileUploadService: Cloudinary test did not confirm connectivity, proceeding with actual upload...',
+        );
+      }
+    } catch (e) {
+      // Ignore test failures, proceed to real upload which gives accurate error
+      print('FileUploadService: Ignoring test error and proceeding: $e');
     }
 
     return _uploadFileWithPreset(
@@ -297,7 +303,15 @@ class FileUploadService {
         return false;
       }
 
-      // 200 means success (even without file, it should accept the request)
+      // Many valid Cloudinary responses will be 400 here because 'file' is missing.
+      // Treat the specific error "Missing required parameter - file" as a successful connectivity test.
+      if (response.statusCode == FileConstants.httpBadRequest &&
+          (responseBody.contains('Missing required parameter') ||
+              responseBody.contains('must supply a file'))) {
+        return true;
+      }
+
+      // Otherwise, consider success only if 200
       return response.statusCode == FileConstants.httpOk;
     } catch (e) {
       print('FileUploadService: Cloudinary test failed: $e');
