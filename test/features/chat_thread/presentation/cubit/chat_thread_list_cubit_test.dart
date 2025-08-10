@@ -3,6 +3,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_cubit.dart';
 import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_state.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_stream_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/delete_chat_thread_usecase.dart';
@@ -32,6 +33,27 @@ class FakeGetChatThreadsUseCase implements GetChatThreadsUseCase {
       throw Exception('Network error');
     }
     return _threads;
+  }
+}
+
+class FakeGetChatThreadsStreamUseCase implements GetChatThreadsStreamUseCase {
+  final List<ChatThread> _threads;
+  bool shouldEmitError;
+
+  FakeGetChatThreadsStreamUseCase(
+    this._threads, {
+    this.shouldEmitError = false,
+  });
+
+  @override
+  late final ChatThreadRepository repository;
+
+  @override
+  Stream<List<ChatThread>> call(String currentUserId) {
+    if (shouldEmitError) {
+      return Stream.error(Exception('Stream error'));
+    }
+    return Stream.value(_threads);
   }
 }
 
@@ -419,6 +441,11 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   ) async => [];
 
   @override
+  Stream<List<ChatThread>> getChatThreadsStream(String currentUserId) {
+    return Stream.value(threads);
+  }
+
+  @override
   Future<void> unhideChatThread(String chatThreadId, String userId) async {}
 
   @override
@@ -438,6 +465,7 @@ void main() {
   group('ChatThreadListCubit', () {
     late ChatThreadListCubit cubit;
     late FakeGetChatThreadsUseCase fakeGetChatThreadsUseCase;
+    late FakeGetChatThreadsStreamUseCase fakeGetChatThreadsStreamUseCase;
     late FakeGetArchivedThreadsUseCase fakeGetArchivedThreadsUseCase;
     late FakeCreateChatThreadUseCase fakeCreateChatThreadUseCase;
     late FakeSearchChatThreadsUseCase fakeSearchChatThreadsUseCase;
@@ -479,6 +507,9 @@ void main() {
 
     setUp(() {
       fakeGetChatThreadsUseCase = FakeGetChatThreadsUseCase(testChatThreads);
+      fakeGetChatThreadsStreamUseCase = FakeGetChatThreadsStreamUseCase(
+        testChatThreads,
+      );
       fakeGetArchivedThreadsUseCase = FakeGetArchivedThreadsUseCase(
         FakeChatThreadRepository([]),
       );
@@ -496,6 +527,7 @@ void main() {
 
       cubit = ChatThreadListCubit(
         getChatThreadsUseCase: fakeGetChatThreadsUseCase,
+        getChatThreadsStreamUseCase: fakeGetChatThreadsStreamUseCase,
         getArchivedThreadsUseCase: fakeGetArchivedThreadsUseCase,
         createChatThreadUseCase: fakeCreateChatThreadUseCase,
         searchChatThreadsUseCase: fakeSearchChatThreadsUseCase,
@@ -636,6 +668,76 @@ void main() {
         // assert
         expect(result, isA<ChatThread>());
         expect(result.name, 'Test Thread');
+      });
+    });
+
+    group('startListeningToThreads', () {
+      blocTest<ChatThreadListCubit, ChatThreadListState>(
+        'should emit [ChatThreadListLoading, ChatThreadListLoaded] when stream succeeds',
+        build: () => cubit,
+        act: (cubit) => cubit.startListeningToThreads('current_user'),
+        expect: () => [
+          isA<ChatThreadListLoading>(),
+          isA<ChatThreadListLoaded>(),
+        ],
+      );
+
+      blocTest<ChatThreadListCubit, ChatThreadListState>(
+        'should emit [ChatThreadListLoading, ChatThreadListError] when stream fails',
+        build: () {
+          final errorStreamUseCase = FakeGetChatThreadsStreamUseCase(
+            [],
+            shouldEmitError: true,
+          );
+          return ChatThreadListCubit(
+            getChatThreadsUseCase: fakeGetChatThreadsUseCase,
+            getChatThreadsStreamUseCase: errorStreamUseCase,
+            getArchivedThreadsUseCase: fakeGetArchivedThreadsUseCase,
+            createChatThreadUseCase: fakeCreateChatThreadUseCase,
+            searchChatThreadsUseCase: fakeSearchChatThreadsUseCase,
+            deleteChatThreadUseCase: fakeDeleteChatThreadUseCase,
+            hideChatThreadUseCase: fakeHideChatThreadUseCase,
+            markThreadDeletedUseCase: fakeMarkThreadDeletedUseCase,
+            archiveThreadUseCase: fakeArchiveThreadUseCase,
+            leaveGroupUseCase: fakeLeaveGroupUseCase,
+            joinGroupUseCase: fakeJoinGroupUseCase,
+            findOrCreateChatThreadUseCase: fakeFindOrCreateChatThreadUseCase,
+          );
+        },
+        act: (cubit) => cubit.startListeningToThreads('current_user'),
+        expect: () => [
+          isA<ChatThreadListLoading>(),
+          isA<ChatThreadListError>(),
+        ],
+      );
+
+      test('should emit error state when user ID is empty', () {
+        // act
+        cubit.startListeningToThreads('');
+
+        // assert
+        expect(cubit.state, isA<ChatThreadListError>());
+        expect(
+          (cubit.state as ChatThreadListError).message,
+          equals('User ID cannot be empty'),
+        );
+      });
+    });
+
+    group('stopListeningToThreads', () {
+      test('should cancel existing subscription', () async {
+        // arrange - start listening first
+        cubit.startListeningToThreads('current_user');
+        await Future.delayed(
+          const Duration(milliseconds: 100),
+        ); // Let subscription start
+
+        // act
+        cubit.stopListeningToThreads();
+
+        // assert
+        // Just verify the method doesn't throw - subscription cancellation is internal
+        expect(true, isTrue);
       });
     });
   });

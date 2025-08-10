@@ -12,4 +12,6 @@ abstract class OnlineStatusRepository {
   Future<bool> setUserOnline(String userId);
 
   Future<bool> setUserOffline(String userId);
+
+  Future<bool> cleanupUserOnlineStatus(String userId);
 }

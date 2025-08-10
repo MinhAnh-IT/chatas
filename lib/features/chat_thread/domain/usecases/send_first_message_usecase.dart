@@ -32,12 +32,26 @@ class SendFirstMessageUseCase {
     // Check if this is a hidden thread being recreated (has lastRecreatedAt)
     if (chatThread.lastRecreatedAt != null) {
       print(
-        'SendFirstMessageUseCase: Reviving hidden thread: ${chatThread.id} for user: ${message.senderId}',
+        'SendFirstMessageUseCase: Processing hidden thread recreation: ${chatThread.id} for sender: ${message.senderId}',
       );
-      await chatThreadRepository.reviveThreadForUser(
-        chatThread.id,
-        message.senderId,
-      );
+
+      // IMPORTANT: Only revive for 1-1 chats and only for the SENDER
+      // For GROUP CHATS: never auto-revive, even for sender. Archived groups stay archived.
+      // Do NOT auto-revive for other users who may have archived this thread
+      if (!chatThread.isGroup) {
+        await chatThreadRepository.reviveThreadForUser(
+          chatThread.id,
+          message.senderId, // Only revive for sender in 1-1 chats
+        );
+        print(
+          'SendFirstMessageUseCase: Revived 1-1 thread ${chatThread.id} for SENDER ONLY: ${message.senderId}',
+        );
+      } else {
+        print(
+          'SendFirstMessageUseCase: Group chat ${chatThread.id} is archived. Not auto-reviving for sender ${message.senderId}',
+        );
+      }
+
       // Update lastRecreatedAt (now visibilityCutoff) for the user
       await chatThreadRepository.updateVisibilityCutoff(
         chatThread.id,
@@ -53,7 +67,7 @@ class SendFirstMessageUseCase {
       // Use the original thread ID
       actualThreadId = chatThread.id;
       print(
-        'SendFirstMessageUseCase: Successfully revived thread: $actualThreadId',
+        'SendFirstMessageUseCase: Successfully processed recreation for thread: $actualThreadId',
       );
     }
     // Check if this is a temporary thread (starts with 'temp_') - for completely new chats

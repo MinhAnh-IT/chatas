@@ -5,6 +5,7 @@ import '../../domain/entities/login_request.dart';
 import '../../domain/entities/register_request.dart';
 import '../../domain/entities/user.dart';
 import '../../di/auth_dependency_injection.dart';
+import '../../../../shared/services/online_status_service.dart';
 
 // States
 abstract class AuthState extends Equatable {
@@ -78,6 +79,9 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     emit(const AuthLoading());
     try {
+      // Handle offline status before logout
+      await OnlineStatusService.instance.handleLogout();
+
       final result = await AuthDependencyInjection.logoutUseCase();
       if (result is domain.AuthSuccess) {
         emit(const AuthSuccess(null));

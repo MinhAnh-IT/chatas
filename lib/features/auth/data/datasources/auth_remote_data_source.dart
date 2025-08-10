@@ -113,16 +113,16 @@ class AuthRemoteDataSource {
               .doc(userCredential.user!.uid)
               .update({
                 'isOnline': true,
-                'lastActive': now.toIso8601String(),
                 'updatedAt': now.toIso8601String(),
+                // Do not update lastActive on login - only when going offline
               });
 
           final userModel = UserModel.fromJson(userDoc.data()!);
           // Create updated user model with online status
           final updatedUserModel = userModel.copyWith(
             isOnline: true,
-            lastActive: now,
             updatedAt: now,
+            // Do not update lastActive on login - keep existing value
           );
 
           return AuthSuccess(updatedUserModel.toEntity());
@@ -143,20 +143,6 @@ class AuthRemoteDataSource {
 
   Future<AuthResult> logout() async {
     try {
-      final currentUser = _firebaseAuth.currentUser;
-      if (currentUser != null) {
-        // Update online status to offline when user logs out
-        final now = DateTime.now();
-        await _firestore
-            .collection(AuthConstants.usersCollection)
-            .doc(currentUser.uid)
-            .update({
-              'isOnline': false,
-              'lastActive': now.toIso8601String(),
-              'updatedAt': now.toIso8601String(),
-            });
-      }
-
       await _firebaseAuth.signOut();
       return const AuthSuccess(null);
     } catch (e) {

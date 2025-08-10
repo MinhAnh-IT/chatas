@@ -6,9 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'firebase_options.dart';
 import 'features/friends/injection/friends_injection.dart';
 import 'features/auth/online_status_exports.dart';
-import 'features/notifications/notification_injection.dart';
+import 'features/notifications/notification_injection.dart' as notification_di;
 import 'features/notifications/background_message_handler.dart';
 import 'core/services/credentials_loader.dart';
+import 'features/friends/services/fcm_push_service.dart';
+import 'features/notifications/domain/usecases/initialize_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +23,13 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   // Initialize dependencies - notifications TRƯỚC friends
-  setupNotificationDependencies();
+  notification_di.setupNotificationDependencies();
   FriendsDependencyInjection.init();
 
   OnlineStatusService.instance.initialize();
+
+  // Initialize notifications (request permission, set up listeners, etc.)
+  await notification_di.sl<InitializeNotifications>()();
 
   // Cleanup any existing online status and set user online if logged in
   final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
@@ -37,6 +42,9 @@ void main() async {
 
     // Then set online
     await OnlineStatusService.instance.setOnline();
+
+    // Ensure FCM token is saved for this user so others can reach them
+    await FCMPushService.saveTokenToFirestore(currentUser.uid);
   }
 
   runApp(MyApp());

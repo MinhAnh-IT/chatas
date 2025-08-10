@@ -199,4 +199,19 @@ class ChatThreadRepositoryImpl implements ChatThreadRepository {
     );
     return models.map((model) => model.toEntity()).toList();
   }
+
+  @override
+  Stream<List<ChatThread>> getChatThreadsStream(String currentUserId) {
+    return _remoteDataSource.chatThreadsStream(currentUserId).map((models) {
+      // Convert models to entities and sort by lastMessageTime (newest first)
+      final threads = models.map((model) => model.toEntity()).toList();
+
+      // Sort by lastMessageTime in descending order (newest first)
+      threads.sort((a, b) {
+        return b.lastMessageTime.compareTo(a.lastMessageTime); // Newest first
+      });
+
+      return threads;
+    });
+  }
 }

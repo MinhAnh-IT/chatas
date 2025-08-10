@@ -27,15 +27,12 @@ class OnlineStatusService with WidgetsBindingObserver {
 
   OnlineStatusService._();
 
-  Timer? _activityTimer;
   Timer? _backgroundTimer;
   Timer? _terminationTimer;
   bool _isActive = true;
   bool _isInBackground = false;
-  // User is considered offline if no interaction for 1 minute
-  final Duration _inactivityThreshold = const Duration(minutes: 1);
   final Duration _backgroundCheckInterval = const Duration(minutes: 1);
-  final Duration _terminationThreshold = const Duration(seconds: 30);
+  final Duration _terminationThreshold = const Duration(seconds: 5);
 
   // Stream controllers for real-time updates
   final StreamController<bool> _onlineStatusController =
@@ -52,7 +49,6 @@ class OnlineStatusService with WidgetsBindingObserver {
     _setupAppTerminationHandler();
     // Mark online as soon as app starts
     setOnline();
-    _startActivityTimer();
   }
 
   void _setupBackgroundDetection() {
@@ -97,10 +93,8 @@ class OnlineStatusService with WidgetsBindingObserver {
         _onAppHidden();
       }
 
-      // Force offline for any non-resumed state
-      if (msg != AppLifecycleState.resumed.toString()) {
-        _forceOffline();
-      }
+      // Do not force offline on generic non-resumed states to avoid
+      // unintended lastActive updates during normal app startup/resume
 
       return null;
     });
@@ -109,7 +103,6 @@ class OnlineStatusService with WidgetsBindingObserver {
   void _onAppResumed() {
     _isInBackground = false;
     _setActive(true);
-    _startActivityTimer();
     _stopTerminationTimer();
 
     // Check if user is still logged in and set online
@@ -121,13 +114,11 @@ class OnlineStatusService with WidgetsBindingObserver {
 
   void _onAppPaused() {
     _isInBackground = true;
-    // Immediately mark user offline and update lastActive
-    _setActive(false);
     _startBackgroundTimer();
     _startTerminationTimer();
 
-    // Set offline when app goes to background
-    _updateOnlineStatus(false);
+    // Do not immediately set offline on pause, wait for termination timer
+    // User might just switch to another app temporarily
   }
 
   void _onAppDetached() {
@@ -163,7 +154,6 @@ class OnlineStatusService with WidgetsBindingObserver {
       _isActive = active;
       if (active) {
         _updateOnlineStatus(true);
-        _startActivityTimer();
 
         // Trigger callback if user was offline and now back online
         if (wasOffline && _onUserBackOnlineCallback != null) {
@@ -171,24 +161,8 @@ class OnlineStatusService with WidgetsBindingObserver {
         }
       } else {
         _updateOnlineStatus(false);
-        _stopActivityTimer();
       }
     }
-  }
-
-  void _startActivityTimer() {
-    _stopActivityTimer();
-    _activityTimer = Timer(_inactivityThreshold, () {
-      if (_isActive && !_isInBackground) {
-        _setActive(false);
-        _forceOffline(); // Force offline when inactive
-      }
-    });
-  }
-
-  void _stopActivityTimer() {
-    _activityTimer?.cancel();
-    _activityTimer = null;
   }
 
   void _startBackgroundTimer() {
@@ -208,9 +182,10 @@ class OnlineStatusService with WidgetsBindingObserver {
   void _startTerminationTimer() {
     _stopTerminationTimer();
     _terminationTimer = Timer(_terminationThreshold, () {
-      // If app is still in background after threshold, force offline
+      // If app is still in background after threshold, set offline
       if (_isInBackground) {
-        _forceOffline();
+        _setActive(false);
+        _updateOnlineStatus(false);
       }
     });
   }
@@ -257,15 +232,15 @@ class OnlineStatusService with WidgetsBindingObserver {
     try {
       final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        // First set offline to cleanup any existing status
-        await OnlineStatusDependencyInjection.setUserOfflineUseCase(
+        // First cleanup online status without updating lastActive
+        await OnlineStatusDependencyInjection.cleanupUserOnlineStatusUseCase(
           currentUser.uid,
         );
 
         // Wait a bit to ensure cleanup is processed
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // Then set online
+        // Then set online (does not update lastActive)
         await OnlineStatusDependencyInjection.setUserOnlineUseCase(
           currentUser.uid,
         );
@@ -279,11 +254,12 @@ class OnlineStatusService with WidgetsBindingObserver {
   }
 
   // Force cleanup all online statuses for current user (for app restart)
+  // This method only sets isOnline=false without updating lastActive
   Future<void> forceCleanup() async {
     try {
       final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        await OnlineStatusDependencyInjection.setUserOfflineUseCase(
+        await OnlineStatusDependencyInjection.cleanupUserOnlineStatusUseCase(
           currentUser.uid,
         );
         _setActive(false);
@@ -294,18 +270,8 @@ class OnlineStatusService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> updateLastActive() async {
-    try {
-      final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        await OnlineStatusDependencyInjection.setUserOnlineUseCase(
-          currentUser.uid,
-        );
-      }
-    } catch (e) {
-      debugPrint('Error updating last active: $e');
-    }
-  }
+  // Note: updateLastActive is removed because setUserOnline no longer updates lastActive
+  // lastActive should only be updated when user goes offline
 
   // Method to handle user activity (call this when user interacts with the app)
   void onUserActivity() {
@@ -315,11 +281,18 @@ class OnlineStatusService with WidgetsBindingObserver {
     if (!_isActive) {
       _setActive(true);
     }
-    _startActivityTimer();
   }
 
   // Get current online status
   bool get isOnline => _isActive && !_isInBackground;
+
+  // Method to be called when user explicitly logs out
+  Future<void> handleLogout() async {
+    _setActive(false);
+    await _updateOnlineStatus(false);
+    _stopBackgroundTimer();
+    _stopTerminationTimer();
+  }
 
   /// Sets a callback to be called when user comes back online after being offline
   void setOnUserBackOnlineCallback(VoidCallback? callback) {
@@ -329,7 +302,6 @@ class OnlineStatusService with WidgetsBindingObserver {
   // Dispose resources
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopActivityTimer();
     _stopBackgroundTimer();
     _stopTerminationTimer();
     _onlineStatusController.close();
@@ -359,10 +331,10 @@ class OnlineStatusService with WidgetsBindingObserver {
   }
 
   void _onAppInactive() {
-    // App is inactive (between foreground and background)
-    _setActive(false);
-    _updateOnlineStatus(false);
-    _forceOffline();
+    // Treat similar to paused: do not immediately mark offline
+    _isInBackground = true;
+    _startBackgroundTimer();
+    _startTerminationTimer();
   }
 }
 
