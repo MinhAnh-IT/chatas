@@ -60,6 +60,18 @@ class MockChatThreadRepository extends _i1.Mock
           as _i4.Future<List<_i2.ChatThread>>);
 
   @override
+  _i4.Future<List<_i2.ChatThread>> getArchivedChatThreads(
+    String? currentUserId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getArchivedChatThreads, [currentUserId]),
+            returnValue: _i4.Future<List<_i2.ChatThread>>.value(
+              <_i2.ChatThread>[],
+            ),
+          )
+          as _i4.Future<List<_i2.ChatThread>>);
+
+  @override
   _i4.Future<void> createChatThread(_i2.ChatThread? chatThread) =>
       (super.noSuchMethod(
             Invocation.method(#createChatThread, [chatThread]),

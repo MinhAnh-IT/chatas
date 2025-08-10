@@ -42,6 +42,11 @@ import 'package:chatas/features/friends/presentation/widgets/friends_with_chat_p
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chatas/features/chat_message/data/repositories/ai_summary_repository_impl.dart';
+import 'package:chatas/features/chat_message/data/datasources/ai/ai_summary_remote_data_source.dart';
+import 'package:chatas/features/chat_message/domain/usecases/ai_summary_usecase.dart';
+import 'package:chatas/shared/services/offline_summary_service.dart';
+import 'package:chatas/features/chat_message/constants/chat_message_remote_constants.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -51,23 +56,23 @@ class AppRouter {
       final user = FirebaseAuth.instance.currentUser;
       final isLoggedIn = user != null;
       final isAuthRoute =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register' ||
-          state.matchedLocation == '/forgot-password';
+          state.matchedLocation == AppRouteConstants.loginPath ||
+          state.matchedLocation == AppRouteConstants.registerPath ||
+          state.matchedLocation == AppRouteConstants.forgotPasswordPath;
 
       if (!isLoggedIn && !isAuthRoute) {
-        return '/login';
+        return AppRouteConstants.loginPath;
       }
 
       if (isLoggedIn && isAuthRoute) {
-        return '/';
+        return AppRouteConstants.homePath;
       }
 
       return null;
     },
     routes: [
       GoRoute(
-        path: '/',
+        path: AppRouteConstants.homePath,
         name: AppRouteConstants.homePathName,
         builder: (context, state) => const ChatThreadListPage(),
       ),
@@ -77,23 +82,23 @@ class AppRouter {
         builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
-        path: '/register',
+        path: AppRouteConstants.registerPath,
         name: AppRouteConstants.registerPathName,
         builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
-        path: '/forgot-password',
+        path: AppRouteConstants.forgotPasswordPath,
         name: AppRouteConstants.forgotPasswordPathName,
         builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(
-        path: '/profile',
+        path: AppRouteConstants.profilePath,
         name: AppRouteConstants.profilePathName,
         builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
-        path: '/archived',
-        name: 'archived',
+        path: AppRouteConstants.archivedPath,
+        name: AppRouteConstants.archivedPathName,
         builder: (context, state) {
           // Create repository and use cases for archived page
           final repository = ChatThreadRepositoryImpl();
@@ -190,6 +195,7 @@ class AppRouter {
               getUnreadCount: notification_di.sl(),
               sendFriendRequestNotification: notification_di.sl(),
               sendFriendAcceptedNotification: notification_di.sl(),
+              sendNewMessageNotification: notification_di.sl(),
             ),
             child: const NotificationsPage(),
           );
@@ -230,6 +236,21 @@ class AppRouter {
             chatMessageRepository: repository,
           );
 
+          // Setup AI Summary use case
+          final aiSummaryRepository = AISummaryRepositoryImpl(
+            remoteDataSource: AISummaryRemoteDataSource(
+              apiKey: ChatMessageRemoteConstants.geminiApiKey,
+            ),
+          );
+          final aiSummaryUseCase = AISummaryUseCase(
+            repository: aiSummaryRepository,
+          );
+
+          // Setup Offline Summary Service
+          final offlineSummaryService = OfflineSummaryService(
+            aiSummaryUseCase: aiSummaryUseCase,
+          );
+
           return BlocProvider(
             create: (context) => ChatMessageCubit(
               getMessagesStreamUseCase: getMessagesStreamUseCase,
@@ -240,6 +261,8 @@ class AppRouter {
               deleteMessageUseCase: deleteMessageUseCase,
               sendFirstMessageUseCase: sendFirstMessageUseCase,
               markMessagesAsReadUseCase: markMessagesAsReadUseCase,
+              offlineSummaryService: offlineSummaryService,
+              aiSummaryUseCase: aiSummaryUseCase,
             ),
             child: ChatMessagePage(
               threadId: threadId,

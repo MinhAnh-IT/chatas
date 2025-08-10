@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/notification_model.dart';
 
 class NotificationRemoteDataSource {
@@ -154,6 +155,64 @@ class NotificationRemoteDataSource {
       print('Token sent to server: $token');
     } catch (e) {
       print('Error sending token to server: $e');
+    }
+  }
+
+  /// Gửi thông báo đến user cụ thể thông qua FCM token được lưu trong Firestore
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required NotificationModel notification,
+  }) async {
+    try {
+      print('🔔 Preparing to send notification to user: $userId');
+      print('   Title: ${notification.title}');
+      print('   Body: ${notification.body}');
+
+      // Lấy FCM token của user từ Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!userDoc.exists) {
+        print('❌ User not found: $userId');
+        return;
+      }
+
+      final userData = userDoc.data()!;
+      final fcmToken = userData['fcmToken'] as String?;
+
+      if (fcmToken == null || fcmToken.isEmpty) {
+        print('❌ FCM token not found for user: $userId');
+        return;
+      }
+
+      // Tạo notification data để gửi
+      final notificationData = {
+        'to': fcmToken,
+        'notification': {
+          'title': notification.title,
+          'body': notification.body,
+        },
+        'data': {
+          ...notification.data,
+          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+        },
+      };
+
+      // TODO: Ở đây cần implement việc gửi qua FCM server
+      // Hiện tại chỉ log ra để demo
+      print('📱 Notification data prepared for FCM:');
+      print('   Token: ${fcmToken.substring(0, 20)}...');
+      print('   Data: $notificationData');
+
+      // Note: Để gửi thực sự, cần backend server với admin SDK
+      // hoặc sử dụng HTTP POST tới FCM API với server key
+
+      print('✅ Notification prepared successfully for user: $userId');
+    } catch (e) {
+      print('❌ Error sending notification to user: $e');
+      throw Exception('Failed to send notification to user: $e');
     }
   }
 

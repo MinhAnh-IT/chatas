@@ -11,6 +11,8 @@ import '../../../../shared/widgets/app_bar.dart';
 import '../../domain/usecases/create_group_chat_usecase.dart';
 import '../../domain/usecases/find_or_create_chat_thread_usecase.dart';
 import '../../data/repositories/chat_thread_repository_impl.dart';
+import '../../../friends/constants/FriendRemoteConstants.dart';
+import '../../../auth/di/auth_dependency_injection.dart';
 
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_route_constants.dart';
@@ -207,6 +209,31 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
           );
         }
 
+        // Không cho tạo chat 1-1 nếu có trạng thái chặn ở bất kỳ chiều nào
+        try {
+          final ds = FriendRemoteDataSource();
+          final myDoc = await ds.firestore
+              .collection(Friendremoteconstants.friendCollection)
+              .doc('${currentUserId}_$actualFriendId')
+              .get();
+          final theirDoc = await ds.firestore
+              .collection(Friendremoteconstants.friendCollection)
+              .doc('${actualFriendId}_$currentUserId')
+              .get();
+          final myBlock = (myDoc.data()?['isBlock'] as bool?) ?? false;
+          final theirBlock = (theirDoc.data()?['isBlock'] as bool?) ?? false;
+          if (myBlock || theirBlock) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Không thể tạo chat vì hai bên đã chặn nhau'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            setState(() => _isCreating = false);
+            return;
+          }
+        } catch (_) {}
+
         // Use existing use case for 1-on-1 chat
         // This will find existing hidden threads and reuse them
         // The actual thread creation/unhiding happens when first message is sent
@@ -352,51 +379,96 @@ class _FriendSelectionPageState extends State<FriendSelectionPage> {
                         );
 
                         return ListTile(
-                          leading: Stack(
-                            children: [
-                              SmartAvatar(
-                                imageUrl:
-                                    '', // Friend entity doesn't have avatarUrl
-                                radius: 20,
-                                fallbackText: friend.nickName.isNotEmpty
-                                    ? friend.nickName
-                                    : 'U',
-                                showBorder: true,
-                                showShadow: true,
-                              ),
-                              if (isSelected)
-                                Positioned(
-                                  right: 0,
-                                  bottom: 0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
+                          leading: FutureBuilder<Map<String, dynamic>?>(
+                            future: AuthDependencyInjection.authRemoteDataSource
+                                .getUserById(
+                                  // Extract actual friend user id
+                                  (() {
+                                    final parts = friend.friendId.split('_');
+                                    return parts.length == 2
+                                        ? parts[1]
+                                        : friend.friendId;
+                                  })(),
+                                )
+                                .then(
+                                  (user) => user == null
+                                      ? null
+                                      : {
+                                          'avatarUrl': user.avatarUrl,
+                                          'fullName': user.fullName,
+                                        },
+                                ),
+                            builder: (context, snapshot) {
+                              final avatarUrl =
+                                  snapshot.data?['avatarUrl'] as String? ?? '';
+                              final displayName = friend.nickName.isNotEmpty
+                                  ? friend.nickName
+                                  : (snapshot.data?['fullName'] as String? ??
+                                        'Người dùng');
+                              return Stack(
+                                children: [
+                                  SmartAvatar(
+                                    imageUrl: avatarUrl,
+                                    radius: 20,
+                                    fallbackText: displayName,
+                                    showBorder: true,
+                                    showShadow: true,
+                                  ),
+                                  if (isSelected)
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
                                       ),
                                     ),
-                                    child: const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                                ],
+                              );
+                            },
                           ),
-                          title: Text(
-                            friend.nickName.isNotEmpty
-                                ? friend.nickName
-                                : 'Người dùng',
-                            style: TextStyle(
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
+                          title: FutureBuilder<Map<String, dynamic>?>(
+                            future: AuthDependencyInjection.authRemoteDataSource
+                                .getUserById(
+                                  (() {
+                                    final parts = friend.friendId.split('_');
+                                    return parts.length == 2
+                                        ? parts[1]
+                                        : friend.friendId;
+                                  })(),
+                                )
+                                .then(
+                                  (user) => user == null
+                                      ? null
+                                      : {'fullName': user.fullName},
+                                ),
+                            builder: (context, snapshot) {
+                              final name = friend.nickName.isNotEmpty
+                                  ? friend.nickName
+                                  : (snapshot.data?['fullName'] as String? ??
+                                        'Người dùng');
+                              return Text(
+                                name,
+                                style: TextStyle(
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              );
+                            },
                           ),
                           subtitle: !friend.isBlock
                               ? Text(

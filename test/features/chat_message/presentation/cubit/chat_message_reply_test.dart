@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
-import 'package:bloc_test/bloc_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:chatas/features/chat_message/domain/entities/chat_message.dart';
 import 'package:chatas/features/chat_message/domain/usecases/get_messages_stream_usecase.dart';
@@ -14,20 +12,40 @@ import 'package:chatas/features/chat_message/domain/usecases/mark_messages_as_re
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_cubit.dart';
 import 'package:chatas/features/chat_message/presentation/cubit/chat_message_state.dart';
+import 'package:chatas/shared/services/offline_summary_service.dart';
+import 'package:chatas/features/chat_message/domain/usecases/ai_summary_usecase.dart';
 
-import 'chat_message_reply_test.mocks.dart';
+/// Mock implementations for testing.
+class MockGetMessagesStreamUseCase extends Mock
+    implements GetMessagesStreamUseCase {}
 
-@GenerateMocks([
-  GetMessagesStreamUseCase,
-  SendMessageUseCase,
-  AddReactionUseCase,
-  RemoveReactionUseCase,
-  EditMessageUseCase,
-  DeleteMessageUseCase,
-  SendFirstMessageUseCase,
-  MarkMessagesAsReadUseCase,
-])
+class MockSendMessageUseCase extends Mock implements SendMessageUseCase {}
+
+class MockAddReactionUseCase extends Mock implements AddReactionUseCase {}
+
+class MockRemoveReactionUseCase extends Mock implements RemoveReactionUseCase {}
+
+class MockEditMessageUseCase extends Mock implements EditMessageUseCase {}
+
+class MockDeleteMessageUseCase extends Mock implements DeleteMessageUseCase {}
+
+class MockSendFirstMessageUseCase extends Mock
+    implements SendFirstMessageUseCase {}
+
+class MockMarkMessagesAsReadUseCase extends Mock
+    implements MarkMessagesAsReadUseCase {}
+
+class MockOfflineSummaryService extends Mock implements OfflineSummaryService {}
+
+class MockAISummaryUseCase extends Mock implements AISummaryUseCase {}
+
 void main() {
+  setUpAll(() {
+    // Register fallback values for enums
+    registerFallbackValue(ReactionType.like);
+    registerFallbackValue(MessageType.text);
+  });
+
   group('ChatMessageCubit Reply Functionality', () {
     late ChatMessageCubit cubit;
     late MockGetMessagesStreamUseCase mockGetMessagesStreamUseCase;
@@ -38,6 +56,8 @@ void main() {
     late MockDeleteMessageUseCase mockDeleteMessageUseCase;
     late MockSendFirstMessageUseCase mockSendFirstMessageUseCase;
     late MockMarkMessagesAsReadUseCase mockMarkMessagesAsReadUseCase;
+    late MockOfflineSummaryService mockOfflineSummaryService;
+    late MockAISummaryUseCase mockAISummaryUseCase;
 
     setUp(() {
       mockGetMessagesStreamUseCase = MockGetMessagesStreamUseCase();
@@ -48,6 +68,8 @@ void main() {
       mockDeleteMessageUseCase = MockDeleteMessageUseCase();
       mockSendFirstMessageUseCase = MockSendFirstMessageUseCase();
       mockMarkMessagesAsReadUseCase = MockMarkMessagesAsReadUseCase();
+      mockOfflineSummaryService = MockOfflineSummaryService();
+      mockAISummaryUseCase = MockAISummaryUseCase();
 
       cubit = ChatMessageCubit(
         getMessagesStreamUseCase: mockGetMessagesStreamUseCase,
@@ -58,6 +80,8 @@ void main() {
         deleteMessageUseCase: mockDeleteMessageUseCase,
         sendFirstMessageUseCase: mockSendFirstMessageUseCase,
         markMessagesAsReadUseCase: mockMarkMessagesAsReadUseCase,
+        offlineSummaryService: mockOfflineSummaryService,
+        aiSummaryUseCase: mockAISummaryUseCase,
       );
 
       // Set up current user
