@@ -30,7 +30,7 @@ class _ProfileFormState extends State<ProfileForm> {
     super.initState();
     _fullNameController = TextEditingController(text: widget.profile.fullName);
     _usernameController = TextEditingController(text: widget.profile.username);
-    _selectedGender = widget.profile.gender;
+    _selectedGender = ProfileConstants.normalizeGender(widget.profile.gender);
     _selectedBirthDate = widget.profile.birthDate;
   }
 
@@ -339,7 +339,7 @@ class _ProfileFormState extends State<ProfileForm> {
       final request = UpdateProfileRequest(
         fullName: _fullNameController.text.trim(),
         username: _usernameController.text.trim(),
-        gender: _selectedGender,
+        gender: ProfileConstants.toEnglishGender(_selectedGender),
         birthDate: _selectedBirthDate,
         profileImageUrl: widget.profile.profileImageUrl,
       );

@@ -6,6 +6,9 @@ import '../widgets/auth_button.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
 import '../../data/models/user_model.dart';
+import '../../data/datasources/auth_remote_data_source.dart';
+import '../../domain/entities/register_request.dart';
+import '../../domain/entities/auth_result.dart';
 import 'package:go_router/go_router.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -22,8 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
+  final _authRemoteDataSource = AuthRemoteDataSource();
 
   String _selectedGender = '';
   DateTime? _selectedDate;
@@ -77,45 +79,18 @@ class _RegisterPageState extends State<RegisterPage> {
           return;
         }
 
-        if (_passwordController.text.length < AuthConstants.minPasswordLength) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Mật khẩu quá yếu'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
+        final registerRequest = RegisterRequest(
+          fullName: _fullNameController.text.trim(),
+          username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          gender: _selectedGender,
+          birthDate: _selectedDate!,
+        );
 
-        final userCredential = await _firebaseAuth
-            .createUserWithEmailAndPassword(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            );
+        final result = await _authRemoteDataSource.register(registerRequest);
 
-        if (userCredential.user != null) {
-          final userModel = UserModel(
-            userId: userCredential.user!.uid,
-            fullName: _fullNameController.text.trim(),
-            username: _usernameController.text.trim(),
-            email: _emailController.text.trim(),
-            gender: _selectedGender,
-            birthDate: _selectedDate!,
-            avatarUrl: '',
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            isOnline: false,
-            lastActive: DateTime.now(),
-          );
-
-          await _firestore
-              .collection(AuthConstants.usersCollection)
-              .doc(userCredential.user!.uid)
-              .set(userModel.toJson());
-
-          // Đăng xuất để user phải đăng nhập lại
-          await _firebaseAuth.signOut();
-
+        if (result is AuthSuccess) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -125,28 +100,15 @@ class _RegisterPageState extends State<RegisterPage> {
             );
             context.go('/login');
           }
-        }
-      } on firebase_auth.FirebaseAuthException catch (e) {
-        String message = 'Lỗi đăng ký';
-        switch (e.code) {
-          case 'email-already-in-use':
-            message = 'Email đã được sử dụng';
-            break;
-          case 'weak-password':
-            message = 'Mật khẩu quá yếu';
-            break;
-          case 'invalid-email':
-            message = 'Địa chỉ email không hợp lệ';
-            break;
-          case 'operation-not-allowed':
-            message = 'Thao tác không được phép';
-            break;
-        }
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), backgroundColor: Colors.red),
-          );
+        } else if (result is AuthFailure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } catch (e) {
         if (mounted) {
