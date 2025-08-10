@@ -31,11 +31,14 @@ class _ProfileFormState extends State<ProfileForm> {
     _fullNameController = TextEditingController(text: widget.profile.fullName);
     _usernameController = TextEditingController(text: widget.profile.username);
 
-    // Validate gender value against available options
-    _selectedGender =
-        ProfileConstants.genderOptions.contains(widget.profile.gender)
-        ? widget.profile.gender
-        : ProfileConstants.defaultGender;
+    // Initialize gender - convert from database format to display format
+    final dbGender = widget.profile.gender;
+    if (ProfileConstants.genderOptions.contains(dbGender)) {
+      _selectedGender = dbGender;
+    } else {
+      // If gender is not in expected format, use default
+      _selectedGender = ProfileConstants.defaultGender;
+    }
 
     _selectedBirthDate = widget.profile.birthDate;
   }
@@ -228,9 +231,7 @@ class _ProfileFormState extends State<ProfileForm> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: ProfileConstants.genderOptions.contains(_selectedGender)
-              ? _selectedGender
-              : ProfileConstants.defaultGender,
+          value: _selectedGender,
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.person_outline, color: Colors.grey.shade600),
             border: OutlineInputBorder(
@@ -350,7 +351,7 @@ class _ProfileFormState extends State<ProfileForm> {
       final request = UpdateProfileRequest(
         fullName: _fullNameController.text.trim(),
         username: _usernameController.text.trim(),
-        gender: _selectedGender,
+        gender: ProfileConstants.toEnglishGender(_selectedGender),
         birthDate: _selectedBirthDate,
         profileImageUrl: widget.profile.profileImageUrl,
       );

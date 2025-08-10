@@ -13,7 +13,10 @@ import '../../domain/entities/update_profile_request.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../../../shared/widgets/online_status_indicator.dart';
+import '../../../../shared/services/online_status_service.dart';
 import 'package:chatas/features/auth/constants/auth_remote_constants.dart';
+import 'package:chatas/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:chatas/features/auth/domain/entities/auth_result.dart';
 import '../../../../shared/widgets/app_bar.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -26,6 +29,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  final _authRemoteDataSource = AuthRemoteDataSource();
 
   UserProfile? _profile;
   bool _isLoading = true;
@@ -36,30 +40,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _getUserProfile();
-    _setUserOnline();
-  }
-
-  Future<void> _setUserOnline() async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        final now = DateTime.now();
-        await _firestore.collection('users').doc(user.uid).update({
-          'isOnline': true,
-          'lastActive': now.toIso8601String(),
-          'updatedAt': now.toIso8601String(),
-        });
-
-        // Update local state
-        if (mounted) {
-          setState(() {
-            _isOnline = true;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Error setting user online: $e');
-    }
   }
 
   Future<void> _getUserProfile() async {
@@ -91,7 +71,9 @@ class _ProfilePageState extends State<ProfilePage> {
               fullName: data[AuthRemoteConstants.fullNameField] ?? '',
               email: data[AuthRemoteConstants.emailField] ?? '',
               username: data[AuthRemoteConstants.usernameField] ?? '',
-              gender: data[AuthRemoteConstants.genderField] ?? '',
+              gender: ProfileConstants.normalizeGender(
+                data[AuthRemoteConstants.genderField],
+              ),
               birthDate: birthDate,
               profileImageUrl: data[AuthRemoteConstants.avatarUrlField] ?? '',
             );
@@ -134,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
         await _firestore.collection('users').doc(user.uid).update({
           'fullName': updatedProfile.fullName,
           'username': updatedProfile.username,
-          'gender': updatedProfile.gender,
+          'gender': ProfileConstants.toEnglishGender(updatedProfile.gender),
           'birthDate': Timestamp.fromDate(updatedProfile.birthDate),
           'updatedAt': FieldValue.serverTimestamp(),
         });
@@ -263,9 +245,20 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout() async {
     try {
-      await _firebaseAuth.signOut();
-      if (mounted) {
-        context.go('/login');
+      final result = await _authRemoteDataSource.logout();
+      if (result is AuthSuccess) {
+        if (mounted) {
+          context.go('/login');
+        }
+      } else if (result is AuthFailure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi đăng xuất: ${result.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -545,23 +538,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         // Test button to toggle online status
                         GestureDetector(
                           onTap: () async {
-                            final user = _firebaseAuth.currentUser;
-                            if (user != null) {
-                              final newStatus = !_isOnline;
-                              final now = DateTime.now();
-                              await _firestore
-                                  .collection('users')
-                                  .doc(user.uid)
-                                  .update({
-                                    'isOnline': newStatus,
-                                    'lastActive': now.toIso8601String(),
-                                    'updatedAt': now.toIso8601String(),
-                                  });
-
-                              setState(() {
-                                _isOnline = newStatus;
-                              });
+                            if (_isOnline) {
+                              await OnlineStatusService.instance.setOffline();
+                            } else {
+                              await OnlineStatusService.instance.setOnline();
                             }
+                            setState(() {
+                              _isOnline = !_isOnline;
+                            });
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -677,7 +661,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         fullName: request.fullName,
                         email: profile.email,
                         username: request.username,
-                        gender: request.gender,
+                        gender: ProfileConstants.normalizeGender(
+                          request.gender,
+                        ),
                         birthDate: request.birthDate,
                         profileImageUrl:
                             request.profileImageUrl ?? profile.profileImageUrl,

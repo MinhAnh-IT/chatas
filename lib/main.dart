@@ -2,6 +2,7 @@ import 'package:chatas/core/routing/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'firebase_options.dart';
 import 'features/friends/injection/friends_injection.dart';
 import 'features/auth/online_status_exports.dart';
@@ -24,6 +25,19 @@ void main() async {
   FriendsDependencyInjection.init();
 
   OnlineStatusService.instance.initialize();
+
+  // Cleanup any existing online status and set user online if logged in
+  final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
+  if (currentUser != null) {
+    // Force cleanup any existing online status first
+    await OnlineStatusService.instance.forceCleanup();
+
+    // Wait a bit to ensure cleanup is processed
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    // Then set online
+    await OnlineStatusService.instance.setOnline();
+  }
 
   runApp(MyApp());
 }

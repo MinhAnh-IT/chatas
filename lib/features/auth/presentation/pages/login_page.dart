@@ -5,6 +5,9 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '/shared/utils/auth_validator.dart';
 import '../../constants/auth_constants.dart';
+import '../../data/datasources/auth_remote_data_source.dart';
+import '../../domain/entities/login_request.dart';
+import '../../domain/entities/auth_result.dart';
 import '../../constants/auth_ui_constants.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,8 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailOrUsernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
+  final _authRemoteDataSource = AuthRemoteDataSource();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -40,37 +42,14 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       try {
-        String userEmail = _emailOrUsernameController.text.trim();
-
-        if (!userEmail.contains('@')) {
-          final userQuery = await _firestore
-              .collection(AuthConstants.usersCollection)
-              .where('username', isEqualTo: userEmail)
-              .limit(1)
-              .get();
-
-          if (userQuery.docs.isEmpty) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Không tìm thấy người dùng'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-            return;
-          }
-
-          final userData = userQuery.docs.first.data();
-          userEmail = userData['email'] as String;
-        }
-
-        final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
-          email: userEmail,
+        final loginRequest = LoginRequest(
+          emailOrUsername: _emailOrUsernameController.text.trim(),
           password: _passwordController.text,
         );
 
-        if (userCredential.user != null) {
+        final result = await _authRemoteDataSource.login(loginRequest);
+
+        if (result is AuthSuccess) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -80,31 +59,15 @@ class _LoginPageState extends State<LoginPage> {
             );
             context.go('/');
           }
-        }
-      } on firebase_auth.FirebaseAuthException catch (e) {
-        String message = 'Lỗi đăng nhập';
-        switch (e.code) {
-          case 'user-not-found':
-            message = 'Không tìm thấy người dùng';
-            break;
-          case 'wrong-password':
-            message = 'Sai mật khẩu';
-            break;
-          case 'invalid-email':
-            message = 'Email không hợp lệ';
-            break;
-          case 'user-disabled':
-            message = 'Tài khoản đã bị vô hiệu hóa';
-            break;
-          case 'too-many-requests':
-            message = 'Thử quá nhiều lần. Vui lòng thử lại sau';
-            break;
-        }
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), backgroundColor: Colors.red),
-          );
+        } else if (result is AuthFailure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } catch (e) {
         if (mounted) {
