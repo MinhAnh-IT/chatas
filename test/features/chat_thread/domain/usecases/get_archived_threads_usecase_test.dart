@@ -122,6 +122,11 @@ class FakeChatThreadRepository implements ChatThreadRepository {
   ) async => [];
 
   @override
+  Stream<List<ChatThread>> getChatThreadsStream(String currentUserId) {
+    return Stream.value([]);
+  }
+
+  @override
   Future<void> unhideChatThread(String chatThreadId, String userId) async {}
 
   @override

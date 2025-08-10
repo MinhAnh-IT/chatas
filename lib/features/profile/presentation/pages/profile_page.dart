@@ -254,6 +254,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout() async {
     try {
+      // Handle offline status before logout
+      await OnlineStatusService.instance.handleLogout();
+
       final result = await _authRemoteDataSource.logout();
       if (result is AuthSuccess) {
         if (mounted) {
@@ -662,121 +665,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               profile.profileImageUrl,
                         );
                         await _updateProfile(updatedProfile);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Quick Actions Card
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Card Header
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE67E22).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.settings,
-                            color: Color(0xFFE67E22),
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Tùy chọn khác',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF2C3E50),
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Quản lý tài khoản và bảo mật',
-                                style: TextStyle(
-                                  color: const Color(0xFF7F8C8D),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Action Buttons
-                    _buildActionButton(
-                      icon: Icons.lock_outline,
-                      title: 'Đổi mật khẩu',
-                      subtitle: 'Cập nhật mật khẩu tài khoản',
-                      color: const Color(0xFFE67E22),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const ChangePasswordDialog(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _buildActionButton(
-                      icon: Icons.security,
-                      title: 'Bảo mật tài khoản',
-                      subtitle: 'Cài đặt bảo mật nâng cao',
-                      color: const Color(0xFF9B59B6),
-                      onTap: () {
-                        // TODO: Implement security settings
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Tính năng đang phát triển'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _buildActionButton(
-                      icon: Icons.help_outline,
-                      title: 'Trợ giúp & Hỗ trợ',
-                      subtitle: 'Liên hệ hỗ trợ khách hàng',
-                      color: const Color(0xFF3498DB),
-                      onTap: () {
-                        // TODO: Implement help & support
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Tính năng đang phát triển'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
                       },
                     ),
                   ],

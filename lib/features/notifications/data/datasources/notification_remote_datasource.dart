@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/notification_model.dart';
+import '../../../friends/services/fcm_push_service.dart';
 
 class NotificationRemoteDataSource {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -164,52 +164,25 @@ class NotificationRemoteDataSource {
     required NotificationModel notification,
   }) async {
     try {
-      print('🔔 Preparing to send notification to user: $userId');
+      print('🔔 Sending notification to user via Admin API: $userId');
       print('   Title: ${notification.title}');
       print('   Body: ${notification.body}');
 
-      // Lấy FCM token của user từ Firestore
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
-
-      if (!userDoc.exists) {
-        print('❌ User not found: $userId');
-        return;
-      }
-
-      final userData = userDoc.data()!;
-      final fcmToken = userData['fcmToken'] as String?;
-
-      if (fcmToken == null || fcmToken.isEmpty) {
-        print('❌ FCM token not found for user: $userId');
-        return;
-      }
-
-      // Tạo notification data để gửi
-      final notificationData = {
-        'to': fcmToken,
-        'notification': {
-          'title': notification.title,
-          'body': notification.body,
-        },
-        'data': {
+      final success = await FCMPushService.sendNotificationToUser(
+        toUserId: userId,
+        title: notification.title,
+        body: notification.body,
+        data: {
           ...notification.data,
           'click_action': 'FLUTTER_NOTIFICATION_CLICK',
         },
-      };
+      );
 
-      // TODO: Ở đây cần implement việc gửi qua FCM server
-      // Hiện tại chỉ log ra để demo
-      print('📱 Notification data prepared for FCM:');
-      print('   Token: ${fcmToken.substring(0, 20)}...');
-      print('   Data: $notificationData');
-
-      // Note: Để gửi thực sự, cần backend server với admin SDK
-      // hoặc sử dụng HTTP POST tới FCM API với server key
-
-      print('✅ Notification prepared successfully for user: $userId');
+      if (success) {
+        print('✅ Notification sent successfully to user: $userId');
+      } else {
+        print('❌ Failed to send notification to user: $userId');
+      }
     } catch (e) {
       print('❌ Error sending notification to user: $e');
       throw Exception('Failed to send notification to user: $e');

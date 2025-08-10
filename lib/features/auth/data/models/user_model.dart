@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/entities/user.dart';
 
@@ -32,27 +33,33 @@ class UserModel extends Equatable {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+      if (value is Timestamp) return value.toDate();
+      if (value is int) {
+        // assume millisecondsSinceEpoch
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      if (value is String) {
+        return DateTime.tryParse(value) ?? DateTime.now();
+      }
+      return DateTime.now();
+    }
+
     return UserModel(
-      userId: json['userId'] ?? '',
-      isOnline: json['isOnline'] ?? false,
-      lastActive: DateTime.parse(
-        json['lastActive'] ?? DateTime.now().toIso8601String(),
-      ),
-      fullName: json['fullName'] ?? '',
-      username: json['username'] ?? '',
-      email: json['email'] ?? '',
+      userId: (json['userId'] ?? json['uid'] ?? '').toString(),
+      isOnline: (json['isOnline'] ?? false) as bool,
+      lastActive: parseDate(json['lastActive']),
+      fullName: (json['fullName'] ?? '').toString(),
+      username: (json['username'] ?? '').toString(),
+      email: (json['email'] ?? '').toString(),
       // password: json['password'] ?? '',
-      gender: json['gender'] ?? '',
-      birthDate: DateTime.parse(
-        json['birthDate'] ?? DateTime.now().toIso8601String(),
-      ),
-      avatarUrl: json['avatarUrl'] ?? '',
-      createdAt: DateTime.parse(
-        json['createdAt'] ?? DateTime.now().toIso8601String(),
-      ),
-      updatedAt: DateTime.parse(
-        json['updatedAt'] ?? DateTime.now().toIso8601String(),
-      ),
+      gender: (json['gender'] ?? '').toString(),
+      birthDate: parseDate(json['birthDate']),
+      avatarUrl: (json['avatarUrl'] ?? '').toString(),
+      createdAt: parseDate(json['createdAt']),
+      updatedAt: parseDate(json['updatedAt']),
     );
   }
 
@@ -134,5 +141,17 @@ class UserModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => throw UnimplementedError();
+  List<Object?> get props => [
+    userId,
+    isOnline,
+    lastActive,
+    fullName,
+    username,
+    email,
+    gender,
+    birthDate,
+    avatarUrl,
+    createdAt,
+    updatedAt,
+  ];
 }

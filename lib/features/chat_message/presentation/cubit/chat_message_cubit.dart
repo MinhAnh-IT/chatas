@@ -193,11 +193,9 @@ class ChatMessageCubit extends Cubit<ChatMessageState> {
   /// Clears the current offline summary display
   void clearSummary() {
     _isSummaryInProgress = false;
-    // Don't emit summary states, just return to normal message state
-    final currentState = state;
-    if (currentState is ChatMessageLoaded) {
-      emit(ChatMessageLoaded(messages: currentState.messages));
-    }
+    // Always return to normal message state using current visible messages
+    final messages = currentMessages;
+    emit(ChatMessageLoaded(messages: messages));
   }
 
   /// Resets the offline summary check flag so it can trigger again

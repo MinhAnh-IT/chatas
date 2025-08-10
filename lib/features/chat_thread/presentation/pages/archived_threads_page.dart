@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:chatas/core/constants/app_route_constants.dart';
 
 import '../../domain/entities/chat_thread.dart';
 import '../cubit/chat_thread_list_cubit.dart';
@@ -50,10 +51,13 @@ class _ArchivedThreadsPageState extends State<ArchivedThreadsPage> {
     String threadId,
     String? otherUserName,
   ) {
-    context.push(
-      '/chat-message/$threadId',
-      extra: {'otherUserName': otherUserName ?? 'Chat'},
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final route = AppRouteConstants.chatMessageRoute(
+      threadId,
+      currentUserId: currentUserId,
+      otherUserName: otherUserName ?? 'Chat',
     );
+    context.push(route);
   }
 
   void _unarchiveThread(ChatThread thread) {

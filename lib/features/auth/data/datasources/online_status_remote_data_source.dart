@@ -17,12 +17,18 @@ class OnlineStatusRemoteDataSource {
     DateTime? lastActive,
   }) async {
     try {
-      final now = lastActive ?? DateTime.now();
-      await _firestore.collection('users').doc(userId).update({
+      final now = DateTime.now();
+      final Map<String, dynamic> updates = {
         'isOnline': isOnline,
-        'lastActive': now.toIso8601String(),
         'updatedAt': now.toIso8601String(),
-      });
+      };
+
+      // Only update lastActive when going offline
+      if (!isOnline) {
+        updates['lastActive'] = (lastActive ?? now).toIso8601String();
+      }
+
+      await _firestore.collection('users').doc(userId).update(updates);
       return true;
     } catch (e) {
       return false;
@@ -72,11 +78,15 @@ class OnlineStatusRemoteDataSource {
   }
 
   Future<bool> setUserOnline(String userId) async {
-    return await updateOnlineStatus(
-      userId: userId,
-      isOnline: true,
-      lastActive: DateTime.now(),
-    );
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'isOnline': true,
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<bool> setUserOffline(String userId) async {
@@ -85,6 +95,19 @@ class OnlineStatusRemoteDataSource {
       isOnline: false,
       lastActive: DateTime.now(),
     );
+  }
+
+  // Set user offline for cleanup without updating lastActive
+  Future<bool> cleanupUserOnlineStatus(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'isOnline': false,
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // Get current user ID

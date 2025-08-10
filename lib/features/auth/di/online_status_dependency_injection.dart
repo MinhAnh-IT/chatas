@@ -10,6 +10,7 @@ class OnlineStatusDependencyInjection {
   static SetUserOfflineUseCase? _setUserOfflineUseCase;
   static GetUserOnlineStatusUseCase? _getUserOnlineStatusUseCase;
   static StreamUserOnlineStatusUseCase? _streamUserOnlineStatusUseCase;
+  static CleanupUserOnlineStatusUseCase? _cleanupUserOnlineStatusUseCase;
 
   static OnlineStatusRemoteDataSource get onlineStatusRemoteDataSource {
     _onlineStatusRemoteDataSource ??= OnlineStatusRemoteDataSource();
@@ -47,6 +48,13 @@ class OnlineStatusDependencyInjection {
     return _streamUserOnlineStatusUseCase!;
   }
 
+  static CleanupUserOnlineStatusUseCase get cleanupUserOnlineStatusUseCase {
+    _cleanupUserOnlineStatusUseCase ??= CleanupUserOnlineStatusUseCase(
+      onlineStatusRepository,
+    );
+    return _cleanupUserOnlineStatusUseCase!;
+  }
+
   static void dispose() {
     _onlineStatusRepository = null;
     _onlineStatusRemoteDataSource = null;
@@ -54,6 +62,7 @@ class OnlineStatusDependencyInjection {
     _setUserOfflineUseCase = null;
     _getUserOnlineStatusUseCase = null;
     _streamUserOnlineStatusUseCase = null;
+    _cleanupUserOnlineStatusUseCase = null;
   }
 
   static void reset() {

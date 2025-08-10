@@ -18,6 +18,7 @@ import 'package:chatas/features/chat_thread/presentation/pages/archived_threads_
 import 'package:chatas/features/chat_thread/presentation/cubit/chat_thread_list_cubit.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/send_first_message_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_usecase.dart';
+import 'package:chatas/features/chat_thread/domain/usecases/get_chat_threads_stream_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/get_archived_threads_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/create_chat_thread_usecase.dart';
 import 'package:chatas/features/chat_thread/domain/usecases/search_chat_threads_usecase.dart';
@@ -103,6 +104,9 @@ class AppRouter {
           // Create repository and use cases for archived page
           final repository = ChatThreadRepositoryImpl();
           final getChatThreadsUseCase = GetChatThreadsUseCase(repository);
+          final getChatThreadsStreamUseCase = GetChatThreadsStreamUseCase(
+            repository,
+          );
           final getArchivedThreadsUseCase = GetArchivedThreadsUseCase(
             repository,
           );
@@ -121,6 +125,7 @@ class AppRouter {
           return BlocProvider(
             create: (context) => ChatThreadListCubit(
               getChatThreadsUseCase: getChatThreadsUseCase,
+              getChatThreadsStreamUseCase: getChatThreadsStreamUseCase,
               getArchivedThreadsUseCase: getArchivedThreadsUseCase,
               createChatThreadUseCase: createChatThreadUseCase,
               searchChatThreadsUseCase: searchChatThreadsUseCase,

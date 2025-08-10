@@ -39,3 +39,13 @@ class StreamUserOnlineStatusUseCase {
     return repository.streamUserOnlineStatus(userId);
   }
 }
+
+class CleanupUserOnlineStatusUseCase {
+  final OnlineStatusRepository repository;
+
+  CleanupUserOnlineStatusUseCase(this.repository);
+
+  Future<bool> call(String userId) async {
+    return await repository.cleanupUserOnlineStatus(userId);
+  }
+}
