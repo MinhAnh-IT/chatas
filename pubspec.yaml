@@ -58,7 +58,7 @@ dependencies:
 
   image_picker: ^1.0.4
   file_picker: ^8.0.3
-  mime: ^1.0.5
+  mime: ^2.0.0
   url_launcher: ^6.2.5
   dartz: ^0.10.1
 
