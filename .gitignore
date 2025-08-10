@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.auth_feature_structure.dart
+
+# Firebase/Security related
+*.pem
+*.p12
