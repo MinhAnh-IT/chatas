@@ -26,17 +26,17 @@ class ProfileConstants {
   /// File size limits
   static const int maxImageSizeInBytes = 5 * 1024 * 1024; // 5MB
 
-  // Gender options (Vietnamese display)
-  static const List<String> genderOptions = ['Nam', 'Nữ', 'Khác'];
+  // Gender options (English for database)
+  static const List<String> genderOptions = ['male', 'female', 'other'];
 
   // Gender mapping from English to Vietnamese
   static const Map<String, String> genderMapping = {
     'Male': 'Nam',
     'Female': 'Nữ',
     'Other': 'Khác',
-    'Nam': 'Nam',
-    'Nữ': 'Nữ',
-    'Khác': 'Khác',
+    'male': 'Nam',
+    'female': 'Nữ',
+    'other': 'Khác',
   };
 
   // Gender mapping from Vietnamese to English (for database)
@@ -69,9 +69,6 @@ class ProfileConstants {
   static String toEnglishGender(String vietnameseGender) {
     return genderToEnglish[vietnameseGender] ?? 'Male';
   }
-
-  /// Gender options
-  static const List<String> genderOptions = ['male', 'female', 'other'];
 
   /// Gender display labels
   static const Map<String, String> genderLabels = {
