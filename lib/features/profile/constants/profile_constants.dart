@@ -45,6 +45,7 @@ class ProfileConstants {
     'Nữ': 'Female',
     'Khác': 'Other',
   };
+
   /// Supported image formats
   static const List<String> supportedImageFormats = [
     'jpg',
