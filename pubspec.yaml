@@ -63,7 +63,7 @@ dependencies:
   dartz: ^0.10.1
 
   # Google APIs for Firebase Admin SDK
-  googleapis_auth: ^1.4.1
+  googleapis_auth: ^2.0.0
 
   # Navigation
   go_router: ^14.0.1
